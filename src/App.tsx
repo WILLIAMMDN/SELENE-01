@@ -29,32 +29,34 @@ export default function App() {
   const [config,setConfig]=useState<DesignConfig>(INITIAL_DESIGN)
   const [ops,setOps]=useState(startOperations)
   const [notification,setNotification]=useState('')
+  const [launched,setLaunched]=useState(false)
   const evaluation=evaluateDesign(config)
   const stageIndex=STAGES.findIndex(x=>x.id===stage)
   const operateReady=evaluation.ready
   const go=(value:Stage)=>{
-    if(value==='operations' && !operateReady){setNotification('Corrige la configuración antes de iniciar operaciones.');setStage('design');return}
-    if(value==='report' && ops.status==='running'){setNotification('Completa las tres decisiones de operaciones antes del informe.');return}
+    if(value==='operations' && (!operateReady || !launched)){setNotification('Autoriza primero un lanzamiento con un diseño válido.');setStage('launch');return}
+    if(value==='report' && (!launched || ops.status==='running')){setNotification('Completa las tres decisiones de operaciones antes del informe.');return}
     setNotification('');setStage(value)
   }
   const interact=useCallback((station:Station)=>{
     if(station==='briefing'){setStage('briefing');setNotification('La Dra. Vega te espera con las instrucciones.')}
     if(station==='hangar'){setStage('design');setNotification('Has entrado al hangar de ingeniería.')}
     if(station==='launch'){setStage('launch');setNotification('Verifica la misión antes de lanzar.')}
-    if(station==='control'){setStage('operations');setNotification('Has entrado al centro de control.')}
-  },[])
+    if(station==='control'){setStage(launched?'operations':'launch');setNotification(launched?'Has entrado al centro de control.':'Autoriza el lanzamiento antes de operar la misión.')}
+  },[launched])
   const toggleInstrument=(id:InstrumentId)=>{
+    setLaunched(false);setOps(startOperations())
     setConfig(previous=>({...previous,instruments:previous.instruments.includes(id)?previous.instruments.filter(x=>x!==id):[...previous.instruments,id]}))
   }
   const fly=()=>{
     if(!evaluation.ready){go('design');return}
-    setOps(startOperations());setStage('operations');setNotification('¡Lanzamiento simulado! El orbitador está en la fase de operaciones.')
+    setOps(startOperations());setLaunched(true);setStage('operations');setNotification('¡Lanzamiento simulado! El orbitador está en la fase de operaciones.')
   }
   const operate=(choice:OperationChoice)=>{
     setOps(previous=>applyOperation(previous,choice,evaluation))
   }
   const restart=()=>{
-    setConfig(INITIAL_DESIGN);setOps(startOperations());setStage('briefing');setNotification('')
+    setConfig(INITIAL_DESIGN);setOps(startOperations());setLaunched(false);setStage('briefing');setNotification('')
   }
   return <div className="app-shell">
     <header className="topbar">
@@ -63,7 +65,7 @@ export default function App() {
       <span className="topbar-status">PROTOTIPO EDUCATIVO · V0.2</span>
     </header>
     <nav className="stage-nav" aria-label="Etapas de la misión">
-      {STAGES.map((item,index)=><button key={item.id} type="button" className={stage===item.id?'current':''} aria-current={stage===item.id?'step':undefined} onClick={()=>go(item.id)} disabled={(item.id==='report'&&ops.status==='running')||(item.id==='operations'&&!operateReady)}>{index<stageIndex?'✓ ':''}{item.label}</button>)}
+      {STAGES.map((item,index)=><button key={item.id} type="button" className={stage===item.id?'current':''} aria-current={stage===item.id?'step':undefined} onClick={()=>go(item.id)} disabled={(item.id==='report'&&ops.status==='running')||(item.id==='operations'&&(!operateReady || !launched))}>{index<stageIndex?'✓ ':''}{item.label}</button>)}
     </nav>
     <main className="game-layout">
       <section className="world-column">
@@ -87,13 +89,13 @@ export default function App() {
           <h2>Instrumentos científicos</h2>
           <div className="select-list">{INSTRUMENTS.map(item=><label className="select-card" key={item.id}><input type="checkbox" checked={config.instruments.includes(item.id)} onChange={()=>toggleInstrument(item.id)}/><span><strong>{item.name}</strong><small>{item.benefit} · {item.massKg} kg · {item.watts} W · {item.dataGb} GB/día</small></span></label>)}</div>
           <h2>Órbita prevista</h2>
-          <select value={config.orbit} onChange={e=>setConfig(previous=>({...previous,orbit:e.target.value as DesignConfig['orbit']}))} aria-label="Tipo de órbita">{ORBITS.map(option=><option key={option.id} value={option.id}>{option.name}</option>)}</select>
+          <select value={config.orbit} onChange={e=>{setLaunched(false);setOps(startOperations());setConfig(previous=>({...previous,orbit:e.target.value as DesignConfig['orbit']}))}} aria-label="Tipo de órbita">{ORBITS.map(option=><option key={option.id} value={option.id}>{option.name}</option>)}</select>
           <p className="field-help">{ORBITS.find(o=>o.id===config.orbit)?.description}</p>
           <h2>Vehículo de lanzamiento</h2>
-          <select aria-label="Vehículo de lanzamiento" value={config.launcher} onChange={e=>setConfig(previous=>({...previous,launcher:e.target.value as DesignConfig['launcher']}))}>{LAUNCHERS.map(option=><option key={option.id} value={option.id}>{option.name} · {option.maxMass} kg</option>)}</select>
+          <select aria-label="Vehículo de lanzamiento" value={config.launcher} onChange={e=>{setLaunched(false);setOps(startOperations());setConfig(previous=>({...previous,launcher:e.target.value as DesignConfig['launcher']}))}}>{LAUNCHERS.map(option=><option key={option.id} value={option.id}>{option.name} · {option.maxMass} kg</option>)}</select>
           <h2>Mejoras de ingeniería</h2>
-          <label className="option-small"><input type="checkbox" checked={config.solarUpgrade} onChange={e=>setConfig(previous=>({...previous,solarUpgrade:e.target.checked}))}/> Paneles solares adicionales (+170 W)</label>
-          <label className="option-small"><input type="checkbox" checked={config.commUpgrade} onChange={e=>setConfig(previous=>({...previous,commUpgrade:e.target.checked}))}/> Antena mejorada (+14 GB/día)</label>
+          <label className="option-small"><input type="checkbox" checked={config.solarUpgrade} onChange={e=>{setLaunched(false);setOps(startOperations());setConfig(previous=>({...previous,solarUpgrade:e.target.checked}))}}/> Paneles solares adicionales (+170 W)</label>
+          <label className="option-small"><input type="checkbox" checked={config.commUpgrade} onChange={e=>{setLaunched(false);setOps(startOperations());setConfig(previous=>({...previous,commUpgrade:e.target.checked}))}}/> Antena mejorada (+14 GB/día)</label>
           <button className="action-primary" onClick={()=>go('launch')}>Verificar para lanzamiento →</button>
         </>}
         {stage==='launch'&&<>
