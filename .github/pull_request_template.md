@@ -1,15 +1,16 @@
-## Descripción
-¿Qué cambia y por qué?
+## Objetivo y issue
+- Qué problema soluciona:
+- Issue relacionado:
 
-## Issue relacionado
-Closes #
+## Evidencia
+- [ ] npm test
+- [ ] npm run build
+- [ ] Captura o video si cambia la escena 3D
+- [ ] Revisión de recursos/claims NASA
+- [ ] Sin archivos con secretos ni assets sin licencia
 
-## Comprobación
-- [ ] `npm run build`
-- [ ] `npm test`
-- [ ] Probado en navegador (y móvil si corresponde)
-- [ ] Captura para cambios visuales
-- [ ] Sin secretos ni assets de origen desconocido
+## QA
+Dispositivos y navegadores probados:
 
-## Revisores
-Solicitar revisión a otro integrante antes de integrar.
+## Revisor
+Solicitar revisión a alguien distinto del autor.
