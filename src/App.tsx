@@ -128,7 +128,7 @@ export default function App() {
           <p>Resultado: <b>{ops.status==='completed'?'Operación completada':'Operación interrumpida'}</b>. Datos enviados: <b>{ops.delivered} GB</b>. Reserva final: <b>{ops.battery}%</b>.</p>
           <h2>Bitácora de decisiones</h2><div className="mission-log">{ops.history.map((entry,index)=><p key={index}>{index+1}. {entry}</p>)}</div>
           <p><strong>Reflexión:</strong> ¿qué instrumento cambiarías para equilibrar valor científico, masa, potencia y capacidad de transmisión?</p>
-          <button className="action-primary" onClick={()=>{setOps(startOperations());go('design')}}>Rediseñar la misión ↻</button>
+          <button className="action-primary" onClick={()=>{setOps(startOperations());setLaunched(false);go('design')}}>Rediseñar la misión ↻</button>
           <button className="action-secondary" onClick={restart}>Comenzar otra historia</button>
         </>}
       </section>
