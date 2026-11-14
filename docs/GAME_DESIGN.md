@@ -1,59 +1,40 @@
-# Documento de diseño del juego — SELENE-01
+# Game Design Document — SELENE-01
 
-## 1. Premisa
-**Género:** simulación educativa, aventura narrativa y gestión de recursos. **Público:** estudiantes de nivel escolar (adaptable según pruebas con docentes). **Plataforma:** navegador web de escritorio y móvil. **Modo inicial:** individual, con colaboración de seis integrantes *desarrolladores* (no seis jugadores simultáneos).
+## Premisa y público
+Juego 3D de aventura y simulación de ingeniería, para adolescentes y estudiantes universitarios iniciales. Narrativa cálida, exploración en tercera persona y un sistema de decisiones verificables. En una campaña ficticia, la protagonista es reclutada para construir un orbitador lunar.
 
-**Pregunta central:** ¿qué decisiones permiten mantener una pequeña base lunar habitable cuando los recursos son limitados?
+**Problema educativo:** los componentes de una misión se aprenden por separado. Las decisiones reales entre instrumentos, presupuesto, masa, potencia, órbita, comunicaciones, datos y vida útil son difíciles de experimentar en clases tradicionales.
 
-## 2. Historia general
-Año ficticio próximo al establecimiento de una base lunar. La misión de entrenamiento **SELENE-01** te pone al mando de la estación **Artemisa**, un puesto científico en las proximidades del polo sur lunar. La tripulación acaba de aterrizar, la comunicación con la Tierra tiene demoras operativas y cada sistema depende de otros. Un mensaje de Control de Misión explica que no ganará quien acumule un solo recurso, sino quien mantenga el equilibrio.
+**Objetivo de aprendizaje:** tomar decisiones integradas y explicar por qué mejoran o empeoran la viabilidad y los objetivos científicos.
 
-**Acto I — Llegada (sol 1):** activar la estación, orientar paneles y asegurar energía.
+## Historia canónica
+Cap. 1 — La convocatoria: el jugador llega al campus. Dra. Vega plantea el estudio del polo sur lunar. ORBI se incorpora como guía científica, no como piloto automático.
 
-**Acto II — Vida cotidiana (sol 2):** solucionar una pérdida de agua y comprender el reciclaje.
+Cap. 2 — El hangar: el equipo define objetivos, selecciona instrumentos (cámara, espectrómetro, radar), subsistemas de energía y antena, lanzador y órbita. Un panel muestra los efectos cruzados en tiempo real.
 
-**Acto III — Emergencia (sol 3):** responder a un evento de radiación solar y proteger al personal.
+Cap. 3 — Cuenta regresiva: el jugador valida el presupuesto, la masa del vehículo, la potencia disponible y los datos transmisibles. Los diseños incompatibles requieren corregirse.
 
-**Acto IV — Autosuficiencia (sol 4):** sostener el cultivo de alimentos, controlar nutrientes y distribución de recursos.
+Cap. 4 — Órbita y primera observación: decisiones de ciencia vs. consumo de batería y memoria.
 
-**Acto V — Legado (sol 5):** tomar la última decisión y transmitir el reporte a la Tierra.
+Cap. 5 — Ventana de comunicación y eclipse: elegir entre transmitir, investigar o conservar recursos. No existe una única solución óptima.
 
-El entrenamiento actual presenta estos actos como cinco eventos cortos. **Futuro:** escenas de diálogo, misiones explorables, diario científico, personajes y cinemáticas.
+Cap. 6 — Informe: explicación de aciertos y errores, datos enviados, rendimiento estimado y opción de repetir con otro diseño.
 
-## 3. Bucle de jugabilidad
-Observar la base 3D → leer evento → comparar tres opciones → decidir → recibir explicación y cambios de recursos → avanzar un sol → evaluar condición de victoria o derrota.
+## Localizaciones
+Campus explorable; centro de investigación; hangar de ensamblaje; plataforma de lanzamiento; centro de control; escena orbital. Los ambientes se conectarán mediante escenas con carga progresiva.
 
-**Victoria:** cinco soles completados y todos los índices de recursos por encima de cero. **Derrota:** cualquier índice crítico llega a cero tras el consumo diario. Hay reinicio inmediato, sin castigo permanente.
+## Bucle principal
+Recorrer → conversar → planificar → comparar recursos → validar → lanzar simulación → afrontar eventos → recibir explicación → rediseñar.
 
-## 4. Sistemas
-- Energía: alimenta soporte vital, equipos, movilidad e iluminación.
-- Oxígeno: representa disponibilidad del sistema de soporte vital.
-- Agua: consumo y circuito de reciclaje.
-- Alimentos: reservas y producción controlada.
-- Integridad: índice agregado de seguridad y estado de las instalaciones.
+## Mecánicas
+- Configuración de instrumentos, órbita y lanzador; upgrades de paneles y comunicaciones.
+- Restricciones de capacidad, potencia, presupuesto y transferencia.
+- Tres eventos de operación deterministas, memoria de 36 GB de simulación y batería.
+- ORBI explica ciencia con enlaces verificables y expresa incertidumbre cuando una pregunta no está cubierta.
+- Puntuación educativa y registro de decisiones.
 
-Los cinco índices son una **abstracción pedagógica de 0–100**. No se presentan como medidas reales de kWh, kg u horas de oxígeno.
+## Aceptación del prototipo
+Una historia coherente y un camino completo desde briefing a informe. Un diseño incompatible no debe lanzarse; el feedback explica el porqué; el diseño puede reintentarse. El jugador diferencia parámetros ficticios de hechos NASA y puede abrir fuentes.
 
-## 5. Experiencia visual deseada
-Aventura de ciencia ficción amigable y educativa: personaje astronauta de silueta clara; módulos blancos, beige y azul; acentos naranja para acciones importantes; polvo lunar gris; siluetas limpias, cel shading ligero, sombras suaves y cámaras amplias. Evitar copiar franquicias o usar insignias oficiales sin permiso. Ver `ART_DIRECTION.md`.
-
-## 6. Pantallas planificadas
-1. Inicio e introducción cinematográfica breve.
-2. Vista explorable de la estación lunar + HUD (prototipo implementado).
-3. Diálogos de tripulación y consola de misiones.
-4. Mapa/sectores: hábitat, invernadero, energía, laboratorio y comunicaciones.
-5. Bitácora con conceptos aprendidos y progreso.
-6. Resultados, informe de misión y opción de repetir.
-
-## 7. Experiencia de aprendizaje y evaluación
-Cada decisión enseña una relación causal entre sistemas; el mensaje de feedback explica el razonamiento. Para una versión evaluable, se propone pretest/postest breve, preguntas de transferencia y telemetría **anonimizada y con consentimiento**, no necesaria para el prototipo.
-
-## 8. Criterios de aceptación del MVP
-- Escenario lunar 3D se renderiza y permite girar la cámara.
-- Recursos comienzan con valores reproducibles.
-- Un evento ofrece tres decisiones distintas.
-- Una sola decisión por sol.
-- Una explicación clara tras la decisión.
-- El consumo se aplica al avanzar.
-- Se puede ganar o perder y volver a iniciar.
-- El sitio se compila sin backend.
+## Ampliaciones no implementadas
+Multijugador colaborativo hasta cuatro participantes; objetivos alternativos, terrenos importados, efectos de eventos probabilísticos, perfiles de dificultad, simulación orbital de mayor rigor, estudio pedagógico antes/después.

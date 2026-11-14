@@ -1,35 +1,22 @@
-# Hoja de ruta y entregables
+# Hoja de ruta y puntos de control
 
-## Hito 0 — Base de trabajo [implementado en el repositorio]
-- [x] Estructura Vite + React + TypeScript.
-- [x] Primer escenario 3D procedural (terreno, hábitat, paneles, rover y astronauta).
-- [x] HUD con cinco indicadores.
-- [x] Cinco eventos, tres opciones por evento y finales.
-- [x] Motor de simulación desacoplado y pruebas unitarias.
-- [x] Documentación de equipo, diseño, arquitectura, arte y ciencia.
-- [x] Workflow de CI.
-- [ ] Comprobación real de `npm install`, `npm run build` y `npm test` en un entorno con acceso a npm.
+## M0 — Alcance y trazabilidad
+Confirmar Space Mission Design Game como reto, cerrar historia y asignar seis roles. Cumplido documentalmente.
 
-## Hito 1 — Vertical slice
-- [ ] Sustituir astronauta por GLB propio con animación.
-- [ ] Añadir interacción por clic en al menos un edificio.
-- [ ] Introducción narrativa con tutor o voz textual.
-- [ ] Ajustar UI para móvil y accesibilidad con pruebas reales.
-- [ ] Diseñar un sector con identidad visual definitiva.
-- [ ] Publicar demo accesible por URL.
+## M1 — Vertical slice funcional
+Campus navegable + ORBI + una misión de diseño con tres instrumentos, orbital y lanzamiento simulados, operación y evaluación. Base de geometrías provisionales y motor ficticio de decisiones. Estado: implementado en rama de integración; pendientes revisión funcional y QA en navegador real.
 
-## Hito 2 — Juego educativo ampliado
-- [ ] Explorar hábitat, invernadero, energía y laboratorio.
-- [ ] Añadir misiones secundarias y bitácora de aprendizajes.
-- [ ] Persistencia local segura y menú de opciones.
-- [ ] Eventos de dificultad gradual y más desenlaces.
-- [ ] Mejorar modelado, luz, sonido y optimización.
+## M2 — Producción artística
+Ensamblar campus, laboratorio, hangar y control a partir de paquetes Blender. Personajes animados y robot ORBI real. Mejorar colisiones, movimiento de cámara y actuaciones. Integrar por GLB optimizado.
 
-## Hito 3 — Presentación y evaluación
-- [ ] Revisar contenido con asesor/docente de ciencias.
-- [ ] Pruebas con estudiantes y registro ético de hallazgos.
-- [ ] Preparar trailer, capturas, presentación y demostración.
-- [ ] Completar créditos, licencias, accesibilidad y guía de instalación.
-- [ ] Contrastar entregables con las bases oficiales del desafío elegido.
+## M3 — Alineación científica
+Revisión de datos con NASA, revisión de escenarios con asesor, trazabilidad de supuestos, tests de condiciones extremas y demostración de por qué cada decisión cambia los resultados.
 
-**Advertencia:** el reto se interpretó a partir de la idea de un entrenador de misión para astronautas junior. Validar la rúbrica exacta del concurso antes de declarar que cumple todos sus criterios.
+## M4 — Narrativa y experiencia
+Misiones secundarias, tutoriales, diálogos, guardado local, accesibilidad, sonido original/licenciado y feedback educativo. Medir comprensión con prueba corta.
+
+## M5 — Demostración y entrega
+Compilación reproducible, hospedaje verificable, enlace de demo, README consistente, video explicativo, informe y créditos con atribución de assets.
+
+## Extensiones
+Modo cooperativo de hasta cuatro jugadores, objetivos alternativos y RAG. No declarar implementadas hasta tener pruebas de integración.

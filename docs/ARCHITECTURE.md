@@ -1,40 +1,26 @@
-# Arquitectura técnica
+# Arquitectura y contratos
 
-## Principios
-La aplicación es una SPA estática escrita en TypeScript. El renderizado 3D vive dentro del `Canvas` de React Three Fiber y la interfaz HTML en React. La lógica de misión es pura y se prueba sin navegador ni WebGL.
+## Capas
+- src/scene/GameWorld.tsx: Canvas WebGL, campus, orbitador, avatar y robot provisional. Controles de movimiento y estaciones.
+- src/App.tsx: lógica de navegación por la historia y componentes React de UI.
+- src/game/missionDesign.ts: función pura evaluateDesign; operaciones puras startOperations/applyOperation; missionScore. Sin dependencias gráficas.
+- src/robot/nasaKnowledge.ts: fichas curatoriales y recuperación por palabras; no inteligencia artificial generativa.
+- src/robot/nasaMedia.ts: búsqueda NASA Image and Video Library; se usa sólo al solicitarla.
+- src/robot/Orbi.tsx: UI, fuentes y búsquedas.
+- docs/: contrato de producto y ciencia.
+- public/models/: assets GLB finales futuros con manifiesto de derechos y procedencia.
 
-```text
-src/
-  App.tsx                 HUD, decisiones, informes y controles
-  styles.css              diseño responsivo
-  main.tsx                punto de entrada
-  scene/LunarBase.tsx     terreno, hábitat, rover, paneles, astronauta
-  game/simulation.ts      modelo de recursos, eventos y transiciones
-  game/simulation.test.ts pruebas del modelo
-  store/useMissionStore.ts estado reactivo (Zustand)
-public/
-  selene-icon.svg
-docs/                      diseño, ciencia, equipo y planificación
-.github/workflows/ci.yml   compilación y pruebas en Pull Requests
-```
+## Ciclo de datos
+Input de jugador → evaluación pura → indicadores de límites y warnings → autorización de lanzamiento → selección de eventos → informe.
 
-## Flujo
-El usuario hace clic en una decisión → `useMissionStore.decide()` → `choose()` en el motor puro → React actualiza HUD → `advance()` invoca `nextSol()` → validación de recursos → siguiente escenario, victoria o derrota.
+ORBI: pregunta → búsqueda determinista en biblioteca curada → respuesta con enlace NASA o mensaje sin resultados. Para material en vivo, hace consulta a imágenes NASA en el navegador; no interpreta imágenes ni consulta telemetría de una misión operativa.
 
-## Integración futura de recursos 3D
-1. Crear o adaptar objeto en Blender con licencia apropiada.
-2. Aplicar escala coherente, UV/materiales y reducir geometría.
-3. Exportar `.glb`, optimizar texturas y tamaño.
-4. Guardar en `public/models/` y cargarlo con `useGLTF('/models/...')`.
-5. Mantener los prototipos geométricos como fallback o sustituirlos tras validar rendimiento.
+## Seguridad
+- Sin secretos ni tokens en frontend. No enviar claves de modelos generativos al navegador.
+- Links externos con noopener/noreferrer.
+- Parametrización limitada de consultas públicas; no procesar HTML arbitrario recibido de APIs.
+- Si se agrega un backend/LLM, usar allowlist de dominios NASA, citas por fragmento, análisis de prompt injection y límites de gasto.
+- No registrar datos personales de estudiantes en esta versión.
 
-## Rendimiento
-Presupuesto inicial orientativo (a validar en dispositivos reales): 30–60 FPS en PC corriente y experiencia funcional en móvil. Controlar triángulos, draw calls, luces con sombras, texturas, DPR y memoria GPU. No usar materiales 4K en cada elemento. Probar teclado, tacto y accesibilidad del HUD.
-
-## Seguridad y despliegue
-No se requieren secretos, servidor ni cuentas de jugadores. CI ejecuta instalación, TypeScript, compilación y tests. Para publicar: generar `dist/` con `npm run build` y configurar un hosting estático. No afirmar persistencia o guardado en la nube hasta implementarlos.
-
-## Decisiones pendientes
-- Evaluar incorporación de Rapier si se agrega movimiento libre y colisiones reales.
-- Elegir persistencia local para guardar avances; después, únicamente si es necesario, backend y cuentas.
-- Establecer presupuesto de recursos/artes y decidir licencia con todo el equipo.
+## Ingeniería de calidad
+npm test y npm run build obligatorios en PR. Los módulos de ciencia son deterministas, con pruebas de contornos. Comprobar WebGL en navegador real, accesibilidad, memoria y FPS. La rama main estará protegida cuando el propietario habilite Rulesets.

@@ -1,26 +1,27 @@
-# Organización del equipo — 6 integrantes
+# Equipo de seis — responsabilidades
 
-Los siguientes son **roles propuestos**, no asignaciones definitivas. El coordinador los relacionará con usuarios de GitHub cuando todos acepten la invitación.
+**Seis desarrolladores** no significa seis jugadores simultáneos. El modo cooperativo de hasta cuatro jugadores es una fase futura.
 
-| Integrante | Rol principal | Primer entregable | Rama recomendada |
+| Integrante | Especialidad | Entregable verificable | Área inicial |
 |---|---|---|---|
-| 1 | Product owner, coordinación e integración | Revisar objetivos, gestionar issues y PR, controlar entregables | `docs/planificacion` |
-| 2 | Dirección artística y UI/UX | Moodboard, guía de estilo, propuestas de HUD | `art/direccion-visual` |
-| 3 | Modelado 3D y animación | Astronauta y un módulo GLB optimizado | `art/personaje-base` |
-| 4 | Gameplay y narrativa | Diálogos, guía de misión y eventos | `feat/narrativa` |
-| 5 | Simulación científica y QA | Auditoría de supuestos y pruebas del motor | `test/simulacion` |
-| 6 | Frontend 3D, integración y despliegue | Interactividad del mundo, rendimiento y publicación | `feat/interacciones-3d` |
+| 1 · Coordinador de mundos (propietario del repositorio) | Diseño de niveles, composición, iluminación, integración WebGL | Campus explorable, escena de laboratorio, integración de GLB y revisión de PR | src/scene, docs |
+| 2 · Artista de entornos | Modelado Blender de edificios, caminos, árboles, hangar, laboratorio | Kit modular GLB optimizado con licencias y renders | assets/entornos |
+| 3 · Artista de personajes | Protagonista, NPC y ORBI; rig, animaciones y expresiones | GLB con animaciones Idle, Walk, Run, Talk, Scan y control de escala | assets/personajes |
+| 4 · Programador de gameplay | Controles, cámara, colisiones, interacción, misiones | Navegación, disparadores de estaciones y transiciones | src/scene, src/game |
+| 5 · Responsable de simulación científica | Configurador de orbitador, lanzadores, órbitas, eventos | Motor puro, pruebas y fuentes de reglas | src/game, docs/SCIENCE.md |
+| 6 · Narrativa, interfaz y robot ORBI | Escritura, diálogos, onboarding, UX/UI, robot y citación | Guion completo, HUD y ORBI; QA de experiencia | src/robot, src/App.tsx |
 
-**Ritmo sugerido:** una reunión breve de coordinación por semana, avances asíncronos mediante issues, al menos un revisor distinto por Pull Request y revisión semanal de una demo funcional.
+Cada integrante participa en pruebas y revisión de calidad; el líder integra. Los nombres de GitHub se asignan cuando los cinco compañeros acepten la invitación.
 
-## Definición de terminado
-Una tarea se completa cuando tiene su código/arte/documento en el repositorio, fue revisada, cumple criterios del issue y no rompe build ni tests. Las tareas de arte requieren además procedencia de licencias, captura y prueba de rendimiento.
+## Ritmo de trabajo
+Todos publican entregables a través de issues y ramas propias. Daily breve: bloqueo, avance y siguiente paso. Revisión visual con capturas, revisión funcional con pruebas. No aceptar assets no licenciados ni código no verificado.
 
-## Invitaciones
-Solo el propietario puede invitar directamente a colaboradores desde la configuración del repositorio. Evitar compartir credenciales. El acceso se hace mediante cuentas personales y permisos de colaboración.
+## Definition of Done
+- Issue y criterios de aceptación completos.
+- Arte: fuente, licencia, escala, pivotes, rendimiento y captura de prueba.
+- Código: build + tests y revisión de otra persona.
+- Ciencia: distinción entre hechos NASA y parámetros de ficción.
+- Narrativa: legibilidad y consistencia con la historia de SELENE-01.
 
-## Acuerdos
-- No sobrescribir ni modificar la rama de otro integrante sin coordinar.
-- No aprobar entregables sin abrirlos y verificar su funcionamiento.
-- Avisar antes de introducir dependencias nuevas o cambiar el modelo de recursos.
-- Registrar las decisiones técnicas importantes en `docs/ARCHITECTURE.md`.
+## Accesos
+En GitHub: Settings → Collaborators → Add people. Invitar a las cinco cuentas como colaboradores; no compartir contraseñas. Después habilitar Settings → Rules → Rulesets con PR obligatorio, mínimo una aprobación y sin force-push para main. En repo personal público, la disponibilidad de reglas puede depender del plan; si no se aplica, mantener el acuerdo del equipo por procedimiento.

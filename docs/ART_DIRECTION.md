@@ -195,3 +195,10 @@ Capturas A/B + revisión grupal + Pull Request
 El prototipo actual sirve como prueba de **estructura técnica y mecánica educativa**, pero **no todavía como objetivo artístico**. Esta biblia sustituye la descripción vaga «aventura espacial estilizada» por un objetivo visual verificable. El primer paso de ejecución debe ser una escena A/B de un astronauta y un módulo con materiales toon y dos tratamientos de contornos; una vez aprobado, se escala al resto del mundo.
 
 **Estado:** guía propuesta; su fusión a `main` debe validarla el equipo.
+
+
+## 11. Adecuación al reto Space Mission Design Game
+
+La guía original describía un escenario lunar de supervivencia (prototipo anterior). **En la campaña actual el centro de formación espacial y el campus están en la Tierra**, por lo que árboles, montañas y cielos turquesa son coherentes con el entorno. **La escena orbital** muestra espacio oscuro y superficie lunar sin atmósfera; no se deben añadir nubes terrestres sobre la Luna. Los diseños de hábitat y rover se conservan como referencias para expansiones, no como mecánicas centrales del juego.
+
+**Entregables prioritarios de Blender:** campus terrestre, laboratorio de ingeniería, hangar, control, lanzador ficticio y orbitador; protagonista, Dra. Vega y robot ORBI. Conservar el NPR, el cel shading, las siluetas y la paleta documentados arriba, evitando el aspecto de paneles holográficos excesivos.
