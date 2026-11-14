@@ -1,6 +1,6 @@
 import {Canvas,useFrame} from '@react-three/fiber'
-import {Edges,Float,OrbitControls,Stars} from '@react-three/drei'
-import {useCallback,useEffect,useRef} from 'react'
+import {Edges,OrbitControls,Stars} from '@react-three/drei'
+import {useCallback,useEffect,useRef, type RefObject} from 'react'
 import * as THREE from 'three'
 export type Station='briefing'|'hangar'|'launch'|'control'
 const stations:{id:Station;name:string;x:number;z:number}[]=[
@@ -44,7 +44,7 @@ function AstronautModel(){
     {[-0.23,0.23].map((x,i)=><mesh key={i} position={[x,0.33,0]} castShadow><capsuleGeometry args={[0.12,0.55,4,10]}/><meshToonMaterial color="#516678"/></mesh>)}
   </group>
 }
-function OrbiModel({robot}:{robot:React.RefObject<THREE.Group|null>}) {
+function OrbiModel({robot}:{robot:RefObject<THREE.Group|null>}) {
   return <group ref={robot}>
     <mesh castShadow><sphereGeometry args={[0.55,16,12]}/><meshToonMaterial color="#fbf3df"/></mesh>
     <mesh position={[0,0,0.45]}><boxGeometry args={[0.7,0.3,0.12]}/><meshToonMaterial color="#27495a"/></mesh>
