@@ -59,7 +59,7 @@ export default function LaunchPanel({ controller }: { controller: MissionControl
       )}
       <DestinationPicker value={destination} onChange={setDestination} />
       <div className="flight-brief">
-        <h2>Diseño de ODYSSEY y mapa posterior</h2>
+        <h2>Revisión de ODYSSEY</h2>
         <p>
           <b>Mapa de exploración tras el lanzamiento:</b> {target.name} · {target.place}
         </p>
@@ -83,7 +83,7 @@ export default function LaunchPanel({ controller }: { controller: MissionControl
       </div>
       <button className="action-primary" onClick={fly} disabled={!operateReady}>
         {operateReady
-          ? `Iniciar lanzamiento simulado y explorar ${target.name} →`
+          ? `Simular campaña lunar y abrir ${target.name} →`
           : 'Corrige los problemas para lanzar'}
       </button>
       {campus && (

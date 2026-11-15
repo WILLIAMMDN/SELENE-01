@@ -161,6 +161,31 @@
   border-radius: 1px;
 }
 
+.app-shell .design-intro { border-bottom: 1px solid #aab9ab; padding-bottom: 16px; }
+.app-shell .design-intro h1 { margin: 8px 0 10px; }
+.app-shell .design-intro p { margin: 0 0 15px; }
+.app-shell .design-route { display: flex; flex-wrap: wrap; gap: 7px; list-style: none; padding: 0; margin: 0; }
+.app-shell .design-route li { display: flex; align-items: center; gap: 6px; background: #e7ecdf; border: 1px solid #adbaac; padding: 5px 8px; font-size: 11px; }
+.app-shell .design-route span, .app-shell .design-step-heading > span { color: #386e71; font: 700 11px 'Trebuchet MS', sans-serif; letter-spacing: .08em; }
+.app-shell .design-step { margin: 16px 0; padding: 17px; border: 1px solid #9ead9e; background: #f5f5e9; }
+.app-shell .design-step-heading { display: flex; align-items: center; gap: 10px; }
+.app-shell .design-step-heading > span { display: grid; place-items: center; width: 31px; height: 31px; flex: none; border: 1px solid #56878b; background: #e1ebe2; }
+.app-shell .design-step-heading h2 { margin: 0; }
+.app-shell .design-step h3 { font: 21px 'Patrick Hand', cursive; margin: 18px 0 7px; }
+.app-shell .design-step .small-note { margin: 8px 0 13px; }
+.app-shell .design-requirement { border-top: 1px solid #b4c3b4; padding-top: 9px; }
+.app-shell .design-step .select-list { grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr)); }
+.app-shell .design-step .select-card { min-height: 76px; }
+.app-shell .odyssey-assembly { margin: 16px 0; }
+.app-shell .campaign-panel { padding-bottom: 112px; }
+.app-shell .orbi { width: auto; max-width: min(310px, calc(100vw - 28px)); }
+.app-shell .orbi-button { min-width: 125px; }
+.app-shell .orbi-panel { width: min(390px, calc(100vw - 28px)); }
+@media (max-width: 790px) {
+  .app-shell .design-step { padding: 13px; }
+  .app-shell .design-route { gap: 5px; }
+}
+
 .app-shell .notification,
 .app-shell .system-message,
 .app-shell .verdict {

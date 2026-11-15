@@ -11,8 +11,11 @@ export default function LunarRoverHud({
 }) {
   return (
     <aside className="lunar-rover-hud" aria-label="Rover lunar">
-      <span>
+      <span className="rover-speed">
         <strong>{Math.round(speed)}</strong> km/h
+      </span>
+      <span className="rover-controls">
+        <kbd>W</kbd> avanzar <kbd>A</kbd> izquierda <kbd>D</kbd> derecha <kbd>Espacio</kbd> frenar
       </span>
       <button onClick={onExit} title="WASD o flechas: conducir · Espacio: frenar · E: bajar">
         <kbd>E</kbd> Bajar del rover
