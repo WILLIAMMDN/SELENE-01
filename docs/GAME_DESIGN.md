@@ -8,7 +8,7 @@ Juego 3D de aventura y simulación de ingeniería, para adolescentes y estudiant
 **Objetivo de aprendizaje:** tomar decisiones integradas y explicar por qué mejoran o empeoran la viabilidad y los objetivos científicos.
 
 ## Historia canónica
-Cap. 1 — La convocatoria: el jugador llega al campus. Dra. Vega plantea el estudio del polo sur lunar. ORBI se incorpora como guía científica, no como piloto automático.
+Cap. 1 — La convocatoria: el jugador llega al campus. Dra. Vega ofrece tres preguntas científicas lunares vinculadas a cámara, espectrómetro y radar. TARS se incorpora como guía científica, no como piloto automático.
 
 Cap. 2 — El hangar: el equipo define objetivos, selecciona instrumentos (cámara, espectrómetro, radar), subsistemas de energía y antena, lanzador y órbita. Un panel muestra los efectos cruzados en tiempo real.
 
@@ -30,11 +30,11 @@ Recorrer → conversar → planificar → comparar recursos → validar → lanz
 - Configuración de instrumentos, órbita y lanzador; upgrades de paneles y comunicaciones.
 - Restricciones de capacidad, potencia, presupuesto y transferencia.
 - Tres eventos de operación deterministas, memoria de 36 GB de simulación y batería.
-- ORBI explica ciencia con enlaces verificables y expresa incertidumbre cuando una pregunta no está cubierta.
+- TARS explica ciencia con enlaces verificables y expresa incertidumbre cuando una pregunta no está cubierta.
 - Puntuación educativa y registro de decisiones.
 
 ## Aceptación del prototipo
 Una historia coherente y un camino completo desde briefing a informe. Un diseño incompatible no debe lanzarse; el feedback explica el porqué; el diseño puede reintentarse. El jugador diferencia parámetros ficticios de hechos NASA y puede abrir fuentes.
 
 ## Ampliaciones no implementadas
-Multijugador colaborativo hasta cuatro participantes; objetivos alternativos, terrenos importados, efectos de eventos probabilísticos, perfiles de dificultad, simulación orbital de mayor rigor, estudio pedagógico antes/después.
+Multijugador colaborativo hasta cuatro participantes; campañas adicionales, terrenos científicos importados, efectos de eventos probabilísticos, perfiles de dificultad, simulación orbital de mayor rigor, estudio pedagógico antes/después.

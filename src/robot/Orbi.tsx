@@ -34,11 +34,11 @@ export default function Orbi({hint}:{hint:string}) {
   }
   return <aside className="orbi">
     <button type="button" className="orbi-button" aria-expanded={open} aria-controls="orbi-panel" onClick={()=>setOpen(!open)}>
-      <span className="robot-face" aria-hidden="true">◉</span><span><strong>ORBI</strong><small>Tu compañero científico</small></span><span>{open?'−':'+'}</span>
+      <span className="robot-face" aria-hidden="true">◉</span><span><strong>TARS</strong><small>Tu compañero científico</small></span><span>{open?'−':'+'}</span>
     </button>
     {open && <div className="orbi-panel" id="orbi-panel">
       <p className="orbi-context"><strong>Consejo:</strong> {hint}</p>
-      <p className="small-note">ORBI usa fichas documentales verificadas, no genera respuestas libres. Las estadísticas del juego son ficticias.</p>
+      <p className="small-note">TARS usa fichas documentales verificadas, no genera respuestas libres. Las estadísticas del juego son ficticias.</p>
       <form onSubmit={submit}>
         <label htmlFor="orbi-question">Pregunta sobre ciencia espacial</label>
         <div className="input-line"><input id="orbi-question" value={question} onChange={e=>setQuestion(e.target.value)} maxLength={240} placeholder="¿Hay hielo en la Luna?"/><button type="submit">Preguntar</button></div>

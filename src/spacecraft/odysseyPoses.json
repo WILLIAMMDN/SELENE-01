@@ -1,0 +1,132 @@
+{
+  "cabina_fuselaje": {
+    "fuselaje_central": {
+      "traslacion_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotacion_xyzw": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "escala": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    "conectores_modulares": {
+      "traslacion_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotacion_xyzw": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "escala": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    "cabina_mando": {
+      "traslacion_m": [
+        0.0,
+        0.152,
+        0.0
+      ],
+      "rotacion_xyzw": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "escala": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    }
+  },
+  "cabina_habitat_fuselaje": {
+    "fuselaje_central": {
+      "traslacion_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotacion_xyzw": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "escala": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    "conectores_modulares": {
+      "traslacion_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotacion_xyzw": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "escala": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    "cabina_mando": {
+      "traslacion_m": [
+        0.0,
+        2.652,
+        0.0
+      ],
+      "rotacion_xyzw": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "escala": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    "modulo_habitable": {
+      "traslacion_m": [
+        0.0,
+        0.152,
+        0.0
+      ],
+      "rotacion_xyzw": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "escala": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    }
+  }
+}

@@ -8,3 +8,10 @@ coverage/
 Thumbs.db
 *.local
 *.log
+
+# Local editor metadata, backups and retired character notes
+.openai/
+*.tsbuildinfo
+*.blend1
+*.blend2
+docs/assets/ellis/

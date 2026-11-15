@@ -1,0 +1,3 @@
+import bpy,json,sys
+bpy.ops.wm.open_mainfile(filepath=sys.argv[sys.argv.index('--')+1],load_ui=False)
+print("ANIMALS_DATA",json.dumps({"collections":[{"name":c.name,"objects":len(c.all_objects)} for c in bpy.data.collections],"armatures":[{"name":o.name,"parent":o.parent.name if o.parent else None,"children":[c.name for c in o.children],"action":o.animation_data.action.name if o.animation_data and o.animation_data.action else None,"nla":[t.name for t in o.animation_data.nla_tracks] if o.animation_data else []} for o in bpy.data.objects if o.type=="ARMATURE"],"actions":[{"name":a.name,"frames":list(a.frame_range)} for a in bpy.data.actions],"meshes":[o.name for o in bpy.data.objects if o.type=="MESH"]},ensure_ascii=False))

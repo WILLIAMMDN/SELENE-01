@@ -1,0 +1,32 @@
+[
+  {
+    "file": "anime_tree_grove.glb",
+    "variant": [
+      1,
+      1,
+      1
+    ],
+    "leaves": 4000,
+    "animation": "Breeze, 4 seconds, 3 foliage groups"
+  },
+  {
+    "file": "anime_tree_slender.glb",
+    "variant": [
+      0.72,
+      0.8,
+      1.16
+    ],
+    "leaves": 4000,
+    "animation": "Breeze, 4 seconds, 3 foliage groups"
+  },
+  {
+    "file": "anime_tree_shelter.glb",
+    "variant": [
+      1.15,
+      1.08,
+      0.82
+    ],
+    "leaves": 4000,
+    "animation": "Breeze, 4 seconds, 3 foliage groups"
+  }
+]

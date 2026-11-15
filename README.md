@@ -10,35 +10,41 @@ Aprender piezas aisladas de ingeniería aeroespacial no equivale a comprender c�
 
 ## Historia
 
-Un estudiante llega al centro espacial SELENE y recibe de la Dra. Vega una misión: diseñar un **orbitador científico para estudiar el polo sur lunar**. Recorre el campus 3D y conversa con **ORBI**, un robot original que explica ciencia con referencias NASA y no decide por el jugador. La campaña cubre investigación, diseño, validación de lanzador y órbita, lanzamiento simulado, operaciones y un informe final. Se puede rediseñar y repetir.
+Un estudiante llega al centro espacial SELENE y recibe de la Dra. Vega una misión: diseñar un **orbitador científico para estudiar el polo sur lunar**. Recorre el campus 3D y conversa con **TARS**, el acompañante del equipo que explica ciencia con referencias NASA y no decide por el jugador. La campaña cubre investigación, diseño, validación de lanzador y órbita, lanzamiento simulado, operaciones y un informe final. Se puede rediseñar y repetir.
 
 ## Estado real del software
 
-- Implementado en la rama de evolución: escena 3D de campus explorado con WASD y E, prototipos visuales de jugador y ORBI, selección de instrumentos, órbita y lanzador, validación de masa, energía, datos y presupuesto, tres eventos de operaciones y un informe con puntuación; fuentes y búsqueda NASA Images en el robot.
-- Provisional: modelos y escenarios hechos con geometrías por código, no assets Blender finales; resultados **hipotéticos de enseñanza**.
-- Pendiente: rig y animación definitivos, materiales de calidad final, colisiones avanzadas, campaña extensa, multijugador real, cálculo orbital de alta fidelidad, pruebas con estudiantes y despliegue público.
+- Implementado: escena 3D de campus explorado con WASD y E, exploradora Quaternius en Tierra, astronauta en Marte y TARS01, selección de instrumentos, órbita y lanzador, validación de masa, energía, datos y presupuesto, tres eventos de operaciones y un informe con puntuación; fuentes y búsqueda NASA Images en el robot.
+- Assets integrados: exploradora Quaternius (CC0), TARS01, ODYSSEY final con ensamblaje modular, ROBER con cinco animaciones y control remoto, tres variantes animadas del árbol Anime Tree, incluidas con autorización expresa de su creador y diez módulos BASEPRI, con puertas automáticas, suelo interior, rampas y colisiones; plataforma y lanzador de Juego NASA.rar con cinco mecanismos animados. Tierra tiene suelo, caminos, vegetación y cielo con tratamiento ilustrado. Los escenarios combinan estos GLB con geometría ilustrada por código; los resultados son **hipotéticos de enseñanza**.
+- Pendiente: revisión artística de animaciones y materiales, colisiones avanzadas, campaña extensa, multijugador real, cálculo orbital de alta fidelidad, pruebas con estudiantes y despliegue público.
 - Los **seis integrantes** son desarrolladores. El cooperativo **hasta cuatro jugadores**, sugerido en el reto, es una ampliación futura.
 
 ## Tecnologías
 
-React 19, TypeScript, Vite, Three.js, React Three Fiber, Drei, Vitest. Los modelos se crearán en Blender y exportarán a GLB. No hace falta backend ni clave API para las fichas offline de ORBI. Las búsquedas opcionales consultan NASA Images.
+React 19, TypeScript, Vite, Three.js, React Three Fiber, Drei, Vitest. Los modelos se integran desde Blender mediante GLB. No hace falta backend ni clave API para las fichas locales de TARS. Las búsquedas opcionales consultan NASA Images.
 
 ## Desarrollo
 
-Requisitos: Node.js 22 actualizado y npm.
+Requisitos: Node.js 22.12 o posterior de la rama 22 y npm.
+
+La versión compartida del juego está en `main`. Consulta [la guía del equipo](docs/COLLABORATION.md) para trabajar en ella.
 
     git clone https://github.com/WILLIAMMDN/SELENE-01.git
     cd SELENE-01
-    npm install
+    npm ci
     npm run dev
     npm test
     npm run build
 
-Abrir la dirección local que muestra Vite. Mover al personaje con WASD o flechas; E interactúa cerca de edificios. Se puede recorrer el flujo completo desde la navegación por etapas.
+Abrir la dirección local que muestra Vite. Mover al personaje con WASD o flechas; E interactúa al llegar a las mesas y consolas interiores. La campaña del campus requiere aceptar un objetivo, diseñar ODYSSEY, registrar la revisión en comunicaciones y autorizar desde la plataforma.
 
 ## Equipo
 
 Consulta docs/TEAM.md y CONTRIBUTING.md. No introducir código, arte ni archivos ajenos sin revisión del origen, licencia, atribución y aprobación mediante Pull Request.
+
+## Actualización de recursos
+
+Abrir `?world=earth` para Tierra o `?world=mars` para Marte. ROBER está junto al taller: pulsa su rótulo para abrir el control remoto. La exploradora de Quaternius es el único personaje terrestre; Ellis fue retirado. Shift corre, Espacio salta y Ctrl funciona junto a los bancos. El objetivo y el diseño se guardan en este navegador. Ver `docs/WORLD_DELIVERY.md` y los README de `public/models` para procedencia, controles y alcance.
 
 ## Documentos
 
@@ -47,7 +53,7 @@ Consulta docs/TEAM.md y CONTRIBUTING.md. No introducir código, arte ni archivos
 - docs/ARCHITECTURE.md — módulos, estado y APIs.
 - docs/ART_DIRECTION.md — estilo visual 3D y estándar de assets.
 - docs/ASSET_PIPELINE.md — exportación Blender/GLB.
-- docs/ORBI_NASA.md — funcionamiento y fuentes del robot.
+- docs/TARS_NASA.md — funcionamiento y fuentes del robot.
 - docs/ROADMAP.md — fases y criterios de entrega.
 - docs/TEAM.md — reparto y responsabilidades.
 - docs/CHALLENGE_ALIGNMENT.md — correspondencia con el reto.
@@ -65,3 +71,25 @@ Consulta docs/TEAM.md y CONTRIBUTING.md. No introducir código, arte ni archivos
 - [NASA media guidelines](https://www.nasa.gov/nasa-brand-center/images-and-media/)
 
 **Aviso:** obra estudiantil independiente, sin afiliación ni aval de NASA. Los símbolos oficiales, logotipos, imágenes y modelos están sujetos a sus condiciones de uso. No hay licencia de redistribución del código del equipo definida todavía: se acordará antes de crear LICENSE.
+
+## Estaciones e integración NASA — 14 de noviembre de 2026
+
+1. Investigación: entra al laboratorio, acércate a la mesa y pulsa E; acepta un encargo.
+2. Ingeniería: entra por el portón del hangar (o por el taller); ensambla y configura ODYSSEY. Guarda y vuelve al campus.
+3. Comunicaciones: utiliza la terminal interior para revisar los recursos y registrar la configuración. Cambiar el diseño exige otra revisión.
+4. Lanzamiento: utiliza el puesto exterior. Puedes demostrar los mecanismos del lanzador; autoriza para continuar con tres decisiones de operaciones.
+5. Mirador: consulta el resultado guardado y prepara otro encargo.
+
+El mapa y TARS indican el siguiente paso; viajar a una entrada no completa su actividad. Las puertas se abren por proximidad y las cubiertas se ocultan al entrar. Los caminos forman parte del material del terreno, sin capas coplanares superpuestas.
+
+Fuentes, medidas, procedencia y límites: [integración NASA](docs/NASA_INTEGRATION.md). La preparación para GitHub ejecuta las pruebas existentes y la compilación; no incluye revisión visual ni capturas.
+
+## Fauna, entorno y narrativa ilustrada
+
+Ocho animales animados de `animales.blend` habitan la costa occidental de Artemisa; el mapa ofrece acceso al sendero. Se incorporan las quince piezas de `ELEMENTOS ENTORNO.glb`: vehículos estáticos, estacionamientos, mobiliario, vegetación y montañas. ROBER conserva su control remoto.
+
+La interfaz muestra un objetivo breve y botones pequeños. E abre conversaciones de papel en las estaciones; M abre el mapa, J la bitácora y Escape el menú. La primera llegada presenta el encargo; los detalles aparecen bajo demanda. La misión permite elegir 30, 90 o 180 días y explica las consecuencias al terminar. Los caminos tienen bordes reconstruidos en el shader y pasto con hojas y tonos variados.
+
+Documentación vigente: [narrativa e interfaz](docs/NARRATIVE_AND_INTERFACE.md). La revisión visual de esta entrega queda a cargo del equipo.
+
+La cápsula L01 de `ODYSSEY_LANDER_FINAL.rar` está integrada en el descenso de Marte y en una plataforma de entrenamiento de la Tierra. El mapa ofrece acceso; pulsa el modelo o E cerca de él para reproducir descenso y separación de ascenso. Conserva su escala original de 5 m de alto. Su demostración es independiente de la misión orbital.

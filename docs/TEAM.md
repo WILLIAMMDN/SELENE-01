@@ -6,10 +6,10 @@
 |---|---|---|---|
 | 1 · Coordinador de mundos (propietario del repositorio) | Diseño de niveles, composición, iluminación, integración WebGL | Campus explorable, escena de laboratorio, integración de GLB y revisión de PR | src/scene, docs |
 | 2 · Artista de entornos | Modelado Blender de edificios, caminos, árboles, hangar, laboratorio | Kit modular GLB optimizado con licencias y renders | assets/entornos |
-| 3 · Artista de personajes | Protagonista, NPC y ORBI; rig, animaciones y expresiones | GLB con animaciones Idle, Walk, Run, Talk, Scan y control de escala | assets/personajes |
+| 3 · Artista de personajes | Protagonista, NPC y TARS; rig, animaciones y expresiones | GLB con animaciones Idle, Walk, Run, Talk, Scan y control de escala | assets/personajes |
 | 4 · Programador de gameplay | Controles, cámara, colisiones, interacción, misiones | Navegación, disparadores de estaciones y transiciones | src/scene, src/game |
 | 5 · Responsable de simulación científica | Configurador de orbitador, lanzadores, órbitas, eventos | Motor puro, pruebas y fuentes de reglas | src/game, docs/SCIENCE.md |
-| 6 · Narrativa, interfaz y robot ORBI | Escritura, diálogos, onboarding, UX/UI, robot y citación | Guion completo, HUD y ORBI; QA de experiencia | src/robot, src/App.tsx |
+| 6 · Narrativa, interfaz y robot TARS | Escritura, diálogos, onboarding, UX/UI, robot y citación | Guion completo, HUD y TARS; QA de experiencia | src/robot, src/App.tsx |
 
 Cada integrante participa en pruebas y revisión de calidad; el líder integra. Los nombres de GitHub se asignan cuando los cinco compañeros acepten la invitación.
 
