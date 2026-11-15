@@ -26,7 +26,7 @@ export default function BoardingAccess({ motion }: { motion: RefObject<BoardingM
         STAIR_TOTAL_HEIGHT + motion.current.lift * (DECK_HEIGHT - STAIR_TOTAL_HEIGHT)
   })
   return (
-    <group name="LC-01 · acceso físico a tripulación">
+    <group name="LC-01 · pasarela de simulación">
       <Solid position={[70, 0.1, -35]} scale={[24, 0.2, 5]} color="#9daaa2" />
       <Solid position={[80, 0.1, -60]} scale={[5, 0.2, 52]} color="#9daaa2" />
       {Array.from({ length: STAIR_COUNT }, (_, index) => {
@@ -44,8 +44,8 @@ export default function BoardingAccess({ motion }: { motion: RefObject<BoardingM
         <Solid position={[0, 1.1, -2]} scale={[2.5, 2.2, 1.3]} color="#47686a" />
         <Solid position={[0, 1.25, -1.3]} scale={[1.7, 1.4, 0.08]} color="#e9e9dc" />
         <Sign
-          text="VESTUARIO EVA"
-          sub="E · PONERSE TRAJE"
+          text="VESTUARIO · SIMULACIÓN"
+          sub="E · EQUIPAR TRAJE"
           position={[0, 2.9, -2.0]}
           scale={[2.9, 0.95, 1]}
         />

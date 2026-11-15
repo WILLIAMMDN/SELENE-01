@@ -1,0 +1,223 @@
+/* The campaign shares the field notebook's paper, ink and handwritten headings. */
+@font-face {
+  font-family: 'Patrick Hand';
+  src: url('/fonts/PatrickHand-Regular.ttf') format('truetype');
+  font-display: swap;
+}
+.app-shell {
+  --paper: #f7f7ed;
+  --paper-deep: #edf0df;
+  --ink: #34464c;
+  --teal: #56878b;
+  --coral: #ba6061;
+  color: var(--ink);
+  background: #dce6dc;
+  font-family: 'Trebuchet MS', Arial, sans-serif;
+}
+
+.app-shell .topbar,
+.app-shell .stage-nav,
+.app-shell footer {
+  background: var(--paper);
+  border-color: #52656b;
+}
+
+.app-shell .brand-symbol {
+  background: var(--teal);
+  color: var(--paper);
+  border: 1.5px solid var(--ink);
+  border-radius: 2px;
+  box-shadow: 2px 3px 0 #52656b;
+}
+
+.app-shell .brand strong,
+.app-shell .world-overlay strong,
+.app-shell .exploration-story strong,
+.app-shell .campaign-panel h1,
+.app-shell .campaign-panel h2,
+.app-shell .engineering-panel h2,
+.app-shell .verdict strong,
+.app-shell .telemetry strong,
+.app-shell .score strong,
+.app-shell .orbi-button strong {
+  font-family: 'Patrick Hand', cursive;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.app-shell .brand strong { font-size: 28px; }
+.app-shell .brand small,
+.app-shell .topbar-status,
+.app-shell .eyebrow,
+.app-shell .evidence-label {
+  font-family: 'Trebuchet MS', Arial, sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+}
+
+.app-shell .topbar-status {
+  border-color: #52656b;
+  border-radius: 1px;
+  color: #405c5d;
+}
+
+.app-shell .stage-nav { border-bottom: 1.5px solid #52656b; }
+.app-shell .stage-nav button {
+  border: 1.5px solid #718a86;
+  border-radius: 1px;
+  background: var(--paper);
+  color: var(--ink);
+  font: 19px 'Patrick Hand', cursive;
+  padding: 7px 13px;
+}
+.app-shell .stage-nav button.current {
+  background: var(--teal);
+  color: #fffdf3;
+  box-shadow: 2px 3px 0 #52656b;
+}
+
+.app-shell .exploration-story,
+.app-shell .campaign-panel,
+.app-shell .engineering-panel {
+  background: var(--paper);
+  border-color: #52656b;
+}
+.app-shell .exploration-story {
+  border-top: 1.5px solid #52656b;
+  line-height: 1.55;
+}
+.app-shell .exploration-story strong { font-size: 22px; }
+.app-shell .campaign-panel { border-left: 1.5px solid #52656b; }
+.app-shell .engineering-panel { border-left: 1.5px solid #52656b; }
+.app-shell .campaign-panel h1 {
+  font-size: clamp(34px, 3.2vw, 48px);
+  line-height: 1.08;
+  margin: 15px 0 18px;
+}
+.app-shell .campaign-panel h1 em { color: var(--coral); font-style: normal; }
+.app-shell .campaign-panel h2,
+.app-shell .engineering-panel h2 { font-size: 26px; }
+.app-shell .campaign-panel p { color: #465c5b; font-size: 14px; line-height: 1.62; }
+.app-shell .small-note,
+.app-shell .field-help { color: #526b6a; line-height: 1.55; }
+
+.app-shell .evidence-card,
+.app-shell .story-steps,
+.app-shell .flight-brief,
+.app-shell .mission-log,
+.app-shell .orbi-context,
+.app-shell .orbi-answer {
+  background: var(--paper-deep);
+  border: 1.5px solid #9ead9e;
+  border-radius: 1px;
+  padding: 14px 17px;
+  margin: 17px 0;
+}
+.app-shell .evidence-card { border-left: 4px solid var(--teal); }
+.app-shell .evidence-card p { margin: 8px 0; }
+.app-shell .evidence-card a { display: inline-block; margin: 5px 13px 0 0; font-size: 12px; }
+.app-shell .simulation-note {
+  border-left: 2px solid var(--coral);
+  padding-left: 10px;
+  font-size: 12px !important;
+}
+.app-shell .story-steps p { display: flex; align-items: baseline; gap: 10px; margin: 7px 0; }
+.app-shell .story-steps b { color: var(--coral); font: 21px 'Patrick Hand', cursive; }
+
+.app-shell .action-primary,
+.app-shell .action-secondary,
+.app-shell .actions button,
+.app-shell .assembly-parts button,
+.app-shell .select-card,
+.app-shell .option-small,
+.app-shell .campaign-panel select {
+  border: 1.5px solid #52656b;
+  border-radius: 1px;
+  background: #f8f9f2;
+  color: var(--ink);
+}
+.app-shell .action-primary,
+.app-shell .action-secondary {
+  font: 20px 'Patrick Hand', cursive;
+  padding: 8px 16px;
+  box-shadow: 2px 3px 0 #708786;
+}
+.app-shell .action-primary { background: var(--teal); color: #fffdf3; }
+.app-shell .action-primary:not(:disabled):hover { background: #416f73; }
+.app-shell .action-secondary:hover,
+.app-shell .actions button:hover { background: #e3eadf; }
+.app-shell .select-card:has(input:checked),
+.app-shell .option-small:has(input:checked),
+.app-shell .assembly-parts button[aria-pressed=true] { background: #dfe9dc; border-color: var(--teal); }
+.app-shell .select-card strong,
+.app-shell .actions strong { font-size: 14px; }
+.app-shell .select-card small,
+.app-shell .actions small { font-size: 12px; }
+.app-shell .odyssey-assembly {
+  background: #f1f0e3;
+  border: 1.5px solid #52656b;
+  border-radius: 1px;
+}
+
+.app-shell .notification,
+.app-shell .system-message,
+.app-shell .verdict {
+  border: 1.5px solid #779088;
+  border-radius: 1px;
+  background: #edf0df;
+  color: var(--ink);
+}
+.app-shell .notification { border-left: 4px solid var(--teal); }
+.app-shell .verdict.danger,
+.app-shell .system-message.invalid { background: #f3e5df; border-color: #b77d70; }
+.app-shell .verdict.success,
+.app-shell .system-message.valid { background: #e4efdf; border-color: #78a082; }
+.app-shell .telemetry > div,
+.app-shell .score {
+  background: var(--paper-deep);
+  border: 1.5px solid #9ead9e;
+  border-radius: 1px;
+}
+.app-shell .telemetry strong { font-size: 27px; }
+.app-shell .score strong { font-size: 50px; }
+.app-shell .metric-track,
+.app-shell .metric-track > div { border-radius: 1px; }
+.app-shell .metric-track > div { background: var(--teal); }
+.app-shell .metric-track > div.over { background: var(--coral); }
+
+.app-shell .orbi-button,
+.app-shell .orbi-panel {
+  background: var(--paper);
+  border: 1.5px solid #52656b;
+  border-radius: 1px;
+  color: var(--ink);
+  box-shadow: 4px 5px 0 #52656b;
+}
+.app-shell .orbi-panel { border-bottom: 0; }
+.app-shell .orbi-button strong { font-size: 23px; }
+.app-shell .robot-face { border-radius: 1px; background: var(--teal); }
+.app-shell .quick-questions button,
+.app-shell .input-line input,
+.app-shell .input-line button {
+  border-radius: 1px;
+  border: 1px solid #52656b;
+}
+.app-shell .quick-questions button { background: #eef1e7; }
+.app-shell .input-line button { background: var(--teal); }
+
+@media (max-width: 790px) {
+  .app-shell .campaign-panel,
+  .app-shell .engineering-panel { border: 0; border-top: 1.5px solid #52656b; }
+  .app-shell .campaign-panel h1 { font-size: 36px; }
+  .app-shell .stage-nav button { font-size: 17px; }
+  .app-shell .world-column { min-height: 0; }
+  .app-shell .world-frame { height: 290px; min-height: 240px; }
+  .app-shell .campaign-panel,
+  .app-shell .engineering-panel { padding-bottom: 100px; }
+  .app-shell .assembly-parts strong,
+  .app-shell .select-card strong { font-size: 14px; }
+  .app-shell .assembly-parts strong + span,
+  .app-shell .select-card small { font-size: 12px; }
+}

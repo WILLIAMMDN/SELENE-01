@@ -178,7 +178,7 @@ export default function PlayerRig({
           e.preventDefault()
           if (!e.repeat) input.current.actions.push(CHARACTER_KEYS[e.code])
         } else if (e.code === 'KeyE' && !e.repeat) {
-          if (Math.hypot(location.current.x - (-14), location.current.z - 36) < 4.8) {
+          if (Math.hypot(location.current.x - -14, location.current.z - 36) < 4.8) {
             window.dispatchEvent(new CustomEvent('selene-authors-panel'))
           } else {
             const station = stationFor(location.current.x, location.current.z)
@@ -355,7 +355,7 @@ export default function PlayerRig({
           player.current.rotation.y += difference * Math.min(1, delta * 14)
         }
         if (result.interact && launchPhase !== 'bridge' && launchPhase !== 'access') {
-          if (Math.hypot(p.x - (-14), p.z - 36) < 4.8) {
+          if (Math.hypot(p.x - -14, p.z - 36) < 4.8) {
             window.dispatchEvent(new CustomEvent('selene-authors-panel'))
           } else {
             const station = stationFor(p.x, p.z)

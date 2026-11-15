@@ -212,8 +212,9 @@ export const OPERATION_EVENTS: readonly OperationEvent[] = [
       },
       {
         id: 'calibrate',
-        name: 'Calibrar instrumentos',
-        effect: 'Reduce riesgos y genera un ensayo menor.',
+        name: 'Observación de prueba',
+        effect:
+          'Produce una muestra pequeña con menor consumo; no modela una reducción de riesgos.',
         battery: -7,
         generated: 5,
         transmit: false,

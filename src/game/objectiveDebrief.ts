@@ -33,8 +33,8 @@ export function objectiveDebrief(
     pending: 'La operación sigue en curso',
     incompatible: 'El diseño no responde al encargo',
     'no-data': 'El encargo quedó sin datos recuperados',
-    partial: 'Datos recuperados antes de la interrupción',
-    returned: 'Datos recuperados para el encargo',
+    partial: 'Datos agregados recuperados antes de la interrupción',
+    returned: 'Datos agregados recuperados; pregunta aún abierta',
   }
   const explanation =
     outcome === 'pending'
@@ -43,7 +43,7 @@ export function objectiveDebrief(
         ? `Revisa el requisito del encargo: ${objective.requirement}`
         : outcome === 'no-data'
           ? 'Finalizar los turnos no basta: debes observar y transmitir. No hay datos recibidos con los que continuar este encargo.'
-          : `En esta simulación devolviste ${state.delivered} GB con el instrumento solicitado y cobertura polar. ${outcome === 'partial' ? 'La operación se interrumpió; analiza también qué recurso falló.' : 'Puedes analizar las decisiones que hicieron posible recuperar datos.'}`
+          : `ODYSSEY devolvió ${state.delivered} GB agregados. El juego no identifica qué instrumento produjo cada dato ni permite concluir que la pregunta científica esté resuelta. ${outcome === 'partial' ? 'La operación se interrumpió; analiza qué recurso falló.' : 'Compara el diseño y las decisiones que permitieron la transmisión.'}`
   const limit =
     'Los GB son datos agregados del juego, no mediciones por instrumento ni evidencia de una respuesta científica real.'
   return {

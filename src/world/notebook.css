@@ -29,6 +29,10 @@
 .dash-speed-num{font-family:'Patrick Hand',cursive;font-size:32px;fill:#34464c}
 .dash-speed-unit{font-size:8px;font-family:monospace;letter-spacing:1.5px;fill:#617575}
 .dash-rpm-title{font-size:7px;font-family:monospace;letter-spacing:1px;fill:#78908d}
+.story-dialogue .story-source{display:inline-block;margin:0 0 15px;color:#3d686c;font:12px 'Trebuchet MS',sans-serif;text-decoration:underline;text-underline-offset:3px}
+.clean-world .character-actions,.clean-world .rober-controls [role=dialog]{background:#f7f7ed;border:1.5px solid #52656b;border-radius:2px;box-shadow:4px 5px 0 #52656b;font-family:'Trebuchet MS',sans-serif}
+.clean-world .character-actions summary,.clean-world .rober-controls header{font:20px 'Patrick Hand',cursive;letter-spacing:0}
+.clean-world .character-actions button,.clean-world .rober-controls button{border-radius:1px}
 .dash-gears{display:flex;align-items:center;justify-content:center;gap:6px;margin:4px 0 6px}
 .dash-gear{padding:2px 7px;border:1px solid #40596040;background:#eaeedb;border-radius:2px;font:13px 'Patrick Hand',cursive;color:#405960}
 .dash-gear.active{background:#56878b;color:#fffef6;border-color:#405960;font-weight:bold}

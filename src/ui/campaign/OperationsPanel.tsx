@@ -5,13 +5,17 @@ export default function OperationsPanel({ controller }: { controller: MissionCon
   const { ops, evaluation, operate, go } = controller
   return (
     <>
-      <span className="eyebrow">CAPÍTULO 04 · CONTROL DE MISIÓN</span>
+      <span className="eyebrow">CUADERNO DE MISIÓN / 04 · OPERACIONES</span>
       <h1>
         Operación <em>lunar.</em>
       </h1>
       <p>
-        ODYSSEY debe producir datos sin agotar la energía ni saturar la memoria. Tu estrategia
-        influye en el resultado.
+        Tres hitos condensan la campaña elegida. Decide cuándo observar, cuándo transmitir y cuándo
+        reservar energía; producir datos sin enviarlos no cumple el objetivo científico.
+      </p>
+      <p className="simulation-note">
+        Los días, la batería y los GB son reglas del juego. No son telemetría ni predicciones de una
+        misión NASA.
       </p>
       <div className="telemetry">
         <div>

@@ -134,13 +134,13 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
     [mars, moon],
   )
   useEffect(() => {
-  useEffect(() => {
     if (!ready) return
     const params = new URLSearchParams(window.location.search)
     if (params.get('launch') === 'true' || params.get('cinematic') === 'true') {
       onLaunchPhase('flight')
     }
   }, [ready, onLaunchPhase])
+  useEffect(() => {
     if (!ready || offworld) return
     try {
       if (localStorage.getItem('selene-arrival-story-v1')) return
@@ -376,8 +376,12 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
         </div>
       )}
       {arrival && (
-        <div className="mission-arrival" role="region" aria-label="Llegada a la misión">
-          <span className="mission-arrival-label">TARS · DESTINO ALCANZADO</span>
+        <div
+          className="mission-arrival"
+          role="region"
+          aria-label="Reconstrucción del destino lunar"
+        >
+          <span className="mission-arrival-label">TARS · RECONSTRUCCIÓN DE ENTRENAMIENTO</span>
           <strong>{arrival.title}</strong>
           <p>{arrival.narrative.replace(/^TARS:\s*/, '')}</p>
           <div className="mission-arrival-actions">
@@ -406,8 +410,8 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
       )}
       {launchPhase === 'cockpit' && (
         <div className="boarding-cockpit-prompt">
-          <strong>ODYSSEY · Cabina asegurada</strong>
-          <span>TARS: Sistemas listos para la secuencia de despegue.</span>
+          <strong>ODYSSEY · Recreación de cabina</strong>
+          <span>TARS: El diseño está revisado. Inicia la secuencia cinematográfica.</span>
           <button type="button" onClick={() => onLaunchPhase('flight')}>
             Iniciar despegue
           </button>
@@ -415,7 +419,7 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
       )}
       {launchPhase === 'suiting' && !position.boardingSpot && (
         <div className="boarding-guidance" role="status">
-          Acércate al vestuario EVA junto a la plataforma.
+          Acércate al vestuario de la simulación junto a la plataforma.
           <button type="button" onClick={() => onLaunchPhase('idle')}>
             Cancelar
           </button>
@@ -450,10 +454,10 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
         >
           <kbd>E</kbd>{' '}
           {position.boardingSpot === 'suit'
-            ? 'Equipar traje de astronauta'
+            ? 'Equipar traje de la simulación'
             : position.boardingSpot === 'lift'
               ? 'Subir al ascensor'
-              : 'Entrar a la cabina'}
+              : 'Entrar a la cabina simulada'}
         </button>
       )}
       {launchPhase === 'ascending' && (
@@ -557,11 +561,17 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
             </button>
           </div>
         )}
-      {launchPhase === 'idle' && mode === 'walk' && !nearby && !position.vehicle && !panel && !conversation && Math.hypot(position.x - (-14), position.z - 36) < 4.8 && (
-        <button className="station-prompt" onClick={() => setPanel('authors')}>
-          <kbd>E</kbd> Ver Equipo Creador & Créditos <span>👥</span>
-        </button>
-      )}
+      {launchPhase === 'idle' &&
+        mode === 'walk' &&
+        !nearby &&
+        !position.vehicle &&
+        !panel &&
+        !conversation &&
+        Math.hypot(position.x - -14, position.z - 36) < 4.8 && (
+          <button className="station-prompt" onClick={() => setPanel('authors')}>
+            <kbd>E</kbd> Ver Equipo Creador & Créditos <span>👥</span>
+          </button>
+        )}
       {launchPhase === 'idle' && mode === 'walk' && position.room && !panel && !conversation && (
         <div className="interior-caption">
           {roomLabel(position.room)} <small>Primera persona · arrastra para mirar</small>

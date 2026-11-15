@@ -71,9 +71,10 @@ export default function MissionStation({
               <article key={o.id}>
                 <strong>{o.name}</strong>
                 <p>{o.question}</p>
+                <p>{o.nasaContext}</p>
                 <small>{o.requirement}</small>
                 <a href={o.source} target="_blank" rel="noreferrer">
-                  Contexto científico · NASA ↗
+                  {o.sourceLabel} ↗
                 </a>
                 <button
                   className="secondary-world"
@@ -172,8 +173,9 @@ export default function MissionStation({
         <>
           <h3>04 · Preparar y autorizar</h3>
           <p>
-            ODYSSEY está preparada. Acércate al ascensor, sube a la pasarela y entra a la cabina.
-            TARS te acompañará hasta que autorices el despegue.
+            Si la revisión está vigente, usa la pasarela para iniciar la secuencia cinematográfica.
+            El personaje representa al equipo en una recreación interactiva; el orbitador científico
+            ODYSSEY no transporta tripulación en este encargo.
           </p>
           <button
             className="primary-world"
