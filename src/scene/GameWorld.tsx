@@ -192,7 +192,7 @@ function ShipStage({
       ) : (
         <OdysseyShip parts={parts} config={config} exploded={mode === 'workshop' && exploded} />
       )}
-      {mode === 'launch' && cinematic && elapsed >=22 && (
+      {mode === 'launch' && cinematic && elapsed >= 22 && (
         <Stars radius={2800} depth={100} count={700} factor={4} saturation={0} fade speed={0} />
       )}
       {mode === 'launch' && cinematic && onCinematicProgress && onCinematicComplete && (
@@ -270,21 +270,25 @@ export default function GameWorld({
         <AdaptiveResolution maximum={1.6} />
       </Canvas>
       {mode === 'campus' && <CharacterActions controls={controls} />}
-      {!cinematic && <div className="world-overlay">
-        <span className="eyebrow">
+      {!cinematic && (
+        <div className="world-overlay">
+          <span className="eyebrow">
+            {mode === 'campus'
+              ? 'ACADEMIA SELENE · CAMPUS ARTEMISA'
+              : mode === 'orbit'
+                ? 'ÓRBITA LUNAR · SIMULACIÓN'
+                : 'HANGAR ODYSSEY · DISEÑO MODULAR'}
+          </span>
+          <strong>{label}</strong>
+        </div>
+      )}
+      {!cinematic && (
+        <div className="world-help">
           {mode === 'campus'
-            ? 'ACADEMIA SELENE · CAMPUS ARTEMISA'
-            : mode === 'orbit'
-              ? 'ÓRBITA LUNAR · SIMULACIÓN'
-              : 'HANGAR ODYSSEY · DISEÑO MODULAR'}
-        </span>
-        <strong>{label}</strong>
-      </div>}
-      {!cinematic && <div className="world-help">
-        {mode === 'campus'
-          ? 'WASD: caminar · Shift: correr · Espacio: saltar · Ctrl: sentarse · E: interactuar'
-          : 'Arrastra para girar la nave · Rueda para acercar'}
-      </div>}
+            ? 'WASD: caminar · Shift: correr · Espacio: saltar · Ctrl: sentarse · E: interactuar'
+            : 'Arrastra para girar la nave · Rueda para acercar'}
+        </div>
+      )}
     </div>
   )
 }

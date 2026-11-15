@@ -49,8 +49,16 @@ export default function LaunchCinematicHud({
           <p>{frame.narration}</p>
         </div>
         <div className="launch-film-data">
-          <span>T+{Math.max(0, Math.floor(seconds - 9)).toString().padStart(2, '0')} s</span>
-          <span>{Math.round(frame.altitudeMeters).toLocaleString('es-PE')} m · altitud ilustrativa</span>
+          <span>
+            T+
+            {Math.max(0, Math.floor(seconds - 9))
+              .toString()
+              .padStart(2, '0')}{' '}
+            s
+          </span>
+          <span>
+            {Math.round(frame.altitudeMeters).toLocaleString('es-PE')} m · altitud ilustrativa
+          </span>
         </div>
         <div
           className="launch-film-progress"

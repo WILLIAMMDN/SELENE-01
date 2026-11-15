@@ -34,8 +34,7 @@ export function getLaunchFrame(seconds: number, launcher: LauncherId): LaunchFra
   const ascentSeconds = Math.max(0, time - 9)
   const altitudeMeters = 11 * Math.pow(ascentSeconds, 1.55) * acceleration
   const spaceBlend = Math.max(0, Math.min(1, (time - 21) / 9))
-  const exhaust =
-    time < 5 || time > 29 ? 0 : Math.min(1, (time - 5) / 1.5) * (time > 25 ? 0.35 : 1)
+  const exhaust = time < 5 || time > 29 ? 0 : Math.min(1, (time - 5) / 1.5) * (time > 25 ? 0.35 : 1)
   let beat: LaunchBeat = 'countdown'
   let title = 'Preparación del lanzamiento'
   let narration = 'TARS: Secuencia de comprobación completada. Esperando ignición.'

@@ -183,7 +183,9 @@ export function useMissionController({
     setLaunched(true)
     setLaunching(false)
     setStage('operations')
-    setNotification('ODYSSEY ha completado la secuencia de lanzamiento simulado. Inicia operaciones.')
+    setNotification(
+      'ODYSSEY ha completado la secuencia de lanzamiento simulado. Inicia operaciones.',
+    )
   }
   const operate = (choice: OperationChoice) => {
     if (!launched || !operateReady) return

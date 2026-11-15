@@ -244,7 +244,9 @@ export default function LaunchComplex({
       <Asset platform parts={parts} flightClock={flightClock} />
       <group ref={rocket}>
         <Asset platform={false} parts={parts} config={config} flightClock={flightClock} />
-        {flightClock && <EngineExhaust clock={flightClock} launcher={config?.launcher ?? 'aurora'} />}
+        {flightClock && (
+          <EngineExhaust clock={flightClock} launcher={config?.launcher ?? 'aurora'} />
+        )}
       </group>
       {flightClock && <LaunchPadDust clock={flightClock} />}
     </group>
