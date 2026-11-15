@@ -4,15 +4,19 @@ import { useFrame, useThree } from '@react-three/fiber'
 import { AmbientLight, DirectionalLight } from 'three'
 import { AnimeSky } from './AnimeSky.js'
 import { effectiveWeather, useSkySettings } from './skySettings'
+import { getLaunchFrame, type LaunchClock } from '../../spacecraft/launchTimeline'
 
 export default function CampusSky({
   reduced,
   paused,
   quality,
+  launchClock,
 }: {
   reduced: boolean
   paused: boolean
   quality: 'standard' | 'light'
+  /** A launch overrides the simulated hour based on ascent altitude. */
+  launchClock?: LaunchClock
 }) {
   const { scene, camera } = useThree()
   const settings = useSkySettings()
@@ -46,8 +50,21 @@ export default function CampusSky({
     if (!current) return
     current.update(paused || reduced ? 0 : Math.min(dt, 0.05), camera)
     if (occupant.active && buildingAt(occupant.x, occupant.z)) current.rain.visible = false
-    const { day, wet, flash } = current.skyMaterial.uniforms
-    if (ambient.current) ambient.current.intensity = 0.6 + day.value * 0.65
+    const { day, wet, flash, dusk } = current.skyMaterial.uniforms
+    if (launchClock) {
+      const flight = getLaunchFrame(launchClock.current, 'aurora')
+      const night = flight.spaceBlend
+      day.value = Math.min(day.value, 1 - night * 0.98)
+      dusk.value = Math.max(0, Math.sin(night * Math.PI) * 0.09)
+      current.starMaterial.uniforms.opacity.value = Math.max(
+        current.starMaterial.uniforms.opacity.value,
+        Math.max(0, (night - 0.25) / 0.75),
+      )
+      current.cloudMeshes.forEach((mesh) => {
+        mesh.visible = night < 0.84
+      })
+    }
+    if (ambient.current) ambient.current.intensity = 0.22 + day.value * 1.03
     if (sun.current) {
       // Keep the existing shadow coverage over the campus while varying daylight.
       sun.current.color.copy(current.sunMaterial.color)

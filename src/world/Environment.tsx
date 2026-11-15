@@ -138,7 +138,7 @@ function Launch({
       </group>
       <Sign
         text="04 / LANZAMIENTO ODYSSEY"
-        sub="PLATAFORMA LC-01 · PUESTO DE AUTORIZACIÓN"
+        sub="VEHÍCULO FICTICIO · AUTORIZACIÓN EN ESTE PUESTO"
         position={[64, 1.6, -35]}
         scale={[4.5, 1.12, 1]}
       />
@@ -151,14 +151,6 @@ function Launch({
           color={P.aqua}
         />
       </group>
-      <Sign
-        text="PASARELA DE ACCESO · TRIPULACIÓN"
-        sub="CREW ACCESS ARM · TORRE LC-01 · CABINA ODYSSEY"
-        position={[61, 2.6, -44]}
-        scale={[5.2, 1.25, 1]}
-        bg={P.teal}
-        fg={P.cream}
-      />
     </>
   )
 }

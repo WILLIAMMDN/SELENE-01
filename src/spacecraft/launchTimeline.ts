@@ -31,9 +31,6 @@ export type LaunchFrame = {
   mechanism: string | null
   countdown: number | null
   altitudeMeters: number
-  velocityKmh: number
-  maxQKpa: number
-  gForce: number
   exhaust: number
   spaceBlend: number
   milestone: string
@@ -49,25 +46,7 @@ export function getLaunchFrame(
   const ascentSeconds = Math.max(0, time - LIFTOFF_AT)
   const acceleration = launcher === 'atlas' ? 1.12 : 1
   const altitudeMeters = 9 * Math.pow(ascentSeconds, 1.65) * acceleration
-  const velocityKmh =
-    time < LIFTOFF_AT
-      ? 0
-      : Math.round(Math.min(28000, Math.pow(ascentSeconds, 1.85) * (launcher === 'atlas' ? 82 : 74)))
-  const maxQKpa =
-    time < LIFTOFF_AT - 1
-      ? 0
-      : time > 34
-        ? Math.max(0, Number((32.4 * Math.exp(-(time - 24) * 0.35)).toFixed(1)))
-        : Math.min(32.4, Number((Math.sin(((time - LIFTOFF_AT) / 6) * (Math.PI / 2)) * 32.4).toFixed(1)))
-  const gForce =
-    time < 12
-      ? 1.0
-      : time < LIFTOFF_AT
-        ? 1.2
-        : time < 41
-          ? Number((1.2 + Math.pow(ascentSeconds / 23, 1.3) * 2.6).toFixed(1))
-          : 0.0
-  const spaceBlend = Math.max(0, Math.min(1, (time - 32) / 11))
+  const spaceBlend = Math.max(0, Math.min(1, (time - 29) / 13))
   const exhaust =
     time < 12 || time > 38 ? 0 : Math.min(1, (time - 12) / 1.8) * (time > 35 ? 0.5 : 1)
   let beat: LaunchBeat
@@ -157,9 +136,6 @@ export function getLaunchFrame(
     mechanism,
     countdown: time >= 8 && time < 18 ? Math.ceil(18 - time) : null,
     altitudeMeters,
-    velocityKmh,
-    maxQKpa,
-    gForce,
     exhaust,
     spaceBlend,
     milestone,

@@ -5,6 +5,7 @@ import { bindCharacterKeyboard } from '../world/controls/keyboard'
 import { LAUNCH_SITE } from '../spacecraft/LaunchComplex'
 import LaunchCinematicDirector from '../spacecraft/LaunchCinematicDirector'
 import LaunchBoarding from '../spacecraft/LaunchBoarding'
+import LaunchCloudLayers from '../spacecraft/LaunchCloudLayers'
 import { walkingHeight, stationAt, occupant, buildingAt } from '../world/buildingNavigation'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { Edges, OrbitControls, Stars } from '@react-three/drei'
@@ -202,6 +203,12 @@ function ShipStage({
         </>
       )}
       {mode === 'workshop' && <OdysseyShip parts={parts} config={config} exploded={exploded} />}
+      {mode === 'launch' && cinematic && (
+        <>
+          <CampusSky reduced={false} paused quality="standard" launchClock={clock} />
+          <LaunchCloudLayers clock={clock} launcher={config.launcher} />
+        </>
+      )}
       {mode === 'launch' && cinematic && elapsed >= 33 && (
         <Stars radius={2800} depth={100} count={700} factor={4} saturation={0} fade speed={0} />
       )}

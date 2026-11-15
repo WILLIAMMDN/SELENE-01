@@ -177,7 +177,7 @@ export default function MissionStation({
           </p>
           <button
             className="primary-world"
-            disabled={!present}
+            disabled={!present || !verified}
             onClick={() => onCampaign('launch')}
           >
             {savedFlight
@@ -186,20 +186,8 @@ export default function MissionStation({
                 : 'Abrir informe del vuelo →'
               : 'Acceder a la pasarela de embarque →'}
           </button>
-          <button
-            className="secondary-world"
-            disabled={!present}
-            style={{ borderLeft: '3px solid #ba6061', fontWeight: 600 }}
-            onClick={() => {
-              window.dispatchEvent(new CustomEvent('selene-launch-cinematic'))
-            }}
-          >
-            🚀 Probar despegue cinematográfico LC-01 ◒
-          </button>
-          {!verified && !savedFlight && (
-            <small style={{ display: 'block', color: '#688c89', marginTop: 6 }}>
-              Nota: Puedes autorizar y probar la cinemática de despegue directamente en simulación.
-            </small>
+          {!verified && (
+            <p>Necesitas un objetivo aceptado y una revisión vigente en comunicaciones.</p>
           )}
         </>
       )}

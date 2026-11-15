@@ -68,3 +68,27 @@ viajes. Todavía faltan misiones de Marte integradas en la campaña.
 **No declarar terminado el acabado** sin comprobar visualmente en navegador
 los desacoples y el interior de cabina. El elevador y las escaleras son
 geometría funcional prototipo, no el modelo de arte final.
+
+
+## Integración de noviembre de 2026: atmósfera de ascenso y trabajo del equipo
+
+- Se fusionan los cambios del `main` actualizado (mural de autores, menú, diseño de
+  navegación y asistentes), manteniendo el embarque físico y las misiones existentes.
+- `src/spacecraft/LaunchCloudLayers.tsx` añade tres capas de nubes dibujadas con
+  geometría instanciada en alturas estilizadas de 350, 660 y 1040 metros. Se activan
+  durante la ascensión y desaparecen cuando la nave deja las capas representadas.
+- `CampusSky` sigue usando el cielo ilustrado del campus, pero mientras hay
+  `launchClock` oscurece gradualmente la cúpula y activa las estrellas. La hora
+  global de la Tierra no cambia: visualmente se representa la pérdida de
+  dispersión atmosférica conforme se gana altura, no un anochecer instantáneo.
+- También se usa la atmósfera cinematográfica en la vista previa
+  `/?preview=launch`, sin construir otra ambientación.
+- La bitácora de autores y los chevrons planos incorporados por el equipo
+  están enlazados al mundo. El botón de prueba del menú abre el visor y **no**
+  falsifica la autorización de lanzamiento del juego.
+- Las nubes y altitudes forman parte de una **representación educativa**, no
+  deben interpretarse como datos atmosféricos de NASA.
+
+Todos los cambios se desarrollan en una rama de integración antes de añadirlos
+a la rama principal; los guiones de misiones lunares y marcianas conservan sus
+puntos de integración y podrán ampliarse por separado.

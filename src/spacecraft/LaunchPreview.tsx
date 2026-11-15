@@ -73,7 +73,7 @@ export default function LaunchPreview() {
     <div className={`launch-preview app-shell ${playing ? 'cinematic-active' : ''}`}>
       <div className="world-column launch-preview-world">
         <GameWorld
-          key={`${run}-${playing ? 'playing' : 'idle'}`}
+          key={run}
           mode="launch"
           onInteract={() => undefined}
           parts={parts}

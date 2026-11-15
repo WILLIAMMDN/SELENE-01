@@ -32,6 +32,18 @@ describe('cinemática narrativa de lanzamiento', () => {
     )
   })
 
+  it('atraviesa nubes y oscurece el cielo gradualmente sin cambiar la hora del campus', () => {
+    const ground = getLaunchFrame(18, 'aurora')
+    const clouds = getLaunchFrame(29, 'aurora')
+    const edgeOfSpace = getLaunchFrame(39, 'aurora')
+    const space = getLaunchFrame(LAUNCH_DURATION, 'aurora')
+    expect(ground.spaceBlend).toBe(0)
+    expect(clouds.altitudeMeters).toBeGreaterThan(350)
+    expect(clouds.spaceBlend).toBe(0)
+    expect(edgeOfSpace.spaceBlend).toBeGreaterThan(0.5)
+    expect(space.spaceBlend).toBe(1)
+  })
+
   it('mantiene una sola cronología para todos los valores', () => {
     expect(getLaunchFrame(-1, 'aurora').time).toBe(0)
     expect(getLaunchFrame(Number.NaN, 'aurora').time).toBe(0)

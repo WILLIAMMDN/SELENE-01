@@ -1,7 +1,6 @@
 import { roomLabel } from './buildingEntrances'
 import VehicleDashboard from '../ui/world/VehicleDashboard'
 import WorldNotebook from '../ui/world/WorldNotebook'
-import AuthorsPanel from '../ui/world/AuthorsPanel'
 import { OBJECTIVE_NAMES, type Panel } from '../ui/world/worldUiTypes'
 import {
   useCampusMission,
@@ -135,14 +134,13 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
     [mars, moon],
   )
   useEffect(() => {
+  useEffect(() => {
     if (!ready) return
     const params = new URLSearchParams(window.location.search)
     if (params.get('launch') === 'true' || params.get('cinematic') === 'true') {
       onLaunchPhase('flight')
     }
   }, [ready, onLaunchPhase])
-
-  useEffect(() => {
     if (!ready || offworld) return
     try {
       if (localStorage.getItem('selene-arrival-story-v1')) return
@@ -205,6 +203,22 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
     window.addEventListener('keydown', key)
     return () => window.removeEventListener('keydown', key)
   }, [conversation, campaign, launchPhase, finishLaunch])
+  // The latest campus menu uses a shared event for cinematic previews.
+  // Keep that shortcut functional without bypassing mission authorization.
+  useEffect(() => {
+    const previewLaunch = () => {
+      const url = new URL(window.location.href)
+      url.searchParams.set('preview', 'launch')
+      window.location.assign(url.toString())
+    }
+    window.addEventListener('selene-launch-cinematic', previewLaunch)
+    return () => window.removeEventListener('selene-launch-cinematic', previewLaunch)
+  }, [])
+  useEffect(() => {
+    const showTeam = () => setPanel('authors')
+    window.addEventListener('selene-authors-panel', showTeam)
+    return () => window.removeEventListener('selene-authors-panel', showTeam)
+  }, [])
   useEffect(() => {
     const observe = (e: Event) => {
       if (panel || conversation || mode !== 'walk' || campaign) return
@@ -254,13 +268,6 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
     window.addEventListener('selene-tools-panel', open)
     return () => window.removeEventListener('selene-tools-panel', open)
   }, [offworld, panel, conversation, campaign, mode])
-  useEffect(() => {
-    const open = () => {
-      if (!panel && !conversation && !campaign) setPanel('authors')
-    }
-    window.addEventListener('selene-authors-panel', open)
-    return () => window.removeEventListener('selene-authors-panel', open)
-  }, [panel, conversation, campaign])
   const chooseMode = (m: ViewMode) => {
     setMode(m)
     setPanel(null)
@@ -281,7 +288,6 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
     window.addEventListener('selene-launch-cinematic', launchReplay)
     return () => window.removeEventListener('selene-launch-cinematic', launchReplay)
   }, [onLaunchPhase])
-
   const openCampaign = (id: SectorId) => {
     if (offworld || position.nearby !== id) return
     const draft = loadBlueprint()
@@ -349,6 +355,7 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
           onLaunchPhase={onLaunchPhase}
           onCinematicProgress={setFlightElapsed}
           onCinematicComplete={finishLaunch}
+          targetSector={!offworld ? next.sector : undefined}
           onPosition={onPosition}
           onInteract={onInteract}
           quality={quality}
@@ -462,27 +469,7 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
             {offworld
               ? 'El encargo lunar comienza en la Tierra'
               : `${destination.short} · ${Math.round(Math.hypot(position.x - destination.entry[0], position.z - destination.entry[1]))} m`}{' '}
-            <b
-              style={{
-                display: 'inline-block',
-                transform: `rotate(${Math.round(
-                  -Math.atan2(
-                    Math.sin(
-                      Math.atan2(destination.entry[0] - position.x, destination.entry[1] - position.z) -
-                        Math.atan2(-Math.sin(input.current.yaw), -Math.cos(input.current.yaw)),
-                    ),
-                    Math.cos(
-                      Math.atan2(destination.entry[0] - position.x, destination.entry[1] - position.z) -
-                        Math.atan2(-Math.sin(input.current.yaw), -Math.cos(input.current.yaw)),
-                    ),
-                  ) *
-                    (180 / Math.PI),
-                )}deg)`,
-                transition: 'transform 0.12s ease',
-              }}
-            >
-              ▲
-            </b>
+            <b>↗</b>
           </small>
         </button>
       )}
@@ -675,25 +662,11 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
               kind = conversation.kind
             closeConversation()
             if (kind === 'lander') setPanel('lander')
-            else if (sector) {
-              if (sector === 'launch') {
-                const draft = loadBlueprint()
-                const saved = loadOperationSession(blueprintKey(draft.config, draft.parts))
-                if (saved) {
-                  setCampaignStage('launch')
-                  setCampaign(true)
-                } else {
-                  setPanel(sector)
-                }
-              } else {
-                setPanel(sector)
-              }
-            }
+            else if (sector) setPanel(sector)
           }}
         />
       )}
-      {panel === 'authors' && <AuthorsPanel onClose={() => setPanel(null)} />}
-      {panel && panel !== 'authors' && (
+      {panel && (
         <WorldNotebook
           panel={panel}
           position={position}
