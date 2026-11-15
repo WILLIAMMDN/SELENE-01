@@ -1,0 +1,541 @@
+{
+  "format": "mission-architect-odyssey/base-lunar-layout",
+  "version": 2,
+  "coordinates": {
+    "unit": "meter",
+    "handedness": "right",
+    "up": "+Y",
+    "blenderToThree": "(x,y,z) → (x,z,-y)",
+    "basisChangeRowMajor": [
+      [
+        1,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        1,
+        0
+      ],
+      [
+        0,
+        -1,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        1
+      ]
+    ],
+    "transformRule": "M_three = C * M_blender * inverse(C)",
+    "quaternionOrder": [
+      "x",
+      "y",
+      "z",
+      "w"
+    ],
+    "instanceSpace": "world",
+    "assetFileBase": "relative to this JSON"
+  },
+  "portStandard": {
+    "id": "HAB_PASILLO_180",
+    "diameter": 1.8,
+    "centerHeight": 2.27,
+    "outwardLocal": [
+      0,
+      1,
+      0
+    ],
+    "verticalLocal": [
+      0,
+      0,
+      -1
+    ]
+  },
+  "assets": {
+    "COR-L01": {
+      "kind": "corridor",
+      "file": "cor_l01_transitable.glb",
+      "root": "COR_L01_TRANSITABLE_ROOT",
+      "ports": [
+        "COR_L01_PUERTO_A",
+        "COR_L01_PUERTO_B"
+      ],
+      "referenceNodes": [
+        "COR_L01_PUNTO_SUELO"
+      ]
+    },
+    "COR-L01-CORTO": {
+      "kind": "corridor",
+      "file": "cor_l01_corto_transitable.glb",
+      "root": "COR_L01_CORTO_TRANSITABLE_ROOT",
+      "ports": [
+        "COR_L01_CORTO_PUERTO_A",
+        "COR_L01_CORTO_PUERTO_B"
+      ],
+      "referenceNodes": [
+        "COR_L01_CORTO_PUNTO_SUELO"
+      ]
+    },
+    "COR-C01": {
+      "kind": "corridor",
+      "file": "cor_c01_transitable.glb",
+      "root": "COR_C01_TRANSITABLE_ROOT",
+      "ports": [
+        "COR_C01_PUERTO_A",
+        "COR_C01_PUERTO_B"
+      ],
+      "referenceNodes": [
+        "COR_C01_PUNTO_SUELO"
+      ]
+    },
+    "HAB-L01": {
+      "kind": "building",
+      "file": "hab_l01_transitable.glb",
+      "root": "HAB_L01_TRANSITABLE_ROOT",
+      "ports": [
+        "HAB_L01_PUERTO_A",
+        "HAB_L01_PUERTO_B"
+      ],
+      "referenceNodes": [
+        "HAB_INTERIOR_ENTRADA",
+        "HAB_L01_ENTRADA",
+        "HAB_L01_PUNTO_SUELO",
+        "HAB_PUERTA_INTERACCION_EXTERIOR",
+        "HAB_PUERTA_INTERACCION_INTERIOR"
+      ],
+      "interactionNodes": [
+        "HAB_INTERIOR_DESCANSO",
+        "HAB_INTERIOR_ENTRADA",
+        "HAB_INTERIOR_ESTADO_BASE",
+        "HAB_INTERIOR_MISIONES",
+        "HAB_PUERTA_INTERACCION_EXTERIOR",
+        "HAB_PUERTA_INTERACCION_INTERIOR"
+      ],
+      "door": {
+        "openingClip": "HAB_PUERTA_ABRIR",
+        "closing": "reverse",
+        "initialPose": "closed",
+        "pivot": "HAB_L01_PUERTA_PIVOTE",
+        "closedCollider": "HAB_PUERTA_COLISION_CERRADA",
+        "colliderDimensionsExtra": "tamano_m_gltf_xyz",
+        "outside": "HAB_PUERTA_INTERACCION_EXTERIOR",
+        "inside": "HAB_PUERTA_INTERACCION_INTERIOR"
+      }
+    },
+    "PWR-L01": {
+      "kind": "building",
+      "file": "../ODYSSEY_BASE_MODULOS_FINAL/pwr_l01.glb",
+      "root": "PWR_L01_ROOT",
+      "ports": [],
+      "location": "exterior"
+    },
+    "STO-L01": {
+      "kind": "building",
+      "file": "sto_l01_transitable.glb",
+      "root": "STO_L01_TRANSITABLE_ROOT",
+      "ports": [
+        "STO_L01_PUERTO_A"
+      ],
+      "referenceNodes": [
+        "STO_INTERIOR_ENTRADA",
+        "STO_L01_ACCESO_EXTERIOR",
+        "STO_L01_ENTRADA",
+        "STO_L01_INTERACCION",
+        "STO_L01_PUNTO_SUELO",
+        "STO_PUERTA_INTERACCION_EXTERIOR",
+        "STO_PUERTA_INTERACCION_INTERIOR"
+      ],
+      "interactionNodes": [
+        "STO_INTERIOR_CONTENEDORES",
+        "STO_INTERIOR_ENTRADA",
+        "STO_INTERIOR_INVENTARIO",
+        "STO_PUERTA_INTERACCION_EXTERIOR",
+        "STO_PUERTA_INTERACCION_INTERIOR"
+      ],
+      "door": {
+        "openingClip": "STO_PUERTA_ABRIR",
+        "closing": "reverse",
+        "initialPose": "closed",
+        "pivot": "STO_L01_PUERTA_PIVOTE",
+        "closedCollider": "STO_PUERTA_COLISION_CERRADA",
+        "colliderDimensionsExtra": "tamano_m_gltf_xyz",
+        "outside": "STO_PUERTA_INTERACCION_EXTERIOR",
+        "inside": "STO_PUERTA_INTERACCION_INTERIOR"
+      }
+    },
+    "LAB-L01": {
+      "kind": "building",
+      "file": "lab_l01_transitable.glb",
+      "root": "LAB_L01_TRANSITABLE_ROOT",
+      "ports": [
+        "LAB_L01_PUERTO_A"
+      ],
+      "referenceNodes": [
+        "LAB_INTERIOR_ENTRADA",
+        "LAB_L01_ACCESO_EXTERIOR",
+        "LAB_L01_ENTRADA",
+        "LAB_L01_INTERACCION",
+        "LAB_L01_PUNTO_SUELO",
+        "LAB_PUERTA_INTERACCION_EXTERIOR",
+        "LAB_PUERTA_INTERACCION_INTERIOR"
+      ],
+      "interactionNodes": [
+        "LAB_INTERIOR_ANALIZAR",
+        "LAB_INTERIOR_ENTRADA",
+        "LAB_INTERIOR_ENTREGAR_MUESTRAS",
+        "LAB_INTERIOR_INVESTIGACION",
+        "LAB_PUERTA_INTERACCION_EXTERIOR",
+        "LAB_PUERTA_INTERACCION_INTERIOR"
+      ],
+      "door": {
+        "openingClip": "LAB_PUERTA_ABRIR",
+        "closing": "reverse",
+        "initialPose": "closed",
+        "pivot": "LAB_L01_PUERTA_PIVOTE",
+        "closedCollider": "LAB_PUERTA_COLISION_CERRADA",
+        "colliderDimensionsExtra": "tamano_m_gltf_xyz",
+        "outside": "LAB_PUERTA_INTERACCION_EXTERIOR",
+        "inside": "LAB_PUERTA_INTERACCION_INTERIOR"
+      }
+    }
+  },
+  "instances": [
+    {
+      "id": "VISTA_HAB_L01",
+      "asset": "HAB-L01",
+      "position": [
+        63.0,
+        -0.09999847412109375,
+        78.0
+      ],
+      "quaternion": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "id": "VISTA_PWR_L01",
+      "asset": "PWR-L01",
+      "position": [
+        47.5,
+        -0.09999847412109375,
+        78.0
+      ],
+      "quaternion": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "pose": {
+        "clip": "PWR_L01_DESPLIEGUE",
+        "normalizedTime": 1
+      }
+    },
+    {
+      "id": "VISTA_STO_L01",
+      "asset": "STO-L01",
+      "position": [
+        74.0999984741211,
+        -0.09999847412109375,
+        78.0
+      ],
+      "quaternion": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "id": "VISTA_LAB_L01",
+      "asset": "LAB-L01",
+      "position": [
+        52.729942321777344,
+        -0.09999847412109375,
+        83.43657684326172
+      ],
+      "quaternion": [
+        0.0,
+        0.38268330693244934,
+        0.0,
+        0.9238796234130859
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "id": "VISTA_COR_HAB_STO_DESDE_HAB",
+      "asset": "COR-L01",
+      "position": [
+        68.07499694824219,
+        -0.09999847412109375,
+        78.0
+      ],
+      "quaternion": [
+        -4.852938971426682e-24,
+        -4.371138828673793e-08,
+        -1.1102230246251565e-16,
+        1.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "id": "VISTA_COR_HAB_STO_DESDE_STO",
+      "asset": "COR-L01",
+      "position": [
+        70.70999908447266,
+        -0.09999847412109375,
+        78.0
+      ],
+      "quaternion": [
+        -1.1102230246251565e-16,
+        1.0,
+        1.1102228922762585e-16,
+        7.549790126404332e-08
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "id": "VISTA_COR_HAB_LAB_CODO_DESDE_HAB",
+      "asset": "COR-C01",
+      "position": [
+        57.92499923706055,
+        -0.09999847412109375,
+        78.0
+      ],
+      "quaternion": [
+        -1.1102230246251565e-16,
+        1.0,
+        1.1102228922762585e-16,
+        7.549790126404332e-08
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "id": "VISTA_COR_HAB_LAB_RECTO_DESDE_CODO",
+      "asset": "COR-L01",
+      "position": [
+        56.92308807373047,
+        -0.09999878704547882,
+        79.2434310913086
+      ],
+      "quaternion": [
+        2.0531935263079504e-08,
+        -0.9238796234130859,
+        2.0531940592150022e-08,
+        0.38268330693244934
+      ],
+      "scale": [
+        1.0,
+        1.0000001192092896,
+        1.0
+      ]
+    },
+    {
+      "id": "VISTA_COR_HAB_LAB_RECTO_DESDE_LAB",
+      "asset": "COR-L01",
+      "position": [
+        55.508872985839844,
+        -0.09999847412109375,
+        80.65764617919922
+      ],
+      "quaternion": [
+        0.0,
+        0.38268330693244934,
+        0.0,
+        0.9238796234130859
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "id": "VISTA_COR_HAB_STO_CORTO",
+      "asset": "COR-L01-CORTO",
+      "position": [
+        69.39249420166016,
+        -0.09999847412109375,
+        78.0
+      ],
+      "quaternion": [
+        0.0,
+        -8.742277657347586e-08,
+        0.0,
+        1.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "HAB-STO-1",
+      "network": "HAB-STO",
+      "a": {
+        "instance": "VISTA_HAB_L01",
+        "port": "HAB_L01_PUERTO_A"
+      },
+      "b": {
+        "instance": "VISTA_COR_HAB_STO_DESDE_HAB",
+        "port": "COR_L01_PUERTO_A"
+      }
+    },
+    {
+      "id": "HAB-STO-2",
+      "network": "HAB-STO",
+      "a": {
+        "instance": "VISTA_COR_HAB_STO_DESDE_HAB",
+        "port": "COR_L01_PUERTO_B"
+      },
+      "b": {
+        "instance": "VISTA_COR_HAB_STO_CORTO",
+        "port": "COR_L01_CORTO_PUERTO_A"
+      }
+    },
+    {
+      "id": "HAB-STO-3",
+      "network": "HAB-STO",
+      "a": {
+        "instance": "VISTA_COR_HAB_STO_CORTO",
+        "port": "COR_L01_CORTO_PUERTO_B"
+      },
+      "b": {
+        "instance": "VISTA_COR_HAB_STO_DESDE_STO",
+        "port": "COR_L01_PUERTO_B"
+      }
+    },
+    {
+      "id": "HAB-STO-4",
+      "network": "HAB-STO",
+      "a": {
+        "instance": "VISTA_COR_HAB_STO_DESDE_STO",
+        "port": "COR_L01_PUERTO_A"
+      },
+      "b": {
+        "instance": "VISTA_STO_L01",
+        "port": "STO_L01_PUERTO_A"
+      }
+    },
+    {
+      "id": "HAB-LAB-1",
+      "network": "HAB-LAB",
+      "a": {
+        "instance": "VISTA_HAB_L01",
+        "port": "HAB_L01_PUERTO_B"
+      },
+      "b": {
+        "instance": "VISTA_COR_HAB_LAB_CODO_DESDE_HAB",
+        "port": "COR_C01_PUERTO_A"
+      }
+    },
+    {
+      "id": "HAB-LAB-2",
+      "network": "HAB-LAB",
+      "a": {
+        "instance": "VISTA_COR_HAB_LAB_CODO_DESDE_HAB",
+        "port": "COR_C01_PUERTO_B"
+      },
+      "b": {
+        "instance": "VISTA_COR_HAB_LAB_RECTO_DESDE_CODO",
+        "port": "COR_L01_PUERTO_A"
+      }
+    },
+    {
+      "id": "HAB-LAB-3",
+      "network": "HAB-LAB",
+      "a": {
+        "instance": "VISTA_COR_HAB_LAB_RECTO_DESDE_CODO",
+        "port": "COR_L01_PUERTO_B"
+      },
+      "b": {
+        "instance": "VISTA_COR_HAB_LAB_RECTO_DESDE_LAB",
+        "port": "COR_L01_PUERTO_B"
+      }
+    },
+    {
+      "id": "HAB-LAB-4",
+      "network": "HAB-LAB",
+      "a": {
+        "instance": "VISTA_COR_HAB_LAB_RECTO_DESDE_LAB",
+        "port": "COR_L01_PUERTO_A"
+      },
+      "b": {
+        "instance": "VISTA_LAB_L01",
+        "port": "LAB_L01_PUERTO_A"
+      }
+    }
+  ],
+  "variant": "transitable",
+  "presentation": {
+    "completedOnly": true,
+    "oneVisibleInstancePerBuilding": true
+  },
+  "walkability": {
+    "capsuleMeters": {
+      "diameter": 0.84,
+      "height": 1.9
+    },
+    "deckLocalY": 0.832,
+    "corridorClearWidth": 1.2,
+    "corridorClearHeightOverCentral1_05m": 2.17,
+    "routes": [
+      [
+        "Exterior",
+        "HAB-L01",
+        "STO-L01"
+      ],
+      [
+        "Exterior",
+        "HAB-L01",
+        "LAB-L01"
+      ]
+    ],
+    "doorPolicy": "paso habilitado al terminar de abrir; comprueba que el barrido esté libre antes de cerrar; activa la caja al terminar de cerrar",
+    "habThreshold": "Centrar la cápsula; a 0.13 m hacia la bisagra, la cápsula de prueba toca la hoja abierta.",
+    "camera": "Cámara centrada, con retracción mediante colisión al entrar en pasillos, en el codo y cerca de puertas."
+  }
+}

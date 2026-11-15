@@ -8,11 +8,13 @@ export default function CampusMap({
   large = false,
   visited,
   onSelect,
+  active,
 }: {
   position: PositionReport
   large?: boolean
   visited: SectorId[]
   onSelect?: (id: SectorId) => void
+  active?: SectorId
 }) {
   const world = useWorld(),
     SECTORS = world.sectors,
@@ -138,6 +140,17 @@ export default function CampusMap({
             stroke="#26343a"
             strokeWidth="1"
           />
+          {active === s.id && (
+            <circle
+              cx={tx(s.entry[0])}
+              cy={tz(s.entry[1])}
+              r={large ? 12 : 10}
+              fill="none"
+              stroke="#6c9981"
+              strokeWidth="1.5"
+              opacity=".7"
+            />
+          )}
           <circle
             cx={tx(s.entry[0])}
             cy={tz(s.entry[1])}

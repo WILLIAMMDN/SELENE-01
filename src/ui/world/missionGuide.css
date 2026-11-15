@@ -1,0 +1,53 @@
+.mission-direction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  border: 1px solid #789c8b55;
+  border-radius: 50%;
+  background: #e5ede188;
+  color: #5f8976;
+  vertical-align: middle;
+}
+.mission-direction svg {
+  display: block;
+  width: 17px;
+  height: 17px;
+  fill: #709784;
+  transition: transform 0.18s linear;
+  transform-origin: center;
+}
+.mission-direction.is-arrived {
+  border-color: #85a58a77;
+  color: #557d61;
+  font-size: 14px;
+}
+.quest-slip small:has(.mission-direction) {
+  align-items: center;
+  gap: 12px;
+  min-height: 24px;
+}
+.quest-slip small > span:first-child {
+  line-height: 1.45;
+}
+.clean-world .quest-slip.is-interior-guide {
+  max-width: 265px;
+  padding: 8px 12px;
+  background: #f5f6ebe6;
+  box-shadow: 2px 3px 0 #485e601a;
+}
+.quest-slip.is-interior-guide > span {
+  font-size: 8px;
+  letter-spacing: 1px;
+}
+.quest-slip.is-interior-guide strong {
+  font-size: 18px;
+  margin: 3px 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .mission-direction svg {
+    transition: none;
+  }
+}

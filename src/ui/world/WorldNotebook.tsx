@@ -31,10 +31,13 @@ type Props = {
   setReduced: (v: boolean) => void
   miniMap: boolean
   setMiniMap: (v: boolean) => void
+  guideEnabled: boolean
+  setGuideEnabled: (value: boolean) => void
   onClose: () => void
   onPanel: (p: Panel) => void
   onMode: (m: ViewMode) => void
   onWorld: (id: WorldId) => void
+  onLanding?: () => void
   onVisit: (id: Travel['id']) => void
   onCampaign: (id: SectorId) => void
   onConversation: (conversation: Conversation) => void
@@ -51,10 +54,13 @@ export default function WorldNotebook({
   setReduced,
   miniMap,
   setMiniMap,
+  guideEnabled,
+  setGuideEnabled,
   onClose,
   onPanel,
   onMode,
   onWorld,
+  onLanding,
   onVisit,
   onCampaign,
   onConversation,
@@ -110,7 +116,13 @@ export default function WorldNotebook({
           ×
         </button>
         {panel === 'tools' && !offworld && <ToolsPanel onClose={onClose} />}
-        {panel === 'wardrobe' && <WardrobePanel world={world.id} onClose={onClose} />}
+        {panel === 'wardrobe' && (
+          <WardrobePanel
+            world={world.id}
+            onClose={onClose}
+            airlock={world.id === 'earth' && position.room === 'airlock'}
+          />
+        )}
         {panel === 'sky' && !offworld && <SkyPanel reduced={reduced} />}
         {panel === 'observatory-demo' && !offworld && (
           <>
@@ -196,6 +208,16 @@ export default function WorldNotebook({
               <button onClick={() => onMode('tour')}>Recorrido del campus</button>
               <button onClick={() => onPanel('controls')}>Controles</button>
               <button onClick={() => onPanel('wardrobe')}>Vestuario y gestos</button>
+              {moon && onLanding && (
+                <button
+                  onClick={() => {
+                    onClose()
+                    onLanding()
+                  }}
+                >
+                  Ver aterrizaje lunar
+                </button>
+              )}
               {!offworld && <button onClick={() => onPanel('sky')}>Cielo y clima</button>}
               <button onClick={() => onPanel('settings')}>Opciones</button>
               <button onClick={() => onPanel('scale')}>El mundo y sus fuentes</button>
@@ -280,6 +302,7 @@ export default function WorldNotebook({
                 large
                 position={position}
                 visited={visited}
+                active={!offworld && guideEnabled ? next.sector : undefined}
                 onSelect={(id) => onPanel(id)}
               />
               <div className="map-sector-list">
@@ -387,7 +410,7 @@ export default function WorldNotebook({
               <dt>Ctrl</dt>
               <dd>Sentarse junto a un banco</dd>
               <dt>E</dt>
-              <dd>Conversar, usar una estación o subir y bajar del buggy</dd>
+              <dd>Conversar, usar una estación o subir y bajar del buggy y del rover lunar</dd>
               <dt>Buggy</dt>
               <dd>W/↑: acelerar · S/↓: frenar y retroceder · A/D o ←/→: girar · Espacio: frenar</dd>
               <dt>Interiores</dt>
@@ -430,16 +453,26 @@ export default function WorldNotebook({
               Mostrar minimapa mientras camino
             </label>
             {!offworld && (
-              <button
-                className="secondary-world"
-                style={{ borderLeft: '3px solid #ba6061', fontWeight: 600 }}
-                onClick={() => {
-                  onClose()
-                  window.dispatchEvent(new CustomEvent('selene-launch-cinematic'))
-                }}
-              >
-                🚀 Ver despegue en Plataforma LC-01 →
-              </button>
+              <>
+                <button
+                  className="secondary-world"
+                  style={{ borderLeft: '3px solid #ba6061', fontWeight: 600 }}
+                  onClick={() => {
+                    onClose()
+                    window.dispatchEvent(new CustomEvent('selene-launch-cinematic'))
+                  }}
+                >
+                  🚀 Ver despegue en Plataforma LC-01 →
+                </button>
+                <label className="world-setting check-setting">
+                  <input
+                    type="checkbox"
+                    checked={guideEnabled}
+                    onChange={(e) => setGuideEnabled(e.target.checked)}
+                  />
+                  Guía discreta de misión
+                </label>
+              </>
             )}
             <button
               className="secondary-world"

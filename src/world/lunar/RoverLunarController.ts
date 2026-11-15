@@ -163,7 +163,7 @@ export class RoverLunarController {
           : 3.2
     this.speed = approach(this.speed, target, rate * dt)
     // Correct steering sign: pressing A/Left turns Left, D/Right turns Right
-    this.steering = approach(this.steering, (-this.input.steer * Math.PI) / 6, dt * 2.4)
+    this.steering = approach(this.steering, (this.input.steer * Math.PI) / 6, dt * 2.4)
     const ds = (oldSpeed + this.speed) * 0.5 * dt
     const curvature = Math.tan(this.steering) / 2.3
     const dyaw = ds * curvature,

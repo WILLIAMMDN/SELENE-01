@@ -3,6 +3,7 @@ import type { CharacterControls } from '../characterMotion'
 import type { SectorId, ViewMode } from '../worldData'
 import type { BoardingMotion, BoardingPhase } from '../../spacecraft/boardingRoute'
 import type { LaunchClock } from '../../spacecraft/launchTimeline'
+import type { MissionGuideReport } from '../navigation/missionDestination'
 export type Travel = { id: SectorId | 'start'; serial: number; point?: [number, number] }
 export type InputState = CharacterControls & { yaw: number; pitch: number; zoom: number }
 export type PositionReport = {
@@ -23,6 +24,11 @@ export type SceneProps = {
   input: MutableRefObject<InputState>
   paused: boolean
   reduced: boolean
+  landing?: boolean
+  onLandingComplete?: () => void
+  onWardrobe?: () => void
+  guideSector?: SectorId
+  onGuide?: (report: MissionGuideReport) => void
   onPosition: (p: PositionReport) => void
   onInteract: (id: SectorId) => void
   targetSector?: SectorId
