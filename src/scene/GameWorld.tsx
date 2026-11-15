@@ -1,3 +1,4 @@
+import { bindCharacterKeyboard } from '../world/controls/keyboard'
 import LaunchComplex from '../spacecraft/LaunchComplex'
 import { walkingHeight, stationAt, occupant, buildingAt } from '../world/buildingNavigation'
 import {Canvas,useFrame,useThree} from '@react-three/fiber'
@@ -10,13 +11,14 @@ import { COMPLETE_ASSEMBLY, type ModuleId } from '../spacecraft/assembly'
 import type { DesignConfig } from '../game/missionDesign'
 import ExplorerCharacter from '../world/ExplorerCharacter'
 import CharacterActions from '../world/CharacterActions'
-import { CHARACTER_KEYS, MOVEMENT_KEYS, createCharacterMotion, stepCharacter, type CharacterControls } from '../world/characterMotion'
+import { createCharacterMotion, stepCharacter, type CharacterControls } from '../world/characterMotion'
 import Environment from '../world/Environment'
 import { roberRemote } from '../world/roberControl'
 import { canWalk, groundHeight as terrainHeight } from '../world/worldData'
 import { MOTION_SCALE, ODYSSEY_SIZE } from '../world/physicalScale'
 const groundHeight=(x:number,z:number)=>walkingHeight(x,z,terrainHeight)
-export type Station='briefing'|'hangar'|'launch'|'control'
+import type { Station } from '../game/missionTypes'
+export type { Station } from '../game/missionTypes'
 function Campus({onInteract,controls}:{onInteract:(id:Station)=>void;controls:RefObject<CharacterControls>}){
   const player=useRef<THREE.Group>(null)
   const motion=useRef(createCharacterMotion())
@@ -26,19 +28,7 @@ function Campus({onInteract,controls}:{onInteract:(id:Station)=>void;controls:Re
     const station=stationAt(p.x,p.z)
     if(station&&station.sector!=='observatory')onInteract(station.sector==='research'?'briefing':station.sector)
   },[onInteract])
-  useEffect(()=>{
-    const down=(e:KeyboardEvent)=>{
-      if(roberRemote.current)return
-      if(e.target instanceof HTMLElement&&e.target.closest('input,textarea,select,[contenteditable="true"],[role="dialog"]'))return
-      if(e.code==='Space'&&e.target instanceof HTMLElement&&e.target.closest('button,summary'))return
-      if(MOVEMENT_KEYS.includes(e.code)){controls.current.keys.add(e.code);e.preventDefault()}
-      if(CHARACTER_KEYS[e.code]){e.preventDefault();if(!e.repeat)controls.current.actions.push(CHARACTER_KEYS[e.code])}
-    }
-    const up=(e:KeyboardEvent)=>controls.current.keys.delete(e.code)
-    const clear=()=>{controls.current.keys.clear();controls.current.actions.length=0}
-    window.addEventListener('keydown',down);window.addEventListener('keyup',up);window.addEventListener('blur',clear);document.addEventListener('visibilitychange',clear)
-    return()=>{window.removeEventListener('keydown',down);window.removeEventListener('keyup',up);window.removeEventListener('blur',clear);document.removeEventListener('visibilitychange',clear);clear()}
-  },[controls])
+  useEffect(()=>bindCharacterKeyboard({controls:controls.current,enabled:()=>!roberRemote.current}),[controls])
   useFrame((state,rawDelta)=>{
     const delta=Math.min(rawDelta,.05),p=player.current
     if(!p)return

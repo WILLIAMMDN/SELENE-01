@@ -2,7 +2,8 @@ import { coastDistance, sceneryClear } from './environmentLayout'
 import { buildingClear } from './buildingNavigation'
 import { CAMPUS_TREES } from './campusLayout'
 import { ODYSSEY_SIZE } from './physicalScale'
-export type SectorId = 'research' | 'hangar' | 'control' | 'launch' | 'observatory'
+import type { SectorId } from '../game/missionTypes'
+export type { SectorId } from '../game/missionTypes'
 export type ViewMode = 'walk' | 'map' | 'tour'
 export type Sector = { id: SectorId; number: string; name: string; short: string; x: number; z: number; entry: [number, number]; color: string; title: string; description: string; detail: string; chapter: string }
 export const SECTORS: Sector[] = [

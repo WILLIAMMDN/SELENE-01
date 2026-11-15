@@ -2,12 +2,12 @@ import { LAUNCH_MECHANISMS } from '../spacecraft/LaunchComplex'
 import { useState } from 'react'
 import { OBJECTIVES, acceptObjective, useCampusMission, missionProblems, missionVerified, verifyMission, resetCampusMission } from '../game/campusMission'
 import { evaluateDesign } from '../game/missionDesign'
-import { loadBlueprint } from '../spacecraft/blueprint'
+import { useBlueprint } from '../game/state/blueprintStore'
 import type { SectorId } from './worldData'
 
 export default function MissionStation({sector,present,mars,onCampaign}:{sector:SectorId;present:boolean;mars:boolean;onCampaign:(id:SectorId)=>void}){
  const mission=useCampusMission(),[message,setMessage]=useState('')
- const {config,parts}=loadBlueprint(),problems=missionProblems(config,parts),verified=missionVerified(config,parts),evaluation=evaluateDesign(config)
+ const {config,parts}=useBlueprint(),problems=missionProblems(config,parts),verified=missionVerified(config,parts),evaluation=evaluateDesign(config)
  const objective=OBJECTIVES.find(o=>o.id===mission.objective)
  if(mars)return <div className="mission-station"><p>Este interior se puede recorrer. La secuencia de diseño y operaciones de esta entrega se desarrolla en la Tierra y estudia la Luna.</p></div>
  return <section className="mission-station" aria-label="Actividad de la estación">

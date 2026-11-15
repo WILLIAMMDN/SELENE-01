@@ -25,4 +25,4 @@ El progreso se guarda en el navegador. Los cuatro cuadernos de TARS son sesiones
 - [Proporciones](PHYSICAL_SCALE.md): referencias y medidas del juego.
 - `public/models/*/README.md`: procedencia, animaciones y uso de cada recurso.
 
-Las 18 pruebas y la compilación pasaron localmente y en GitHub. La revisión visual, el rendimiento en distintos equipos y la experiencia de juego requieren evaluación del equipo. No se hicieron capturas ni se afirma validación visual completa.
+Las pruebas automatizadas y la compilación pasaron localmente y en GitHub. La revisión visual, el rendimiento en distintos equipos y la experiencia de juego requieren evaluación del equipo. No se hicieron capturas ni se afirma validación visual completa.

@@ -1,7 +1,7 @@
 import { describe,it,expect } from 'vitest'
 import {NASA_FACTS,findFact,normalizeQuestion} from './nasaKnowledge'
 import {mediaSearchUrl} from './nasaMedia'
-describe('ORBI',()=>{
+describe('TARS',()=>{
   it('reconoce tildes',()=>expect(normalizeQuestion('ÓRBITA LUNAR')).toBe('orbita lunar'))
   it('responde con fuente oficial',()=>{
     const fact=findFact('¿Se encuentra hielo en el polo lunar?')

@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { NASA_FACTS, findFact, type NasaFact } from './nasaKnowledge'
 import { mediaSearchUrl, searchNasaMedia, type NasaMedia } from './nasaMedia'
-export default function Orbi({hint}:{hint:string}) {
+export default function TarsCampaignAssistant({hint}:{hint:string}) {
   const [open,setOpen]=useState(false)
   const [question,setQuestion]=useState('')
   const [fact,setFact]=useState<NasaFact|null>(NASA_FACTS[1])

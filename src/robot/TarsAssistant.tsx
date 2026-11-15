@@ -1,3 +1,4 @@
+import { useBlueprint } from '../game/state/blueprintStore'
 import { useCampusMission, nextMissionStep, OBJECTIVES } from '../game/campusMission'
 import { useEffect, useState, type FormEvent } from 'react'
 import { NASA_FACTS, findFact } from './nasaKnowledge'
@@ -10,6 +11,7 @@ type Note={question:string;answer:string;url?:string;source?:string}
 type CrewSession={question:string;note:Note|null;history:Note[]}
 const fresh=():CrewSession=>({question:'',note:null,history:[]})
 export default function TarsAssistant({position,onVisit}:{position:PositionReport;onVisit:(id:'research'|'hangar'|'control'|'launch'|'observatory')=>void}){
+ useBlueprint()
  const mission=useCampusMission(),next=nextMissionStep()
  const world=useWorld(),[crew,setCrew]=useState<CrewId>('crew-1')
  const [sessions,setSessions]=useState<Record<CrewId,CrewSession>>(()=>{
