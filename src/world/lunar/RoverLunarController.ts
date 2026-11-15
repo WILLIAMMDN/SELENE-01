@@ -13,6 +13,7 @@ const approach = (a: number, b: number, step: number) => a + T.MathUtils.clamp(b
 export class RoverLunarController {
   readonly vehicle = new T.Group()
   readonly effects = new T.Group()
+  readonly driverSeat: T.Object3D
   readonly dust: T.Points<T.BufferGeometry, T.ShaderMaterial>
   speed = 0
   yaw = 0
@@ -57,6 +58,7 @@ export class RoverLunarController {
     this.spawn.copy(options.position ?? new T.Vector3())
     this.vehicle.name = 'RoverLunar_Controlled'
     this.vehicle.add(model)
+    this.driverSeat = model.getObjectByName('Seat_L_Cushion') ?? this.vehicle
     model.traverse((node) => {
       if ((node as T.Mesh).isMesh) {
         node.castShadow = true
@@ -190,8 +192,8 @@ export class RoverLunarController {
       rear = this.heightAt(x - s * 1.15, z - c * 1.15)
     const right = this.heightAt(x + c * 1.04, z - s * 1.04),
       left = this.heightAt(x - c * 1.04, z + s * 1.04)
-    const pitch = T.MathUtils.clamp(Math.atan2(rear - front, 2.3), -0.28, 0.28)
-    const roll = T.MathUtils.clamp(Math.atan2(right - left, 2.08), -0.28, 0.28)
+    const pitch = T.MathUtils.clamp(Math.atan2(rear - front, 2.3), -0.49, 0.49)
+    const roll = T.MathUtils.clamp(Math.atan2(right - left, 2.08), -0.43, 0.43)
     this.vehicle.position.y = (front + rear + right + left) * 0.25
     this.vehicle.rotation.set(pitch, this.yaw, roll, 'YXZ')
     for (let i = 0; i < 4; i++) {

@@ -1,10 +1,12 @@
+import { lunarDoors } from './lunar/lunarInteriorNavigation'
+import type { LunarSession } from './lunar/lunarRoverControl'
 import LunarEnvironment from './lunar/LunarEnvironment'
 import LunarLanding from './lunar/LunarLanding'
 import MissionGuide from './MissionGuide'
 import CampusSky from './sky/CampusSky'
 import AdaptiveResolution from './performance/AdaptiveResolution'
 import { Canvas } from '@react-three/fiber'
-import { Component, memo, Suspense, useEffect, type ReactNode } from 'react'
+import { Component, memo, Suspense, useEffect, useRef, type ReactNode } from 'react'
 import Environment from './Environment'
 import MarsEnvironment from './MarsEnvironment'
 import { useWorld } from './worldConfig'
@@ -50,6 +52,14 @@ export default memo(function ExplorerScene(
     blueprint = useBlueprint(),
     mars = world.id === 'mars',
     moon = world.id === 'moon'
+  const lunarRef = useRef<LunarSession | null>(null)
+  if (!lunarRef.current) {
+    lunarRef.current = {
+      boarded: false,
+      doors: new Map(lunarDoors.map(({ id }) => [id, { progress: 0, open: false }])),
+    }
+  }
+  const lunar = lunarRef.current
   return (
     <SceneBoundary onFailure={props.onReady}>
       <Canvas
@@ -72,25 +82,27 @@ export default memo(function ExplorerScene(
           />
         ) : (
           <>
-            <ambientLight intensity={1.25} color="#e1ebdf" />
+            <ambientLight intensity={moon ? 0.16 : 1.25} color="#e1ebdf" />
             <directionalLight
-              position={[-80, 150, 65]}
-              intensity={2.1}
-              color="#fff0d2"
+              position={moon ? [-116, 51, 88] : [-80, 150, 65]}
+              intensity={moon ? 3.35 : 2.1}
+              color={moon ? '#f1f4ff' : '#fff0d2'}
               castShadow={props.quality === 'standard'}
-              shadow-mapSize={[2048, 2048]}
+              shadow-mapSize={moon ? [3072, 3072] : [2048, 2048]}
               shadow-camera-left={-95}
               shadow-camera-right={95}
               shadow-camera-top={95}
               shadow-camera-bottom={-95}
               shadow-camera-far={420}
-              shadow-normalBias={0.025}
+              shadow-normalBias={moon ? 0.065 : 0.025}
             />
           </>
         )}
         <Suspense fallback={null}>
           {moon ? (
             <LunarEnvironment
+              lunar={lunar}
+              input={props.input}
               paused={props.paused || props.mode !== 'walk'}
               reduced={props.reduced}
               landing={props.landing}
@@ -108,7 +120,6 @@ export default memo(function ExplorerScene(
               flightClock={props.launchPhase === 'flight' ? props.flightClock?.current : undefined}
             />
           )}
-          <PlayerRig {...props} />
           {moon && props.landing && props.onLandingComplete && (
             <LunarLanding onComplete={props.onLandingComplete} />
           )}
@@ -141,6 +152,7 @@ export default memo(function ExplorerScene(
                 onComplete={props.onCinematicComplete}
               />
             )}
+          <PlayerRig {...props} lunar={lunar} />
           <SceneReady onReady={props.onReady} />
           <AdaptiveResolution enabled={props.quality === 'standard'} />
         </Suspense>

@@ -1,3 +1,5 @@
+import { lunarDeckAt, lunarExteriorObjects } from './lunarInteriorNavigation'
+import { LUNAR_RESOURCES, LUNAR_GEOLOGIST } from './lunarResources'
 import layout from './lunarLayout.json'
 import { createCollisionGrid } from '../navigation/collision'
 import { landingPadHeight } from '../environmentLayout'
@@ -25,14 +27,50 @@ export function lunarHeight(x: number, z: number) {
   const pad = landingPadHeight(LUNAR_LANDER.x, LUNAR_LANDER.z, lunarTerrainHeight)
   return distance <= 6 ? pad : ground + ((pad - ground) * (8.5 - distance)) / 2.5
 }
+const structures = [
+  ...lunarExteriorObjects,
+  ...LUNAR_RESOURCES.map(({ position: [x, z] }) => ({ x, z, hx: 1.12, hz: 1.12 })),
+  { x: LUNAR_GEOLOGIST[0], z: LUNAR_GEOLOGIST[1], hx: 0.4, hz: 0.45 },
+  { x: LUNAR_LANDER.x, z: LUNAR_LANDER.z, hx: 2.6, hz: 2.6 },
+]
 const clear = createCollisionGrid([
   ...layout.colliders.filter(
     (_, index) => !LUNAR_BASE_LAYOUT.replacedColliderIndices.includes(index),
   ),
-  { x: LUNAR_LANDER.x, z: LUNAR_LANDER.z, hx: 2.6, hz: 2.6 },
+  ...structures,
 ])
+// The exporter writes module footprints first, then terrain rocks. Small rocks remain
+// pedestrian obstacles but are traversable by the rover's wider wheels.
+const moduleFootprintCount = 10
+const roverClear = createCollisionGrid(
+  [
+    ...layout.colliders.filter(
+      (box, index) => index < moduleFootprintCount || Math.min(box.hx, box.hz) >= 1.05,
+    ),
+    ...structures,
+  ],
+  0.04,
+)
+export function lunarCanDrive(x: number, z: number, yaw: number) {
+  const c = Math.cos(yaw),
+    s = Math.sin(yaw)
+  return (
+    Math.abs(x) < 146 &&
+    Math.abs(z) < 146 &&
+    roverClear(x, z) &&
+    [-1.19, 1.19].every((side) =>
+      [-1.64, 0, 1.64].every((end) => roverClear(x + side * c + end * s, z - side * s + end * c)),
+    )
+  )
+}
 export function lunarCanWalk(x: number, z: number) {
   return Math.abs(x) < 148 && Math.abs(z) < 148 && clear(x, z) && lunarBaseClear(x, z)
+}
+export function lunarWalkingHeight(x: number, z: number) {
+  return lunarDeckAt(x, z)?.height ?? lunarHeight(x, z)
+}
+export function lunarPedestrianClear(x: number, z: number) {
+  return !!lunarDeckAt(x, z) || lunarCanWalk(x, z)
 }
 export const LUNAR_SECTORS: Sector[] = [
   {
@@ -42,12 +80,12 @@ export const LUNAR_SECTORS: Sector[] = [
     short: 'Laboratorio',
     x: 52.73,
     z: 83.44,
-    entry: [56.3, 85.49],
+    entry: [56.58, 85.78],
     color: '#7d9298',
     title: 'Preguntas desde la superficie.',
     description: 'El módulo LAB-L01 forma parte de la base ODYSSEY.',
     detail:
-      'Entra por la rampa o por los pasillos del hábitat. Puedes recorrer el laboratorio y su equipo de análisis.',
+      'Entra por la escotilla exterior o por el corredor del hábitat. El laboratorio alberga mesas de análisis y un puesto de recepción de muestras.',
     chapter: 'LABORATORIO',
   },
   {
@@ -57,12 +95,12 @@ export const LUNAR_SECTORS: Sector[] = [
     short: 'Base lunar',
     x: 63,
     z: 78,
-    entry: [63.52, 81.08],
+    entry: [63.52, 83.05],
     color: '#b5987c',
     title: 'Un lugar al que volver.',
     description: 'Hábitat HAB-L01, almacén STO-L01 y corredores de la base.',
     detail:
-      'Puertas automáticas, hábitat, almacén y laboratorio conectados por pasillos transitables. Acércate al acceso para abrir la puerta.',
+      'Acércate a la escotilla del hábitat y pulsa E. Los corredores interiores enlazan el almacén y el laboratorio.',
     chapter: 'BASE ODYSSEY',
   },
   {

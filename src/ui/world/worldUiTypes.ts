@@ -7,6 +7,7 @@ export type Panel =
   | 'lander'
   | 'menu'
   | 'journal'
+  | 'lunar-inventory'
   | 'controls'
   | 'tars'
   | 'map'

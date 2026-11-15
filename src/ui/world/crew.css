@@ -3,8 +3,8 @@
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
   box-sizing: border-box;
-  background: #f2efe3;
-  color: #2e454a;
+  background: #e5e9dc;
+  color: #34464c;
   font-family: 'Trebuchet MS', sans-serif;
 }
 .crew-selection-header {
@@ -18,9 +18,8 @@
   box-sizing: border-box;
 }
 .crew-brand {
-  font-size: 24px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
+  font: 31px 'Patrick Hand', cursive;
+  letter-spacing: 0;
   color: #2f5054;
 }
 .crew-brand > span {
@@ -50,9 +49,10 @@
   height: clamp(440px, calc(100dvh - 160px), 600px);
   min-height: 0;
   min-width: 0;
-  border-radius: 140px 140px 12px 12px;
-  background: radial-gradient(ellipse at 50% 43%, #e6eadc 0%, #d4e0d3 55%, #b8cebf 100%);
-  border: 1px solid #68877b44;
+  border-radius: 2px;
+  background: #edf0df;
+  border: 2px solid #52656b;
+  box-shadow: 5px 6px 0 #899d93;
   overflow: hidden;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
@@ -98,7 +98,7 @@
   background: #f6f3e5e8;
   border: 1px solid #91aaa0;
   padding: 9px 14px;
-  border-radius: 20px;
+  border-radius: 2px;
   color: #395b58;
 }
 .crew-stage-caption {
@@ -110,7 +110,7 @@
   color: #668078;
 }
 .crew-stage-caption h2 {
-  font-size: 30px;
+  font: 36px 'Patrick Hand', cursive;
   margin: 7px 0;
   color: #2e4b4b;
 }
@@ -128,7 +128,7 @@
   padding-block: 12px;
 }
 .crew-selection-options h1 {
-  font-size: clamp(30px, 3.5vw, 48px);
+  font: clamp(34px, 3.5vw, 50px) 'Patrick Hand', cursive;
   line-height: 1.12;
   letter-spacing: -0.045em;
   margin: 16px 0 18px;
@@ -150,9 +150,9 @@
 .crew-card {
   min-width: 0;
   padding: 0;
-  background: #e0e7da;
-  border: 2px solid transparent;
-  border-radius: 8px;
+  background: #f7f7ed;
+  border: 2px solid #718a86;
+  border-radius: 2px;
   overflow: hidden;
   cursor: pointer;
   text-align: left;
@@ -176,7 +176,7 @@
 .crew-card[aria-pressed='true'] {
   border-color: var(--crew-accent, #457d80);
   box-shadow:
-    0 0 0 3px #f2efe3,
+    0 0 0 3px #f7f7ed,
     0 0 0 4px var(--crew-accent, #457d80);
 }
 .crew-card-label {
@@ -184,11 +184,11 @@
   align-items: center;
   justify-content: space-between;
   padding: 10px 7px;
-  background: #f9f7ee;
+  background: #f7f7ed;
   gap: 3px;
 }
 .crew-card-label strong {
-  font-size: 11px;
+  font: 19px 'Patrick Hand', cursive;
 }
 .crew-card-label > span {
   color: var(--crew-accent);
@@ -203,10 +203,9 @@
   border: 1px solid #365e60;
   background: #457d80;
   color: #fff8e8;
-  border-radius: 6px;
+  border-radius: 2px;
   padding: 17px 20px;
-  font-size: 15px;
-  font-weight: 700;
+  font: 21px 'Patrick Hand', cursive;
   cursor: pointer;
   box-shadow: 0 4px 0 #345e62;
 }
@@ -239,9 +238,9 @@
   width: 42%;
   margin: 0 0 18px 24px;
   text-align: center;
-  background: #dce6d7;
-  border: 1px solid #78938966;
-  border-radius: 8px;
+  background: #f7f7ed;
+  border: 1.5px solid #52656b;
+  border-radius: 2px;
   padding: 4px 10px 15px;
 }
 .wardrobe-mini-preview .crew-preview {
@@ -333,7 +332,7 @@
   }
   .crew-stage {
     height: 360px;
-    border-radius: 90px 90px 10px 10px;
+    border-radius: 2px;
   }
   .crew-stage-kicker {
     margin: 22px 24px 0;

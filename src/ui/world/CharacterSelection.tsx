@@ -17,11 +17,11 @@ export function CharacterSelection({ onConfirm }: { onConfirm: (id: CharacterId)
         <span className="crew-brand">
           SELENE<span>—01</span>
         </span>
-        <span>SELENE / TRIPULACIÓN</span>
+        <span>SELENE / EXPLORACIÓN SIMULADA</span>
       </header>
       <section className="crew-selection-content" aria-labelledby="crew-title">
         <div className="crew-stage" style={{ '--crew-accent': info.accent } as CSSProperties}>
-          <span className="crew-stage-kicker">TU COMPAÑÍA HACIA EL SIGUIENTE HORIZONTE</span>
+          <span className="crew-stage-kicker">PERSONAJE PARA EXPLORAR LOS ESCENARIOS</span>
           <CharacterPreview
             character={selected}
             outfit={outfit}
@@ -30,7 +30,7 @@ export function CharacterSelection({ onConfirm }: { onConfirm: (id: CharacterId)
           />
           <div className="crew-stage-caption" aria-live="polite">
             <span>
-              TRIPULANTE /{' '}
+              PERSONAJE /{' '}
               {String(CHARACTERS.findIndex((c) => c.id === selected) + 1).padStart(2, '0')}
             </span>
             <h2>{info.name}</h2>
@@ -45,8 +45,9 @@ export function CharacterSelection({ onConfirm }: { onConfirm: (id: CharacterId)
             esta aventura?
           </h1>
           <p>
-            Elige a tu tripulante y comienza la aventura. La ropa te espera en el vestuario de la
-            esclusa de Artemisa.
+            Elige un personaje para recorrer los escenarios de entrenamiento. El encargo científico
+            de ODYSSEY es diseñar una sonda lunar no tripulada. Puedes cambiar la ropa en el
+            vestuario de Artemisa.
           </p>
           <div className="crew-cards" role="group" aria-label="Seleccionar personaje">
             {CHARACTERS.map((character) => (

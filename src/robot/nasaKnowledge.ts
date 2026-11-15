@@ -18,6 +18,33 @@ export const NASA_FACTS: readonly NasaFact[] = [
     source: 'NASA · Systems Engineering Handbook',
   },
   {
+    id: 'polar-orbit',
+    question: '¿Por qué elegir una órbita polar?',
+    answer:
+      'LRO utilizó una órbita polar para observar distintas zonas de la Luna, incluidas regiones cercanas a los polos. En SELENE, las tres órbitas son opciones simplificadas: sus cifras no reproducen una trayectoria de LRO.',
+    keywords: ['orbita polar', 'cobertura polar', 'polo sur', 'elegir orbita'],
+    url: 'https://science.nasa.gov/mission/lro/spacecraft-and-instruments/',
+    source: 'NASA Science · Instrumentos de LRO',
+  },
+  {
+    id: 'radar-evidence',
+    question: '¿Un radar confirma hielo por sí solo?',
+    answer:
+      'No. Una señal de radar puede requerir comparar el interior y el exterior de un cráter y contrastarse con otras mediciones. Mini-RF busca indicios de hielo bajo la superficie; el radar ficticio de ODYSSEY no detecta depósitos reales.',
+    keywords: ['radar hielo', 'confirmar hielo', 'mini rf', 'senal radar'],
+    url: 'https://science.nasa.gov/missions/mini-rf/nasa-radar-finds-ice-deposits-at-moons-north-pole/',
+    source: 'NASA Science · Interpretación de señales de radar',
+  },
+  {
+    id: 'data-return',
+    question: '¿Por qué importa devolver los datos?',
+    answer:
+      'En LRO, los datos de la nave se envían a un centro de operaciones y luego a los equipos de cada instrumento, donde se procesan y calibran para producir mapas y otros resultados. SELENE resume ese proceso en decisiones de transmisión y un informe educativo.',
+    keywords: ['devolver datos', 'transmitir', 'enlace', 'comunicaciones', 'datos cientificos'],
+    url: 'https://science.nasa.gov/mission/lro/spacecraft-and-instruments/',
+    source: 'NASA Science · Instrumentos de LRO',
+  },
+  {
     id: 'moon-distance',
     question: '¿A qué distancia está la Luna?',
     answer:

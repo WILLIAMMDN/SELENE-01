@@ -4,9 +4,9 @@ export default function ReportPanel({ controller }: { controller: MissionControl
   const { ops, evaluation, debrief, redesign, restart, campus, onReturnToCampus } = controller
   return (
     <>
-      <span className="eyebrow">CAPÍTULO 05 · DESPUÉS DEL VUELO</span>
+      <span className="eyebrow">CUADERNO DE MISIÓN / 05 · RESULTADOS</span>
       <h1>
-        Aprender de <em>la misión.</em>
+        ¿Qué aprendimos <em>del diseño?</em>
       </h1>
       <div className="score">
         <strong>{missionScore(ops, evaluation)} / 100</strong>
@@ -21,9 +21,12 @@ export default function ReportPanel({ controller }: { controller: MissionControl
         <section className="flight-brief" aria-label="Resultado del encargo">
           <h2>{debrief.objective.name}</h2>
           <p>{debrief.objective.question}</p>
+          <p>{debrief.objective.nasaContext}</p>
           <strong>{debrief.title}</strong>
           <p>{debrief.explanation}</p>
-          <small>{debrief.limit}</small>
+          <small>
+            {debrief.objective.interpretation} {debrief.limit}
+          </small>
           <p>
             <a
               className="source-link"
@@ -31,7 +34,7 @@ export default function ReportPanel({ controller }: { controller: MissionControl
               target="_blank"
               rel="noopener noreferrer"
             >
-              Contexto del encargo · NASA ↗
+              {debrief.objective.sourceLabel} ↗
             </a>
           </p>
         </section>

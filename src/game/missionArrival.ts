@@ -30,11 +30,11 @@ export function makeMissionArrival(
     world,
     objective,
     key,
-    title: world === 'moon' ? 'Hemos llegado al entorno lunar.' : 'Hemos llegado al sector Ares.',
+    title: world === 'moon' ? 'Explora la Luna simulada.' : 'Explora Marte simulado: Ares.',
     narrative:
       world === 'moon'
-        ? 'TARS: Estamos en el escenario lunar de entrenamiento. Ahora toca aplicar tu diseño, observar y enviar datos.'
-        : 'TARS: Bienvenido al sector marciano. Los equipos de exploración esperan tus decisiones.',
+        ? 'TARS: ODYSSEY es un orbitador ficticio no tripulado. Este paisaje es una reconstrucción de entrenamiento; las observaciones y transmisiones se deciden en control de misión.'
+        : 'TARS: Ares es una reconstrucción de entrenamiento para explorar Marte. El encargo científico de ODYSSEY sigue siendo lunar y no se convierte en una misión marciana al abrir este mapa.',
   }
 }
 

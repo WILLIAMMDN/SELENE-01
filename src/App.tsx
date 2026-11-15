@@ -4,6 +4,7 @@ import TarsCampaignAssistant from './robot/TarsCampaignAssistant'
 import { useMissionController, type CampaignProps } from './game/hooks/useMissionController'
 import { STAGES, TIPS } from './game/campaignContent'
 import './styles.css'
+import './campaignPaper.css'
 import BriefingPanel from './ui/campaign/BriefingPanel'
 import DesignPanel from './ui/campaign/DesignPanel'
 import LaunchPanel from './ui/campaign/LaunchPanel'
@@ -17,7 +18,8 @@ export default function App(props: CampaignProps) {
   const controller = useMissionController(props)
   const {
     stage,
-    stageIndex,
+    guidance,
+    engineeringProblems,
     go,
     ops,
     operateReady,
@@ -62,7 +64,7 @@ export default function App(props: CampaignProps) {
         <span className="topbar-status">PROTOTIPO EDUCATIVO · V0.2</span>
       </header>
       <nav className="stage-nav" aria-label="Etapas de la misión">
-        {STAGES.map((item, index) => (
+        {STAGES.map((item) => (
           <button
             key={item.id}
             type="button"
@@ -74,7 +76,12 @@ export default function App(props: CampaignProps) {
               (item.id === 'operations' && (!operateReady || !launched))
             }
           >
-            {index < stageIndex ? '✓ ' : ''}
+            {(item.id === 'briefing' && guidance.objective) ||
+            (item.id === 'design' && engineeringProblems.length === 0) ||
+            (item.id === 'launch' && launched) ||
+            (item.id === 'operations' && ops.status !== 'running')
+              ? '✓ '
+              : ''}
             {item.label}
           </button>
         ))}
@@ -104,11 +111,11 @@ export default function App(props: CampaignProps) {
             <LaunchCinematicOverlay seconds={launchElapsed} config={config} onSkip={finishLaunch} />
           )}
           <div className="exploration-story">
-            <strong>La historia</strong>
+            <strong>El encargo</strong>
             <span>
-              Formas parte del equipo SELENE. En este capítulo prepararás un orbitador desde la
-              Tierra. La Dra. Vega presenta el objetivo lunar; en el hangar, construyes ODYSSEY con
-              la ayuda de TARS antes de configurar su misión científica.
+              Diseña un orbitador no tripulado para una pregunta sobre el polo sur lunar. La Dra.
+              Vega define el encargo; tú eliges un sistema viable, diriges tres hitos de operación y
+              evalúas los datos recuperados.
             </span>
           </div>
         </section>

@@ -11,7 +11,7 @@ export function isLaunchDestination(value: unknown): value is LaunchDestination 
 
 type Flight = { destination: LaunchDestination; blueprintKey: string }
 
-/** The authorized flight keeps its destination until completion or cancellation. */
+/** The selected exploration map is retained through the launch simulation. */
 export function createLaunchJourney() {
   let pending: Flight | null = null
   return {

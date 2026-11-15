@@ -61,20 +61,19 @@ export function getLaunchFrame(
     title = 'La última comprobación'
     speaker = 'DRA. VEGA'
     narration = withHabitat
-      ? 'La cabina y el módulo habitable están listos. Las decisiones que tomaste nos trajeron hasta aquí.'
-      : 'Tu nave compacta está lista. Cada módulo que elegiste tendrá un propósito durante el vuelo.'
-    milestone = 'Cabina de ODYSSEY · LC-01'
+      ? 'El módulo habitable forma parte de esta configuración de entrenamiento; no simulamos una tripulación ni soporte vital.'
+      : 'ODYSSEY es un orbitador no tripulado. Esta pasarela es parte de la recreación interactiva del lanzamiento.'
+    milestone = 'Recreación de acceso · LC-01'
   } else if (time < 8) {
     beat = 'cabin'
     title = 'Escotilla asegurada'
-    narration = withHabitat
-      ? 'TARS: Escotilla cerrada. Oxígeno, energía y comunicación de la cabina comprobados.'
-      : 'TARS: Escotilla cerrada. Energía y comunicaciones de la cabina comprobadas.'
-    milestone = 'Preparación de cabina'
+    narration =
+      'TARS: Escotilla del modelo cerrada. El diseño ha pasado las comprobaciones educativas de masa, potencia, datos y costo.'
+    milestone = 'Revisión del simulador'
   } else if (time < 12) {
     beat = 'countdown'
     title = 'La plataforma se despeja'
-    narration = 'TARS: Brazos de servicio en retirada. Todos los equipos confirman disponibilidad.'
+    narration = 'TARS: La animación muestra la retirada de brazos de servicio antes del encendido.'
     milestone = 'Retirada de servicios'
   } else if (time < 18) {
     beat = 'ignition'
@@ -91,7 +90,7 @@ export function getLaunchFrame(
     beat = 'maxq'
     title = 'Cruce de la atmósfera'
     narration =
-      'TARS: Max-Q significa máxima presión dinámica. Protegemos el vehículo reduciendo cargas.'
+      'TARS: Max-Q es el periodo de máxima presión dinámica. Este montaje no calcula las cargas del vehículo.'
     milestone = 'Concepto: presión dinámica'
   } else if (time < 32) {
     beat = 'boosters'

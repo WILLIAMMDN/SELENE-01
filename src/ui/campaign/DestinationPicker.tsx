@@ -12,7 +12,7 @@ export default function DestinationPicker({
   return (
     <div>
       <h2>
-        <label htmlFor={id}>Destino de llegada</label>
+        <label htmlFor={id}>Escenario de exploración</label>
       </h2>
       <select
         id={id}
@@ -27,7 +27,8 @@ export default function DestinationPicker({
         ))}
       </select>
       <p className="field-help" id={`${id}-help`}>
-        Al terminar el despegue entrarás a este mapa con tu tripulante y su traje espacial.
+        Al terminar la recreación del despegue podrás recorrer este mapa con tu personaje. Esta
+        elección no cambia el objetivo científico lunar ni convierte ODYSSEY en una nave tripulada.
       </p>
     </div>
   )

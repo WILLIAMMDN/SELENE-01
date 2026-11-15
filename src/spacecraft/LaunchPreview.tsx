@@ -6,6 +6,7 @@ import { COMPLETE_ASSEMBLY, assemblyReady, type ModuleId } from '../spacecraft/a
 import LaunchCinematicOverlay from './LaunchCinematicOverlay'
 import './launchCinematic.css'
 import './launchPreview.css'
+import '../campaignPaper.css'
 
 type Preset = 'saved' | 'compact' | 'habitat'
 
@@ -136,7 +137,8 @@ export default function LaunchPreview() {
           </button>
           <p className="launch-preview-footnote">
             AURORA-S y ATLAS-T comparten temporalmente el mismo modelo de lanzamiento. Sus
-            diferencias de ascenso son ilustrativas, no simulaciones físicas.
+            diferencias de ascenso son ilustrativas, no simulaciones físicas. El acceso del
+            personaje a la cabina es una recreación; ODYSSEY es un orbitador no tripulado.
           </p>
         </aside>
       )}

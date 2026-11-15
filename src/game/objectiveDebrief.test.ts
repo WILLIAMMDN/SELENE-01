@@ -14,6 +14,7 @@ describe('objective debrief', () => {
       expect(report.objective.id).toBe(id)
       expect(report.outcome).toBe('returned')
       expect(report.explanation).toContain('8 GB')
+      expect(report.explanation).toContain('no identifica qué instrumento produjo cada dato')
       expect(report.limit).toContain('no mediciones por instrumento')
     },
   )

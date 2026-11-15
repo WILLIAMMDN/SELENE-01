@@ -4,7 +4,7 @@
 .clean-world .paper-icon{width:56px;height:56px;border:2px solid #46565a;border-radius:1px;background:#f5f6ef;box-shadow:5px 5px 0 #52656b;color:#61818e;display:grid;place-items:center;transform:rotate(-2deg);padding:12px;transition:transform .12s,box-shadow .12s}.clean-world .paper-icon svg{width:28px;height:28px}.clean-world .paper-icon:hover{transform:translateY(-2px) rotate(1deg)}.clean-world .paper-icon:active{transform:translate(3px,3px);box-shadow:2px 2px 0 #52656b}
 .menu-toggle{position:absolute;right:28px;top:24px;z-index:5}.paper-dock{position:absolute;right:28px;bottom:28px;display:grid;gap:16px;z-index:4}.paper-dock button:nth-child(2){transform:rotate(1.5deg)}
 .clean-world .quest-slip{position:absolute;left:26px;top:24px;max-width:310px;padding:12px 18px;text-align:left;background:#f5f6ebed;border:1.5px solid #485e60;box-shadow:3px 4px 0 #485e6030;border-radius:2px;transform:rotate(-.6deg)}.quest-slip>span{display:block;font-size:9px;letter-spacing:1.7px;color:#547b7c}.quest-slip strong{display:block;font-family:'Patrick Hand',cursive;font-weight:400;font-size:23px;line-height:1.1;margin:5px 0}.quest-slip small{font-size:10px;color:#607171;display:flex;justify-content:space-between;gap:25px}.quest-slip small b{font-size:15px}
-.story-layer{position:absolute;inset:0;z-index:7;pointer-events:none;display:flex;align-items:flex-end;justify-content:center;padding:0 110px 42px}.story-dialogue{position:relative;width:min(800px,100%);padding:32px 36px 18px;border:2px solid #3e5158;background:#f8f9f4;box-shadow:7px 8px 0 #566971;pointer-events:auto;outline:none;transform:rotate(-.35deg);border-radius:2px}.speaker-tab{position:absolute;left:-13px;top:-28px;padding:10px 23px;background:#b95b5e;color:#fffdf3;border:2px solid #3e5158;box-shadow:3px 4px 0 #566971;font:22px 'Patrick Hand',cursive;letter-spacing:.6px;transform:rotate(-1deg)}.story-dialogue p{font:25px/1.4 'Patrick Hand',cursive;color:#303d42;margin:10px 15px 15px 0;min-height:70px}.story-close{position:absolute;right:10px;top:8px;background:none;border:0;color:#718281;font-size:24px;padding:0 5px}.story-bottom{display:flex;align-items:center;justify-content:space-between;gap:15px}.story-bottom>span{display:flex;gap:6px}.story-bottom i{width:5px;height:5px;border:1px solid #697b7a;border-radius:50%}.story-bottom i.current{background:#bd6263}.story-bottom button{border:0;background:none;color:#405961;display:flex;align-items:center;gap:20px;font:19px 'Patrick Hand',cursive;text-align:right}.story-bottom button b{border:2px solid #46565a;box-shadow:3px 3px 0 #52656b;padding:7px 13px;background:#f4f5ed;color:#b95b5e;font-size:25px;transform:rotate(2deg)}
+.story-layer{position:absolute;inset:0;z-index:7;pointer-events:none;display:flex;align-items:flex-end;justify-content:center;padding:0 110px 42px}.story-dialogue{position:relative;width:min(820px,100%);padding:30px 34px 18px;border:3px solid #243338;background:#ffffff;box-shadow:6px 7px 0 #243338;pointer-events:auto;outline:none;transform:rotate(-.2deg);border-radius:6px}.speaker-tab{position:absolute;left:-10px;top:-25px;padding:7px 20px;background:#cf4d44;color:#ffffff;border:2.5px solid #243338;box-shadow:3px 3px 0 #243338;font:700 16px 'Space Grotesk',sans-serif;letter-spacing:1px;border-radius:6px;text-transform:uppercase}.story-dialogue p{font:24px/1.4 'Patrick Hand',cursive;color:#243338;margin:10px 15px 15px 0;min-height:65px}.story-close{position:absolute;right:10px;top:8px;background:none;border:0;color:#718281;font-size:24px;padding:0 5px;cursor:pointer}.story-bottom{display:flex;align-items:center;justify-content:space-between;gap:15px}.story-bottom>span{display:flex;gap:6px}.story-bottom i{width:6px;height:6px;border:1.5px solid #697b7a;border-radius:50%}.story-bottom i.current{background:#cf4d44}.story-bottom button{border:0;background:none;color:#243338;display:flex;align-items:center;gap:18px;font:700 18px 'Patrick Hand',cursive;text-align:right;cursor:pointer}.story-bottom button b{border:2.5px solid #243338;box-shadow:3px 3px 0 #243338;padding:6px 14px;background:#ffffff;color:#cf4d44;font-size:20px;border-radius:4px;display:inline-block;transition:transform .1s}.story-bottom button:hover b{transform:scale(1.08)}
 .clean-world .notebook-layer{position:absolute;inset:0;z-index:8;display:flex;align-items:center;justify-content:center;padding:24px;background:#203e4624}.clean-world .station-layer{justify-content:flex-end;padding-right:28px;background:#203e4610}.clean-world .paper-panel{width:min(600px,100%);max-height:calc(100dvh - 48px);padding:29px 30px;background:#f6f6ec;border:2px solid #46565a;border-radius:2px;box-shadow:6px 7px 0 #52656b;scrollbar-width:thin;scrollbar-color:#8da19a #f6f6ec}.clean-world .paper-panel.map-dialog{width:min(820px,100%)}.clean-world .paper-panel h2{font:38px/1.05 'Patrick Hand',cursive;letter-spacing:0;margin:8px 30px 20px 0;color:#364c51}.clean-world .paper-panel h3{font:25px 'Patrick Hand',cursive;margin:10px 0}.clean-world .paper-panel p{font-size:14px;line-height:1.65;margin:10px 0 16px;color:#465c5b}.clean-world .paper-panel small{font-size:11px;line-height:1.5;color:#617575}.clean-world .paper-panel .dialog-close{background:none;border:0;right:13px;top:10px;font-size:28px;color:#5b7379}.paper-kicker{font-size:10px;letter-spacing:1.5px;color:#69837c}.paper-panel details{border-top:1px solid #bfc9b5;margin-top:18px;padding-top:13px}.paper-panel summary{font:19px 'Patrick Hand',cursive;cursor:pointer;color:#527777}.clean-world .primary-world,.clean-world .secondary-world{font:19px 'Patrick Hand',cursive;letter-spacing:.2px;padding:8px 16px;border:1.5px solid #486168;box-shadow:2px 3px 0 #708786;border-radius:1px}.clean-world .primary-world{background:#56878b;color:#fffdf3}.clean-world .secondary-world{background:#f8f9f2;color:#3e595e}.clean-world .text-button{font-size:13px}.clean-world .mission-station{border:0;padding:0;margin:0}.clean-world .mission-objectives{gap:10px}.clean-world .mission-objectives article{background:#edf0df;border:1px solid #a7b6a1;border-radius:1px;padding:12px 15px}.mission-objectives article>strong{font:23px 'Patrick Hand',cursive}.clean-world .mission-objectives article p{font-size:13px;margin:4px 0}.clean-world .mission-objectives article small{font-size:11px}.clean-world .mission-objectives article a{font-size:10px;margin:6px 0}.clean-world .station-notice{padding:10px 12px;font-size:12px;background:#e8ecd8}.clean-world .mission-resources{gap:8px}.clean-world .mission-resources>div{border-radius:0;background:#e6ecdb;padding:10px}.clean-world .mission-resources dd{font-size:14px}
 .menu-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:20px 0}.clean-world .menu-grid button,.clean-world .menu-worlds button{padding:12px;border:1px solid #8ba29c;font:22px 'Patrick Hand',cursive;background:#eef0e3;text-align:left}.menu-grid button:first-child{grid-column:1/-1;background:#56878b;color:#fffef6}.menu-worlds{display:flex;gap:12px;margin:18px 0}.clean-world .menu-worlds button[aria-pressed=true]{border:2px solid #b95b5e}.quest-list{list-style:none;padding:0;margin:20px 0}.quest-list li{border-bottom:1px solid #bdc6b5}.quest-list button{display:flex;width:100%;gap:14px;align-items:center;text-align:left;background:none;border:0;padding:12px 0}.quest-list button>span{font:22px 'Patrick Hand',cursive;border:1px solid #9eb2a4;min-width:30px;text-align:center}.quest-list strong{font:22px 'Patrick Hand',cursive;font-weight:400;flex:1}.quest-list .current strong{color:#a6585b}.quest-list .current button>span{background:#b95b5e;color:#fff}.clean-world .character-actions{position:static;width:auto;max-width:none;box-shadow:none;background:none;border:0;margin:15px 0;padding:0}.clean-world .character-actions>div{max-height:none}.clean-world .character-actions button{font-size:13px}.clean-world .character-actions small{display:none}
 .clean-world .station-prompt{position:absolute;left:50%;bottom:40px;transform:translateX(-50%) rotate(-.5deg);display:flex;align-items:center;gap:14px;padding:10px 20px;background:#f8f9ed;border:1.5px solid #405960;box-shadow:3px 4px 0 #52656b;font:22px 'Patrick Hand',cursive;color:#3d585d}.station-prompt kbd{font:17px 'Trebuchet MS',sans-serif;border:1px solid #71888c;padding:2px 7px}.station-prompt>span{color:#ba6061;font-size:15px}.clean-world .controls-hint{position:absolute;left:24px;bottom:20px;font-size:11px;padding:5px 8px;background:#f5f6ecbf;border:0;color:#526c6b}.small-map{position:absolute;left:24px;bottom:52px;width:155px;border:2px solid #52656b;background:#f5f6ec;padding:5px}.view-controls{position:absolute;left:50%;bottom:25px;transform:translateX(-50%);display:flex;align-items:center;gap:15px;background:#f7f8ed;border:1px solid #52656b;padding:10px 15px;box-shadow:3px 3px 0 #52656b;font:20px 'Patrick Hand',cursive}.view-controls button{font:inherit;background:none;border:0}.clean-world .map-sector-list strong{font:20px 'Patrick Hand',cursive}.clean-world .map-sector-list small{font-size:11px}.clean-world .crew-tabs button{font:16px 'Patrick Hand',cursive}.clean-world .tars-help h2{font-family:'Patrick Hand',cursive}.clean-world .tars-status{font-size:11px!important}
@@ -29,6 +29,10 @@
 .dash-speed-num{font-family:'Patrick Hand',cursive;font-size:32px;fill:#34464c}
 .dash-speed-unit{font-size:8px;font-family:monospace;letter-spacing:1.5px;fill:#617575}
 .dash-rpm-title{font-size:7px;font-family:monospace;letter-spacing:1px;fill:#78908d}
+.story-dialogue .story-source{display:inline-block;margin:0 0 15px;color:#3d686c;font:12px 'Trebuchet MS',sans-serif;text-decoration:underline;text-underline-offset:3px}
+.clean-world .character-actions,.clean-world .rober-controls [role=dialog]{background:#f7f7ed;border:1.5px solid #52656b;border-radius:2px;box-shadow:4px 5px 0 #52656b;font-family:'Trebuchet MS',sans-serif}
+.clean-world .character-actions summary,.clean-world .rober-controls header{font:20px 'Patrick Hand',cursive;letter-spacing:0}
+.clean-world .character-actions button,.clean-world .rober-controls button{border-radius:1px}
 .dash-gears{display:flex;align-items:center;justify-content:center;gap:6px;margin:4px 0 6px}
 .dash-gear{padding:2px 7px;border:1px solid #40596040;background:#eaeedb;border-radius:2px;font:13px 'Patrick Hand',cursive;color:#405960}
 .dash-gear.active{background:#56878b;color:#fffef6;border-color:#405960;font-weight:bold}
@@ -54,3 +58,92 @@
 .clean-world.is-driving .paper-dock{bottom:440px}
 @media(max-width:700px){.vehicle-dashboard{right:12px;bottom:75px;width:215px;padding:10px 12px;transform:none}.dash-dial{width:115px;height:115px}.clean-world.is-driving .paper-dock{display:none}}
 
+
+/* Lunar vehicle controls remain fixed-size and clear of the follow camera. */
+.lunar-rover-strip {
+  position: absolute;
+  z-index: 10;
+  bottom: max(18px, env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: max-content;
+  max-width: calc(100% - 32px);
+  padding: 4px 5px 4px 10px;
+  background: #f8f9ed;
+  color: #26343a;
+  border: 1px solid #52656b;
+  border-radius: 4px;
+  font: 600 12px/1.25 system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+.clean-world .lunar-rover-strip button {
+  min-height: 34px;
+  padding: 4px 8px;
+  border-radius: 3px;
+  background: #26343a;
+  color: #f8f9ed;
+}
+.lunar-rover-strip kbd { margin-right: 4px; }
+.lunar-rover-strip small { max-width: 135px; font-size: 11px; }
+@media (pointer: coarse) {
+  .lunar-rover-strip { bottom: max(9px, env(safe-area-inset-bottom)); }
+  .lunar-rover-strip kbd { display: none; }
+  .clean-world .lunar-rover-strip button { min-height: 44px; }
+}
+
+.lunar-mission-summary { padding: 12px 14px; border: 1px solid #9eaca0; background: #e9efdf; }
+.lunar-mission-summary progress { display: block; width: 100%; margin: 8px 0; accent-color: #457d80; }
+.clean-world .lunar-mission-summary p { margin: 0; }
+.clean-world .lunar-journal-container button:disabled { opacity: .58; cursor: default; }
+.lunar-design-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 12px; }
+.lunar-design-options > div { min-width: 0; }
+
+.lunar-eva-hud {
+  position: absolute;
+  z-index: 4;
+  top: 98px;
+  right: 28px;
+  width: min(242px, calc(100vw - 36px));
+  padding: 9px 11px;
+  border: 1px solid #52656b;
+  border-radius: 4px;
+  color: #26343a;
+  background: #f8f9ed;
+  font: 600 12px/1.35 system-ui, sans-serif;
+  pointer-events: none;
+}
+.lunar-eva-head, .lunar-eva-secondary { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 3px 8px; }
+.lunar-eva-hud progress { display: block; width: 100%; height: 10px; margin: 6px 0; accent-color: #457d80; }
+.lunar-eva-hud progress.reserve-low { accent-color: #a34137; }
+.lunar-eva-hud small, .lunar-eva-secondary { font-size: 11px; }
+.lunar-eva-hud small { display: block; margin-top: 3px; }
+.lunar-reserve-warning { color: #943831; }
+.clean-world .lunar-hatch-prompt { z-index: 6; white-space: normal; font-size: 19px; }
+.clean-world .lunar-hatch-prompt:disabled { opacity: .85; cursor: default; }
+@media (max-width: 700px) {
+  .lunar-eva-hud { top: 116px; right: 18px; width: min(214px, calc(100vw - 36px)); }
+}
+
+.lunar-field-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* Field exercises use the same notebook materials as the campaign and dialogue. */
+.clean-world .lunar-journal-container [style*="Space Grotesk"] {
+  font-family: 'Trebuchet MS', Arial, sans-serif !important;
+}
+.clean-world .lunar-journal-container [style*="border-radius"] {
+  border-radius: 2px !important;
+}
+.clean-world .lunar-journal-container .lunar-design-options > div,
+.clean-world .lunar-journal-container .lunar-mission-summary,
+.clean-world .lunar-eva-hud {
+  background: #f7f7ed;
+  border-color: #52656b;
+}
+.clean-world .lunar-eva-hud {
+  border-radius: 2px;
+  box-shadow: 3px 4px 0 #52656b;
+  font-family: 'Trebuchet MS', Arial, sans-serif;
+}

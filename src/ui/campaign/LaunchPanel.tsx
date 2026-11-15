@@ -19,21 +19,36 @@ export default function LaunchPanel({ controller }: { controller: MissionControl
   const target = LAUNCH_DESTINATIONS.find((item) => item.id === destination)!
   return (
     <>
-      <span className="eyebrow">CAPÍTULO 03 · COMPROBACIÓN</span>
+      <span className="eyebrow">CUADERNO DE MISIÓN / 03 · REVISIÓN</span>
       <h1>
-        Cuenta <em>regresiva.</em>
+        Antes del <em>lanzamiento.</em>
       </h1>
       <p>
-        Antes del despegue, todas las restricciones deben ser compatibles. Una gran misión no puede
-        despegar con una nave que supera la capacidad del lanzador o el presupuesto.
+        Compara el diseño con el encargo aceptado. Comprueba que la masa, la energía, los datos y el
+        costo estén dentro de los límites de este escenario antes de autorizar el vuelo simulado.
       </p>
       <div className={operateReady ? 'verdict success' : 'verdict danger'}>
         <strong>{operateReady ? '✓ Diseño compatible' : '⚠ La misión necesita cambios'}</strong>
         <p>
           {operateReady
-            ? 'Tu configuración supera las comprobaciones educativas de esta versión.'
+            ? 'El diseño cumple las restricciones educativas y tiene una revisión vigente.'
             : 'Hay incompatibilidades que resolver antes de lanzar.'}
         </p>
+      </div>
+      <div className="evidence-card">
+        <span className="evidence-label">MÉTODO · NASA</span>
+        <p>
+          En ingeniería de sistemas, objetivos y requisitos guían la comparación entre alternativas.
+          Aquí se aplica esa idea a un escenario simplificado; AURORA-S, ATLAS-T y sus capacidades
+          son ficticios.
+        </p>
+        <a
+          href="https://www.nasa.gov/reference/4-0-system-design-processes/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          NASA · Procesos de diseño de sistemas ↗
+        </a>
       </div>
       {launchProblems.length > 0 && (
         <ul className="warnings">
@@ -44,9 +59,9 @@ export default function LaunchPanel({ controller }: { controller: MissionControl
       )}
       <DestinationPicker value={destination} onChange={setDestination} />
       <div className="flight-brief">
-        <h2>Plan de vuelo de ODYSSEY</h2>
+        <h2>Diseño de ODYSSEY y mapa posterior</h2>
         <p>
-          <b>Llegada:</b> {target.name} · {target.place}
+          <b>Mapa de exploración tras el lanzamiento:</b> {target.name} · {target.place}
         </p>
         <p>
           <b>Ensamblaje:</b>{' '}
@@ -67,7 +82,9 @@ export default function LaunchPanel({ controller }: { controller: MissionControl
         </p>
       </div>
       <button className="action-primary" onClick={fly} disabled={!operateReady}>
-        {operateReady ? `Despegar hacia ${target.name} →` : 'Corrige los problemas para lanzar'}
+        {operateReady
+          ? `Iniciar lanzamiento simulado y explorar ${target.name} →`
+          : 'Corrige los problemas para lanzar'}
       </button>
       {campus && (
         <button className="action-secondary" onClick={onReturnToCampus}>

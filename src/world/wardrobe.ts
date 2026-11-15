@@ -6,7 +6,11 @@ import { isCharacterId, type CharacterId } from './characters'
 export const OUTFITS = [
   ['classic', 'Atuendo clásico', 'La exploradora original del campus.'],
   ['original', 'Ropa de campus', 'Ropa cotidiana, calzado y accesorios personales.'],
-  ['formal', 'Uniforme de tripulación', 'Chaqueta, corbata y zapatos antes del despegue.'],
+  [
+    'formal',
+    'Uniforme de entrenamiento',
+    'Chaqueta, corbata y zapatos para el escenario de lanzamiento.',
+  ],
   ['eva', 'Traje espacial EVA', 'Guantes, botas, mochila y casco desmontable.'],
 ] as const
 export type Outfit = (typeof OUTFITS)[number][0]

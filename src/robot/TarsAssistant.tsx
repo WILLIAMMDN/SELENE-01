@@ -79,10 +79,10 @@ export default function TarsAssistant({
     <div className="tars-help">
       <span className="chapter-kicker">TARS / COMPAÑERO CIENTÍFICO</span>
       <h2 id="dialog-title">Exploremos con datos.</h2>
-      <div className="crew-tabs" aria-label="Cuaderno por tripulante">
+      <div className="crew-tabs" aria-label="Cuadernos de práctica">
         {([1, 2, 3, 4] as const).map((n) => (
           <button key={n} aria-pressed={crew === `crew-${n}`} onClick={() => setCrew(`crew-${n}`)}>
-            Tripulante {n}
+            Cuaderno {n}
           </button>
         ))}
       </div>
@@ -176,7 +176,7 @@ export default function TarsAssistant({
       </a>
       {current.history.length > 1 && (
         <details>
-          <summary>Cuaderno de este tripulante · {current.history.length} consultas</summary>
+          <summary>Historial de este cuaderno · {current.history.length} consultas</summary>
           {current.history.map((n, i) => (
             <button
               className="tars-history"

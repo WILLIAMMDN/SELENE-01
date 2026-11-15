@@ -25,7 +25,13 @@ function PreviewCamera({
 }) {
   const { camera, size } = useThree()
   useLayoutEffect(() => {
-    if (!revision || !target.current || !(camera instanceof PerspectiveCamera)) return
+    if (!(camera instanceof PerspectiveCamera)) return
+    if (!revision || !target.current) {
+      camera.position.set(0, 1, 4.8)
+      camera.lookAt(0, 1, 0)
+      camera.updateMatrixWorld(true)
+      return
+    }
     framePreview(camera, visiblePreviewBounds(target.current), size.width / size.height)
   }, [camera, size.width, size.height, revision, target])
   return null
@@ -67,7 +73,7 @@ function PreviewSession({
   const portrait = `${import.meta.env.BASE_URL}${info.portrait}`
   return (
     <div className="crew-preview" role="img" aria-label={`Vista previa de ${info.name}`}>
-      {!revision && <span className="crew-preview-loading">Preparando tripulante…</span>}
+      {!revision && <span className="crew-preview-loading">Preparando personaje…</span>}
       <PreviewBoundary key={`${character}-${outfit}`} portrait={portrait} name={info.name}>
         <Canvas
           dpr={[1, 1.5]}

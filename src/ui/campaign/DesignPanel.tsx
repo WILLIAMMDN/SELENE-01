@@ -26,18 +26,26 @@ export default function DesignPanel({ controller }: { controller: MissionControl
   } = controller
   return (
     <>
-      <span className="eyebrow">CAPÍTULO 02 · EL HANGAR</span>
+      <span className="eyebrow">CUADERNO DE MISIÓN / 02 · DISEÑO</span>
       <h1>
-        Construye <em>ODYSSEY.</em>
+        Diseña <em>ODYSSEY.</em>
       </h1>
       <p>
-        Selecciona instrumentos, lanzador y órbita. TARS te recordará los compromisos de cada
-        decisión.
+        Cada elemento debe servir al encargo. Revisa cómo una elección cambia también la masa, la
+        potencia, los datos diarios y el presupuesto.
       </p>
-      {campus && guidance.objective && (
-        <p className="field-help">
-          <strong>Tu encargo: {guidance.objective.name}.</strong> {guidance.objective.requirement}
-        </p>
+      {guidance.objective && (
+        <div className="evidence-card">
+          <span className="evidence-label">PREGUNTA ELEGIDA · {guidance.objective.name}</span>
+          <p>
+            <strong>{guidance.objective.question}</strong>
+          </p>
+          <p>{guidance.objective.nasaContext}</p>
+          <p className="simulation-note">{guidance.objective.interpretation}</p>
+          <a href={guidance.objective.source} target="_blank" rel="noopener noreferrer">
+            {guidance.objective.sourceLabel} ↗
+          </a>
+        </div>
       )}
       <DestinationPicker value={destination} onChange={setDestination} />
       <div className="odyssey-assembly">
@@ -91,10 +99,15 @@ export default function DesignPanel({ controller }: { controller: MissionControl
         <p className="small-note">
           Hábitat: +90 kg, +55 W, +14 M USD. Soportes: +12 kg, +2 M USD. Valores ficticios para
           aprender; los sistemas básicos están incluidos en el presupuesto base. No se simula
-          soporte vital ni combustible real.
+          soporte vital ni combustible real. El módulo habitable es una pieza opcional del modelo;
+          instalarlo no convierte este encargo orbital en una misión tripulada.
         </p>
       </div>
       <h2>Instrumentos científicos</h2>
+      <p className="small-note">
+        Instrumentos simplificados de ODYSSEY. Las cifras siguientes son valores del juego, no
+        especificaciones de los instrumentos NASA citados.
+      </p>
       <div className="select-list">
         {INSTRUMENTS.map((item) => (
           <label className="select-card" key={item.id}>
@@ -125,6 +138,10 @@ export default function DesignPanel({ controller }: { controller: MissionControl
         ))}
       </select>
       <p className="field-help">{ORBITS.find((o) => o.id === config.orbit)?.description}</p>
+      <p className="small-note">
+        Estas opciones representan cobertura y enlace de forma cualitativa; no calculan trayectorias
+        orbitales.
+      </p>
       <h2>Vehículo de lanzamiento</h2>
       <select
         aria-label="Vehículo de lanzamiento"

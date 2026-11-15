@@ -9,40 +9,53 @@ export type Conversation = {
   action: string
   sector?: SectorId
   kind?: 'lander'
+  source?: { label: string; url: string }
 }
 export const ARRIVAL: Conversation = {
   speaker: 'TARS',
   lines: [
-    'Bienvenida a Artemisa. Hoy empieza tu primera misión: enviar ODYSSEY a estudiar el polo sur de la Luna.',
-    'La Dra. Vega te espera en el laboratorio. Tú decides qué investigar; yo te ayudaré a entender lo que cuesta cada elección.',
+    'Bienvenida al centro SELENE. La Dra. Vega propone diseñar un orbitador ficticio para estudiar el polo sur lunar.',
+    'NASA estudia esta región con varias técnicas. Aquí elegirás una pregunta, construirás ODYSSEY, revisarás recursos y decidirás cómo recuperar sus datos.',
   ],
   action: 'Vamos al laboratorio',
+  source: {
+    label: 'NASA · Instrumentos de LRO',
+    url: 'https://science.nasa.gov/mission/lro/spacecraft-and-instruments/',
+  },
 }
 export function stationConversation(sector: SectorId): Conversation {
   const draft = loadBlueprint(),
     reviewed = missionVerified(draft.config, draft.parts)
   const mission = getMission(),
-    objective = OBJECTIVES.find((o) => o.id === mission.objective)?.name ?? 'tu pregunta científica'
+    selected = OBJECTIVES.find((o) => o.id === mission.objective),
+    objective = selected?.name ?? 'tu pregunta científica'
   const guidance = missionGuidance(mission, draft.config, draft.parts)
   const stories: Record<SectorId, Conversation> = {
     research: {
       speaker: 'DRA. VEGA',
       lines: mission.objective
         ? [
-            `Nuestro encargo sigue siendo: ${objective}. Puedes mantenerlo o empezar de nuevo con otra pregunta.`,
+            `El encargo elegido es ${objective.toLowerCase()}. ${selected?.question}`,
+            selected?.nasaContext ?? 'Revisemos qué observación hace falta antes de diseñar.',
           ]
         : [
-            'La Luna todavía guarda preguntas. Antes de construir una nave, necesitamos decidir qué queremos aprender.',
-            'Podemos estudiar el relieve, la composición de la superficie o señales del subsuelo. Cada pregunta necesita instrumentos distintos.',
+            'Antes de construir ODYSSEY, define qué pregunta científica intentará responder. Así podremos justificar cada instrumento y cada recurso.',
+            'LRO ha cartografiado el terreno y la iluminación lunar; otros instrumentos han aportado evidencia sobre agua y hielo. Elige qué observación modelarás en esta misión.',
           ],
       action: 'Elegir el objetivo',
       sector,
+      source: selected
+        ? { label: selected.sourceLabel, url: selected.source }
+        : {
+            label: 'NASA · Instrumentos de LRO',
+            url: 'https://science.nasa.gov/mission/lro/spacecraft-and-instruments/',
+          },
     },
     hangar: {
       speaker: 'TARS · INGENIERÍA',
       lines: mission.objective
         ? [
-            `Vamos a construir ODYSSEY para ${objective.toLowerCase()}. Elige sus piezas y el instrumento que realmente necesitas.`,
+            `Para ${objective.toLowerCase()}, instala el instrumento solicitado y elige una órbita con cobertura polar. Cada pieza aumenta o limita masa, potencia, datos y costo.`,
             guidance.explanation,
           ]
         : [
@@ -50,22 +63,30 @@ export function stationConversation(sector: SectorId): Conversation {
           ],
       action: mission.objective ? 'Abrir mesa de diseño' : 'Ver el encargo pendiente',
       sector,
+      source: {
+        label: 'NASA · Diseño de sistemas',
+        url: 'https://www.nasa.gov/reference/4-0-system-design-processes/',
+      },
     },
     control: {
       speaker: 'TARS · COMUNICACIONES',
       lines: [
-        'Una nave que observa, pero no devuelve sus datos, no termina su trabajo. Revisemos el enlace y los demás recursos.',
+        'Antes de autorizar el vuelo, comprueba que la nave quepa en el lanzador, disponga de potencia y pueda devolver los datos que produce.',
         guidance.explanation,
       ],
       action: 'Revisar la misión',
       sector,
+      source: {
+        label: 'NASA · Operaciones de LRO',
+        url: 'https://science.nasa.gov/mission/lro/spacecraft-and-instruments/',
+      },
     },
     launch: {
       speaker: 'TARS · LANZAMIENTO',
       lines: reviewed
         ? [
-            'El siguiente paso es autorizar el vuelo. Durante la misión tendrás que elegir cuándo observar, cuándo transmitir y cuándo proteger los sistemas.',
-            'No hace falta una misión perfecta a la primera. Conservaremos tus decisiones para comprender qué funcionó y qué cambiar.',
+            'La configuración ya pasó la revisión educativa. Autoriza el lanzamiento simulado y decide cuándo observar, transmitir y conservar energía.',
+            'La animación no reproduce una trayectoria física. El resultado dependerá de las decisiones de operación y de los datos que regresen.',
           ]
         : [
             'Todavía falta la revisión de comunicaciones. Podemos observar el lanzador, pero la misión necesita un diseño revisado antes de despegar.',
@@ -78,17 +99,21 @@ export function stationConversation(sector: SectorId): Conversation {
       lines: mission.result
         ? [
             mission.result.status === 'failed'
-              ? 'La operación se interrumpió. Eso también nos enseña: revisemos qué decisión agotó nuestros recursos.'
+              ? 'La operación se interrumpió. Revisemos qué recurso falló y qué cambiarías antes de repetir el diseño.'
               : mission.result.delivered > 0
-                ? 'Los datos ya llegaron. Ahora podemos comparar lo que esperábamos con lo que realmente conseguimos.'
+                ? 'Llegaron datos del simulador. Compáralos con la pregunta inicial y revisa los límites de lo que podemos concluir.'
                 : 'La nave terminó sus operaciones, pero no devolvió datos. La próxima vez, reserva una ventana para transmitir.',
-            'Una buena misión responde a su pregunta y sabe explicar sus decisiones. ¿Qué conservarías de este diseño?',
+            'Una misión se evalúa por sus objetivos y por lo que logra devolver. La puntuación de SELENE es educativa; no equivale a un hallazgo científico.',
           ]
         : [
             'Desde aquí se ve el camino que has recorrido. Cuando termine la operación lunar, traeremos aquí los resultados para decidir cómo mejorar.',
           ],
       action: mission.result ? 'Leer el informe' : 'Abrir la bitácora',
       sector,
+      source: {
+        label: 'NASA · Criterios de diseño de misión',
+        url: 'https://www.nasa.gov/reference/4-0-system-design-processes/',
+      },
     },
   }
   return stories[sector]

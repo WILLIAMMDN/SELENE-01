@@ -51,6 +51,7 @@ Abrir `?world=earth` para Tierra o `?world=mars` para Marte. ROBER está junto a
 
 - docs/GAME_DESIGN.md — argumento y experiencia.
 - docs/SCIENCE.md — reglas, supuestos y validación.
+- docs/NASA_MISSION_TRACEABILITY.md — hechos NASA, aplicación en la campaña y límites de la simulación.
 - docs/ARCHITECTURE.md — módulos, estado y APIs.
 - docs/ART_DIRECTION.md — estilo visual 3D y estándar de assets.
 - docs/ASSET_PIPELINE.md — exportación Blender/GLB.

@@ -82,7 +82,7 @@ export default function WardrobePanel({
                 {selected === id ? '✓ ' : ''}
                 {mars && id === 'classic' ? 'Astronauta clásico' : label}
               </strong>
-              <small>{mars && id === 'classic' ? 'El tripulante original de Ares.' : detail}</small>
+              <small>{mars && id === 'classic' ? 'El personaje original de Ares.' : detail}</small>
             </button>
           ))}
         </div>

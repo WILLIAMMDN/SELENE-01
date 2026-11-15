@@ -65,6 +65,16 @@ export default function StoryDialogue({
         <p id="story-line" key={page}>
           {conversation.lines[page]}
         </p>
+        {conversation.source && (
+          <a
+            className="story-source"
+            href={conversation.source.url}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Consultar fuente: {conversation.source.label} ↗
+          </a>
+        )}
         <div className="story-bottom">
           <span aria-label={`Página ${page + 1} de ${conversation.lines.length}`}>
             {conversation.lines.map((_, i) => (
