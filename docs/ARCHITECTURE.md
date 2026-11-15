@@ -1,26 +1,26 @@
 # Arquitectura y contratos
 
-## Capas
-- src/scene/GameWorld.tsx: Canvas WebGL, campus, orbitador, avatar y robot provisional. Controles de movimiento y estaciones.
-- src/App.tsx: lógica de navegación por la historia y componentes React de UI.
-- src/game/missionDesign.ts: función pura evaluateDesign; operaciones puras startOperations/applyOperation; missionScore. Sin dependencias gráficas.
-- src/robot/nasaKnowledge.ts: fichas curatoriales y recuperación por palabras; no inteligencia artificial generativa.
-- src/robot/nasaMedia.ts: búsqueda NASA Image and Video Library; se usa sólo al solicitarla.
-- src/robot/Orbi.tsx: UI, fuentes y búsquedas.
-- docs/: contrato de producto y ciencia.
-- public/models/: assets GLB finales futuros con manifiesto de derechos y procedencia.
+## Capas activas
+
+- `src/main.tsx` inicia `src/world/WorldExperience.tsx`: exploración, HUD, mapa y estaciones.
+- `src/world/ExplorerScene.tsx`: personaje, cámara, desplazamiento y compañero TARS.
+- `src/world/campusLayout.ts`, `buildingNavigation.ts` y `environmentLayout.ts`: edificios, accesos, colisiones y elementos ambientales.
+- `src/world/StoryDialogue.tsx` y `MissionStation.tsx`: conversaciones, objetivos y actividades.
+- `src/App.tsx` y `src/scene/GameWorld.tsx`: configurador de misión, ensamblaje, lanzamiento y operaciones abiertos desde el campus.
+- `src/game/campusMission.ts`: objetivo, revisión vinculada al diseño y resultado persistente.
+- `src/game/missionDesign.ts`: evaluación pura, operaciones y puntuación educativa.
+- `src/spacecraft/`: módulos ODYSSEY, plataforma y cápsula de descenso.
+- `src/robot/TarsAssistant.tsx` y `TarsCompanion.tsx`: ayuda contextual, cuatro cuadernos locales y modelo acompañante.
+- `src/robot/Orbi.tsx`: nombre histórico del componente de ayuda que todavía utiliza App; su interfaz presenta TARS. No eliminarlo sin actualizar ese import.
+- `src/robot/nasaKnowledge.ts` y `nasaMedia.ts`: fichas curadas y consultas opcionales a NASA Images.
+- `public/models/`: GLB integrados, manifiestos y procedencia; `tools/`: exportadores Blender.
 
 ## Ciclo de datos
-Input de jugador → evaluación pura → indicadores de límites y warnings → autorización de lanzamiento → selección de eventos → informe.
 
-ORBI: pregunta → búsqueda determinista en biblioteca curada → respuesta con enlace NASA o mensaje sin resultados. Para material en vivo, hace consulta a imágenes NASA en el navegador; no interpreta imágenes ni consulta telemetría de una misión operativa.
+Objetivo → configuración → evaluación de recursos → revisión de la configuración exacta → autorización → operaciones → informe. Cambiar piezas o parámetros invalida la revisión. El progreso se guarda en localStorage; los cuadernos de TARS usan sessionStorage. No hay backend ni sincronización multijugador.
 
-## Seguridad
-- Sin secretos ni tokens en frontend. No enviar claves de modelos generativos al navegador.
-- Links externos con noopener/noreferrer.
-- Parametrización limitada de consultas públicas; no procesar HTML arbitrario recibido de APIs.
-- Si se agrega un backend/LLM, usar allowlist de dominios NASA, citas por fragmento, análisis de prompt injection y límites de gasto.
-- No registrar datos personales de estudiantes en esta versión.
+TARS recupera fichas mediante palabras clave y muestra fuentes. No es un modelo generativo ni consulta telemetría real. La búsqueda de imágenes es opcional.
 
-## Ingeniería de calidad
-npm test y npm run build obligatorios en PR. Los módulos de ciencia son deterministas, con pruebas de contornos. Comprobar WebGL en navegador real, accesibilidad, memoria y FPS. La rama main estará protegida cuando el propietario habilite Rulesets.
+## Calidad y seguridad
+
+No incluir secretos en el frontend. Ejecutar `npm test` y `npm run build` antes de integrar cambios; CI usa `npm ci` y Node 22. La revisión visual, accesibilidad, memoria y FPS se comprueban en navegador por el equipo. GitHub conserva los cambios por commits; las reglas efectivas de protección dependen de los Rulesets configurados por el propietario.

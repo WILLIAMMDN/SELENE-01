@@ -1,22 +1,17 @@
-# Hoja de ruta y puntos de control
+# Hoja de ruta
 
-## M0 — Alcance y trazabilidad
-Confirmar Space Mission Design Game como reto, cerrar historia y asignar seis roles. Cumplido documentalmente.
+## Implementado
 
-## M1 — Vertical slice funcional
-Campus navegable + ORBI + una misión de diseño con tres instrumentos, orbital y lanzamiento simulados, operación y evaluación. Base de geometrías provisionales y motor ficticio de decisiones. Estado: implementado en rama de integración; pendientes revisión funcional y QA en navegador real.
+Campus terrestre y sector marciano recorribles, interiores accesibles, Quaternius y TARS01, ODYSSEY modular, plataforma, ROBER, cápsula L01, fauna y entorno ilustrado. Campaña lunar con tres objetivos científicos, diseño de instrumentos y duración, revisión de recursos, operaciones e informe. Progreso local, mapa, bitácora y diálogos bajo demanda. Compilación reproducible y pruebas en GitHub.
 
-## M2 — Producción artística
-Ensamblar campus, laboratorio, hangar y control a partir de paquetes Blender. Personajes animados y robot ORBI real. Mejorar colisiones, movimiento de cámara y actuaciones. Integrar por GLB optimizado.
+## Próximas entregas
 
-## M3 — Alineación científica
-Revisión de datos con NASA, revisión de escenarios con asesor, trazabilidad de supuestos, tests de condiciones extremas y demostración de por qué cada decisión cambia los resultados.
+1. Revisión visual y jugable del equipo: animaciones, materiales, puertas, cámara y claridad de objetivos.
+2. Medir FPS, memoria y carga en distintos equipos; reducir el bundle y optimizar recursos donde lo indiquen las medidas.
+3. Revisar supuestos científicos y explicaciones con un asesor, conservando la distinción entre datos NASA y reglas educativas.
+4. Ampliar tutoriales, accesibilidad, sonido con procedencia documentada y actividades secundarias; probar comprensión con estudiantes.
+5. Desplegar una demo pública y preparar video, informe y créditos. El código en GitHub no equivale a un despliegue web.
 
-## M4 — Narrativa y experiencia
-Misiones secundarias, tutoriales, diálogos, guardado local, accesibilidad, sonido original/licenciado y feedback educativo. Medir comprensión con prueba corta.
+## Extensiones pendientes
 
-## M5 — Demostración y entrega
-Compilación reproducible, hospedaje verificable, enlace de demo, README consistente, video explicativo, informe y créditos con atribución de assets.
-
-## Extensiones
-Modo cooperativo de hasta cuatro jugadores, objetivos alternativos y RAG. No declarar implementadas hasta tener pruebas de integración.
+Multijugador hasta cuatro personas, campaña marciana completa, simulación orbital de mayor fidelidad y asistente generativo con backend. Los cuatro cuadernos actuales de TARS no implementan multijugador.

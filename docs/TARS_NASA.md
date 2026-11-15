@@ -1,10 +1,10 @@
-# ORBI — acompañante y tutor científico
+# TARS — acompañante y tutor científico
 
 ## Rol
-ORBI es un robot ficticio que acompaña físicamente a la protagonista en el campus, ayuda a comprender el diseño orbital y aclara datos de astronomía. No elige por el jugador ni tiene autoridad de NASA.
+TARS es un robot ficticio que acompaña físicamente a la protagonista en el campus, ayuda a comprender el diseño orbital y aclara datos de astronomía. No elige por el jugador ni tiene autoridad de NASA.
 
 ## Implementado
-- Representación 3D provisional que sigue al avatar en el campus.
+- Modelo TARS01 integrado que sigue al avatar en el campus.
 - Panel conversacional con cinco preguntas de referencia y búsqueda sencilla basada en palabras clave.
 - Respuestas seleccionadas manualmente y enlazadas a URLs oficiales de NASA.
 - Búsqueda opcional de imágenes reales por NASA Images API; fallback al sitio público.
@@ -13,8 +13,8 @@ ORBI es un robot ficticio que acompaña físicamente a la protagonista en el cam
 **No es una IA entrenada ni un chat inteligente generativo**. No afirmar capacidad de consultar telemetría, artículos nuevos automáticamente o entender cualquier pregunta.
 
 ## Próxima versión
-- Modelo y animaciones definitivos elaborados en Blender.
-- Recomendaciones contextuales según los recursos del configurador.
+- Revisar visualmente las animaciones y el seguimiento del modelo integrado.
+- Ampliar la ayuda contextual de etapas y recursos.
 - Catálogo NASA ampliado con citas granulares y fecha de última revisión.
 - Si se implementa RAG: backend seguro, recuperación de fuentes NASA, controles de prompt injection, citas por fragmento, caché, consentimiento si hay usuarios menores y límites de costos.
 

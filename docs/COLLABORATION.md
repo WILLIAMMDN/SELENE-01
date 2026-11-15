@@ -1,13 +1,13 @@
 # Trabajar juntos en SELENE-01
 
-La versión del campus está en `feature/lunar-world-preview`. `main` conserva la versión anterior hasta que se revise y mezcle el Pull Request. El nombre de la rama es histórico: incluye Tierra, Marte y la campaña lunar.
+La versión compartida está en `main`: incluye Tierra, Marte y la campaña lunar. Crear una rama propia desde `main` para cada modificación.
 
 ## Descargar y ejecutar
 
 Instalar Node.js 22.12 o posterior de la rama 22, Git y un navegador con WebGL2. Blender solo hace falta para modificar los recursos 3D.
 
 ```sh
-git clone --branch feature/lunar-world-preview https://github.com/WILLIAMMDN/SELENE-01.git
+git clone https://github.com/WILLIAMMDN/SELENE-01.git
 cd SELENE-01
 npm ci
 npm run dev -- --host 127.0.0.1 --port 5174
@@ -28,7 +28,7 @@ Compartir el enlace de un repositorio público permite leerlo y clonarlo; no con
 ```sh
 git remote add upstream https://github.com/WILLIAMMDN/SELENE-01.git
 git fetch upstream
-git switch -c feature/mi-cambio upstream/feature/lunar-world-preview
+git switch -c feature/mi-cambio upstream/main
 # Editar archivos, después:
 npm test
 npm run build
@@ -37,7 +37,7 @@ git commit -m "feat: describir el cambio"
 git push -u origin feature/mi-cambio
 ```
 
-Mientras la entrega está en revisión, dirigir los PR de seguimiento a `feature/lunar-world-preview`. Cuando esté integrada, crear ramas desde `main` y dirigir los PR a `main`. Enlazar un issue y pedir revisión a otra persona. Quien ya tenga permiso de escritura puede usar una rama propia del repositorio original, sin fork. No compartir contraseñas ni sobrescribir ramas con force-push.
+Crear ramas desde `main` y dirigir los PR a `main`. Enlazar un issue y pedir revisión a otra persona. Quien ya tenga permiso de escritura puede usar una rama propia del repositorio original, sin fork. No compartir contraseñas ni sobrescribir ramas con force-push.
 
 ## Dónde editar
 

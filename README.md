@@ -14,7 +14,7 @@ Un estudiante llega al centro espacial SELENE y recibe de la Dra. Vega una misi�
 
 ## Estado real del software
 
-- Implementado en la rama de evolución: escena 3D de campus explorado con WASD y E, exploradora Quaternius en Tierra, astronauta en Marte y TARS01, selección de instrumentos, órbita y lanzador, validación de masa, energía, datos y presupuesto, tres eventos de operaciones y un informe con puntuación; fuentes y búsqueda NASA Images en el robot.
+- Implementado: escena 3D de campus explorado con WASD y E, exploradora Quaternius en Tierra, astronauta en Marte y TARS01, selección de instrumentos, órbita y lanzador, validación de masa, energía, datos y presupuesto, tres eventos de operaciones y un informe con puntuación; fuentes y búsqueda NASA Images en el robot.
 - Assets integrados: exploradora Quaternius (CC0), TARS01, ODYSSEY final con ensamblaje modular, ROBER con cinco animaciones y control remoto, tres variantes animadas del árbol Anime Tree, incluidas con autorización expresa de su creador y diez módulos BASEPRI, con puertas automáticas, suelo interior, rampas y colisiones; plataforma y lanzador de Juego NASA.rar con cinco mecanismos animados. Tierra tiene suelo, caminos, vegetación y cielo con tratamiento ilustrado. Los escenarios combinan estos GLB con geometría ilustrada por código; los resultados son **hipotéticos de enseñanza**.
 - Pendiente: revisión artística de animaciones y materiales, colisiones avanzadas, campaña extensa, multijugador real, cálculo orbital de alta fidelidad, pruebas con estudiantes y despliegue público.
 - Los **seis integrantes** son desarrolladores. El cooperativo **hasta cuatro jugadores**, sugerido en el reto, es una ampliación futura.
@@ -27,9 +27,9 @@ React 19, TypeScript, Vite, Three.js, React Three Fiber, Drei, Vitest. Los model
 
 Requisitos: Node.js 22.12 o posterior de la rama 22 y npm.
 
-La versión compartida está en `feature/lunar-world-preview`, pendiente de revisión para `main`. Consulta [la guía del equipo](docs/COLLABORATION.md) para trabajar en ella.
+La versión compartida del juego está en `main`. Consulta [la guía del equipo](docs/COLLABORATION.md) para trabajar en ella.
 
-    git clone --branch feature/lunar-world-preview https://github.com/WILLIAMMDN/SELENE-01.git
+    git clone https://github.com/WILLIAMMDN/SELENE-01.git
     cd SELENE-01
     npm ci
     npm run dev
@@ -53,7 +53,7 @@ Abrir `?world=earth` para Tierra o `?world=mars` para Marte. ROBER está junto a
 - docs/ARCHITECTURE.md — módulos, estado y APIs.
 - docs/ART_DIRECTION.md — estilo visual 3D y estándar de assets.
 - docs/ASSET_PIPELINE.md — exportación Blender/GLB.
-- docs/ORBI_NASA.md — funcionamiento y fuentes del robot.
+- docs/TARS_NASA.md — funcionamiento y fuentes del robot.
 - docs/ROADMAP.md — fases y criterios de entrega.
 - docs/TEAM.md — reparto y responsabilidades.
 - docs/CHALLENGE_ALIGNMENT.md — correspondencia con el reto.

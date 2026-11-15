@@ -38,4 +38,4 @@ Laboratorio, taller, comunicaciones, hábitat, esclusa, invernadero, refugio y s
 
 La misión de esta entrega es lunar y se prepara en la Tierra. Marte conserva su escenario y módulos visitables; sus objetivos específicos todavía no están implementados. El juego es de un jugador con cuatro cuadernos locales de TARS. Las masas, capacidades, presupuestos, tres turnos y puntuaciones son reglas hipotéticas; no se calculan dinámica orbital, consumo real de propelente, vida útil ni seguridad de una misión tripulada.
 
-Sin capturas, pruebas automáticas ni compilación en esta entrega, a petición del usuario. Queda pendiente su revisión visual y jugable.
+Las 18 pruebas y la compilación pasaron localmente y en GitHub al preparar la publicación. Sin capturas; queda pendiente la revisión visual y jugable del equipo.

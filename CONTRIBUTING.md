@@ -6,7 +6,7 @@ Todo cambio nuevo nace en un issue y una rama feature/*, art/*, fix/* o docs/*. 
 ## Pasos
     git clone https://github.com/WILLIAMMDN/SELENE-01.git
     cd SELENE-01
-    npm install
+    npm ci
     git switch -c feature/mi-funcion
     npm run build
     npm test
@@ -20,4 +20,4 @@ Luego abrir PR a main y enlazar el issue. Requerir revisión antes de mezclar.
 TypeScript estricto. Lógica de simulación en funciones puras. Fuentes científicas verificables. No afirmar que los números inventados son datos NASA; nunca copiar logos oficiales para marca. No subir secretos, node_modules, dist ni modelos pesados sin presupuesto. Cada GLB nuevo requiere autor, licencia, revisión visual, ubicación, escala, colisiones y medición de rendimiento.
 
 ## Accesos
-El responsable debe invitar cinco usuarios de GitHub desde Settings → Collaborators, y activar Rulesets para main con PR obligatorio, una aprobación y bloqueo de force-push. La conexión de GitHub utilizada para crear estos archivos no puede modificar administrativamente esa configuración ni adivinar las cuentas de los compañeros.
+Compartir el repositorio público permite clonarlo. Los compañeros sin permisos de escritura pueden trabajar en un fork y proponer un Pull Request; no es obligatorio invitarlos. Ver [la guía de colaboración](docs/COLLABORATION.md). El propietario puede dar acceso de escritura desde Settings → Collaborators si lo decide. La protección de main depende de los Rulesets configurados en GitHub, no de este documento.
