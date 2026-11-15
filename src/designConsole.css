@@ -1,0 +1,186 @@
+/* The design stage uses the established ODYSSEY model and controls as a mission console. */
+.app-shell.stage-design {
+  --console-bg: #172c39;
+  --console-panel: #203a49;
+  --console-panel-raised: #2b4757;
+  --console-line: #526e7a;
+  --console-text: #f0f0e6;
+  --console-muted: #bbcbd0;
+  --console-amber: #e4b85f;
+  --console-green: #83b899;
+  background: var(--console-bg);
+  color: var(--console-text);
+}
+
+.app-shell.stage-design .topbar,
+.app-shell.stage-design .stage-nav {
+  background: #142936;
+  border-color: #405b68;
+  color: var(--console-text);
+}
+.app-shell.stage-design .brand strong { color: var(--console-text); font: 700 27px 'Trebuchet MS', Arial, sans-serif; }
+.app-shell.stage-design .brand small { color: var(--console-muted); }
+.app-shell.stage-design .brand-symbol { background: #2e5361; color: var(--console-amber); border-color: #7f9aa4; }
+.app-shell.stage-design .stage-nav button { background: #263f4d; color: #d4e1df; border-color: #59717a; font: 700 15px 'Trebuchet MS', Arial, sans-serif; box-shadow: none; }
+.app-shell.stage-design .stage-nav button.current { background: var(--console-amber); color: #182d39; border-color: #f2d18a; }
+.app-shell.stage-design .stage-nav button:disabled { color: #92a8ae; }
+
+.app-shell.stage-design .game-layout { gap: 10px; padding: 10px; background: #122633; }
+.app-shell.stage-design .world-column,
+.app-shell.stage-design .campaign-panel,
+.app-shell.stage-design .engineering-panel { min-width: 0; background: var(--console-panel); border: 1px solid var(--console-line); color: var(--console-text); }
+.app-shell.stage-design .world-column { background: #172c39; }
+.app-shell.stage-design .world-frame { border-color: #617b86; }
+.app-shell.stage-design .world-overlay { background: #e8d4aa; color: #203744; text-shadow: none; border: 1px solid #b8a77b; padding: 8px 11px; max-width: 80%; }
+.app-shell.stage-design .world-overlay .eyebrow { color: #52616a; }
+.app-shell.stage-design .world-overlay strong { color: #203744; font: 700 19px 'Trebuchet MS', Arial, sans-serif; }
+.app-shell.stage-design .world-help { background: #182f3be8; color: #e9eee6; border-color: #68838a; font-size: 11px; }
+
+.app-shell.stage-design .campaign-panel { scrollbar-color: #66818b #172c39; }
+.app-shell.stage-design .campaign-panel h1,
+.app-shell.stage-design .campaign-panel h2,
+.app-shell.stage-design .campaign-panel h3,
+.app-shell.stage-design .engineering-panel h2 { color: var(--console-text); font-family: 'Trebuchet MS', Arial, sans-serif; font-weight: 700; letter-spacing: -.025em; }
+.app-shell.stage-design .campaign-panel h1 { font-size: 27px; line-height: 1.15; margin: 3px 0 8px; }
+.app-shell.stage-design .campaign-panel h1 em { color: var(--console-amber); }
+.app-shell.stage-design .campaign-panel h2,
+.app-shell.stage-design .engineering-panel h2 { font-size: 19px; }
+.app-shell.stage-design .campaign-panel h3 { font-size: 15px; }
+.app-shell.stage-design .campaign-panel p,
+.app-shell.stage-design .small-note,
+.app-shell.stage-design .field-help { color: var(--console-muted); }
+.app-shell.stage-design .eyebrow,
+.app-shell.stage-design .evidence-label { color: #c6d5d3; font-size: 10px; letter-spacing: .12em; }
+.app-shell.stage-design .design-intro { border-color: #52707b; padding-bottom: 10px; }
+.app-shell.stage-design .design-intro p { font-size: 12px; line-height: 1.45; margin-bottom: 10px; }
+.app-shell.stage-design .design-route { display: grid; gap: 5px; }
+.app-shell.stage-design .design-route li { border: 0; background: none; }
+.app-shell.stage-design .design-route button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 12px; border: 1px solid #5c7882; background: #2b4757; color: var(--console-text); text-align: left; font: 700 13px 'Trebuchet MS', Arial, sans-serif; }
+.app-shell.stage-design .design-route button:hover { background: #385969; }
+.app-shell.stage-design .design-route button[aria-pressed='true'] { background: var(--console-amber); color: #1b303b; border-color: #f2d18a; }
+.app-shell.stage-design .design-route button span { color: inherit; font: 700 11px 'Trebuchet MS', Arial, sans-serif; }
+
+.app-shell.stage-design .design-brief,
+.app-shell.stage-design .odyssey-assembly,
+.app-shell.stage-design .design-step { border: 1px solid #587681; background: #253f4d; color: var(--console-text); box-shadow: none; }
+.app-shell.stage-design .design-brief { border-left: 4px solid var(--console-amber); padding: 11px 13px; margin: 10px 0; }
+.app-shell.stage-design .design-question { color: var(--console-text); font-size: 13px; line-height: 1.4; }
+.app-shell.stage-design .design-brief p.design-requirement { color: #dce5e1; font-size: 11px; line-height: 1.4; }
+.app-shell.stage-design .design-brief details { border-color: #5d7a82; }
+.app-shell.stage-design .design-brief summary,
+.app-shell.stage-design .design-brief a { color: var(--console-amber); }
+.app-shell.stage-design .design-brief details p { color: var(--console-muted); }
+.app-shell.stage-design .simulation-note { border-color: var(--console-amber); }
+.app-shell.stage-design .odyssey-assembly,
+.app-shell.stage-design .design-step { padding: 13px; margin: 10px 0; }
+.app-shell.stage-design .assembly-heading { align-items: center; }
+.app-shell.stage-design .assembly-heading > span { color: var(--console-amber); font-size: 10px; }
+.app-shell.stage-design .design-step-heading > span { width: 28px; height: 28px; background: #e8d4aa; color: #1d3642; border-color: #e8d4aa; }
+.app-shell.stage-design .assembly-parts { gap: 5px; margin: 10px 0; }
+.app-shell.stage-design .assembly-parts button { padding: 9px 10px; background: #314f5e; color: var(--console-text); border: 1px solid #67848d; }
+.app-shell.stage-design .assembly-parts button:hover { background: #3c6070; }
+.app-shell.stage-design .assembly-parts button[aria-pressed='true'] { background: #d8b86e; border-color: #f2d18a; color: #1b303b; }
+.app-shell.stage-design .assembly-parts button[aria-pressed='true'] .assembly-check { background: #f8e6aa; color: #1b303b; border-color: #695a3b; }
+.app-shell.stage-design .assembly-parts button:disabled { opacity: .55; }
+.app-shell.stage-design .assembly-check { border-color: #d2e0dc; color: #f1ece0; }
+.app-shell.stage-design .assembly-parts strong { color: inherit; font-size: 12px; }
+.app-shell.stage-design .assembly-parts strong + span { color: inherit; opacity: .84; font-size: 10px; }
+.app-shell.stage-design .assembly-parts b { color: inherit; font-weight: 700; }
+.app-shell.stage-design .select-list { grid-template-columns: 1fr; }
+.app-shell.stage-design .select-card,
+.app-shell.stage-design .option-small { background: #314f5e; border-color: #67848d; color: var(--console-text); }
+.app-shell.stage-design .select-card { align-items: flex-start; gap: 9px; padding: 10px; }
+.app-shell.stage-design .select-card .instrument-glyph { order: 1; display: grid; place-items: center; width: 32px; height: 32px; flex: none; border: 1px solid #8ba4a8; color: #e8d4aa; }
+.app-shell.stage-design .select-card .instrument-glyph svg { width: 22px; height: 22px; }
+.app-shell.stage-design .select-card > span:last-child { order: 2; flex: 1; min-width: 0; }
+.app-shell.stage-design .select-card input { order: 3; margin: 4px 0 0 auto; flex: none; }
+.app-shell.stage-design .select-card small { margin: 2px 0 6px; }
+.app-shell.stage-design .select-card .instrument-specs { display: flex; flex-wrap: wrap; gap: 4px; }
+.app-shell.stage-design .select-card .instrument-specs b { font-size: 10px; border: 1px solid currentColor; padding: 2px 4px; font-weight: 700; }
+.app-shell.stage-design .select-card:has(input:checked),
+.app-shell.stage-design .option-small:has(input:checked) { background: #d8b86e; border-color: #f2d18a; color: #1b303b; }
+.app-shell.stage-design .select-card:has(input:checked) .instrument-glyph { color: #1b303b; border-color: #91733a; }
+.app-shell.stage-design .select-card strong,
+.app-shell.stage-design .select-card small { color: inherit; }
+.app-shell.stage-design input[type='checkbox'] { accent-color: #e4b85f; }
+.app-shell.stage-design .select-card:has(input:checked) input[type='checkbox'],
+.app-shell.stage-design .option-small:has(input:checked) input[type='checkbox'] { accent-color: #234250; }
+.app-shell.stage-design .campaign-panel select { background: #314f5e; color: var(--console-text); border-color: #7b959b; }
+.app-shell.stage-design .action-primary { background: var(--console-amber); color: #1b303b; border: 1px solid #f2d18a; font: 700 14px 'Trebuchet MS', Arial, sans-serif; box-shadow: none; }
+.app-shell.stage-design .action-primary:hover { background: #f0ca78; }
+
+.app-shell.stage-design .engineering-panel { padding: 18px; overflow: auto; scrollbar-color: #66818b #172c39; }
+.app-shell.stage-design .engineering-panel > h2,
+.app-shell.stage-design .engineering-panel > .eyebrow,
+.app-shell.stage-design .engineering-panel > .small-note,
+.app-shell.stage-design .engineering-panel > .mission-links { display: block; }
+.app-shell.stage-design .engineering-panel h2 { margin: 7px 0 5px; }
+.app-shell.stage-design .engineering-panel .small-note { font-size: 10px; line-height: 1.45; }
+.app-shell.stage-design .metric { background: #2c4856; border: 1px solid #587681; padding: 11px; margin: 10px 0; }
+.app-shell.stage-design .metric > div:first-child { display: block; }
+.app-shell.stage-design .metric span { display: block; color: #d4e0dc; font-size: 11px; font-weight: 700; }
+.app-shell.stage-design .metric strong { display: block; margin-top: 5px; color: var(--console-text); font-size: 13px; }
+.app-shell.stage-design .metric strong.over { color: #f29c82; }
+.app-shell.stage-design .metric-track { background: #142a35; height: 9px; border: 1px solid #5a7580; margin-top: 8px; }
+.app-shell.stage-design .metric-track > div { background: var(--console-green); }
+.app-shell.stage-design .metric-track > div.over { background: #ce735f; }
+.app-shell.stage-design .science-value { color: #d8e5df; font-size: 11px; line-height: 1.5; }
+.app-shell.stage-design .science-value strong { color: var(--console-amber); }
+.app-shell.stage-design .system-message { background: #2b4854; color: var(--console-text); border-color: #6b8790; }
+.app-shell.stage-design .system-message.valid { background: #284f48; color: #d8f1df; border-color: #6aa383; }
+.app-shell.stage-design .system-message.invalid { background: #583d3a; color: #f7ded6; border-color: #bb7769; }
+.app-shell.stage-design .mission-links a { color: #e9c57d; }
+.app-shell.stage-design .engineering-panel details { border-top: 1px solid #587681; margin-top: 12px; padding-top: 10px; }
+.app-shell.stage-design .engineering-panel summary { color: var(--console-amber); cursor: pointer; font-size: 12px; }
+.app-shell.stage-design .engineering-panel .debrief-notes { color: var(--console-muted); font-size: 11px; }
+.app-shell.stage-design .engineering-panel .debrief-notes p { color: var(--console-muted); }
+.app-shell.stage-design .orbi-button { background: #e8d4aa; color: #1b303b; border-color: #e8d4aa; }
+.app-shell.stage-design .robot-face { background: #2a4f5c; color: var(--console-amber); }
+.app-shell.stage-design .orbi-button strong { color: #1b303b; font: 700 18px 'Trebuchet MS', Arial, sans-serif; }
+.campaign-return-space:has(.stage-design) { background: #122633; }
+.campaign-return-space:has(.stage-design) .return-world { background: #e8d4aa !important; color: #1b303b !important; border-color: #9e8a65 !important; }
+
+@media (min-width: 1200px) {
+  .app-shell.stage-design .game-layout,
+  .campaign-return-space .app-shell.stage-design .game-layout { grid-template-columns: minmax(300px, 360px) minmax(420px, 1fr) minmax(255px, 310px); }
+  .app-shell.stage-design .campaign-panel,
+  .campaign-return-space .app-shell.stage-design .campaign-panel { grid-column: 1; grid-row: 1; max-height: 69dvh; min-height: 560px; padding: 16px; }
+  .app-shell.stage-design .world-column,
+  .campaign-return-space .app-shell.stage-design .world-column { grid-column: 2; grid-row: 1; min-height: 560px; }
+  .app-shell.stage-design .world-frame,
+  .campaign-return-space .app-shell.stage-design .world-frame { height: 69dvh; min-height: 560px; border: 0; }
+  .app-shell.stage-design .engineering-panel,
+  .campaign-return-space .app-shell.stage-design .engineering-panel { display: block; grid-column: 3; grid-row: 1; max-height: 69dvh; min-height: 560px; }
+}
+@media (max-width: 1199px) {
+  .app-shell.stage-design .game-layout,
+  .campaign-return-space .app-shell.stage-design .game-layout { grid-template-columns: minmax(280px, 380px) minmax(0, 1fr); }
+  .app-shell.stage-design .campaign-panel,
+  .campaign-return-space .app-shell.stage-design .campaign-panel { grid-column: 1; grid-row: 1; max-height: 62dvh; min-height: 480px; }
+  .app-shell.stage-design .world-column,
+  .campaign-return-space .app-shell.stage-design .world-column { grid-column: 2; grid-row: 1; min-height: 480px; }
+  .app-shell.stage-design .world-frame,
+  .campaign-return-space .app-shell.stage-design .world-frame { height: 62dvh; min-height: 480px; }
+  .app-shell.stage-design .engineering-panel,
+  .campaign-return-space .app-shell.stage-design .engineering-panel { grid-column: 1 / -1; grid-row: 2; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; max-height: none; min-height: 0; }
+  .app-shell.stage-design .engineering-panel > h2,
+  .app-shell.stage-design .engineering-panel > .eyebrow,
+  .app-shell.stage-design .engineering-panel > .small-note,
+  .app-shell.stage-design .engineering-panel > .system-message,
+  .app-shell.stage-design .engineering-panel > .science-value,
+  .app-shell.stage-design .engineering-panel > .mission-links { grid-column: 1 / -1; }
+}
+@media (max-width: 760px) {
+  .app-shell.stage-design .game-layout,
+  .campaign-return-space .app-shell.stage-design .game-layout { display: flex; flex-direction: column; }
+  .app-shell.stage-design .world-column,
+  .campaign-return-space .app-shell.stage-design .world-column { order: 1; min-height: 300px; }
+  .app-shell.stage-design .world-frame,
+  .campaign-return-space .app-shell.stage-design .world-frame { height: 38dvh; min-height: 300px; }
+  .app-shell.stage-design .campaign-panel,
+  .campaign-return-space .app-shell.stage-design .campaign-panel { order: 2; max-height: none; min-height: 0; }
+  .app-shell.stage-design .engineering-panel,
+  .campaign-return-space .app-shell.stage-design .engineering-panel { order: 3; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .app-shell.stage-design .orbi { position: relative; top: auto; right: auto; margin: 10px; }
+  .app-shell.stage-design .orbi-panel { position: static; width: min(390px, 100%); }
+}
