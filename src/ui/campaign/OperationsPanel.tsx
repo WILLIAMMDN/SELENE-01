@@ -1,3 +1,4 @@
+import { operationPreview } from '../../game/operationFeedback'
 import type { MissionController } from '../../game/hooks/useMissionController'
 import { OPERATION_EVENTS } from '../../game/missionDesign'
 export default function OperationsPanel({ controller }: { controller: MissionController }) {
@@ -40,6 +41,27 @@ export default function OperationsPanel({ controller }: { controller: MissionCon
           </span>
           <h2>{OPERATION_EVENTS[ops.step].name}</h2>
           <p>{OPERATION_EVENTS[ops.step].message}</p>
+          <details>
+            <summary>TARS · ¿Qué cambia con cada decisión?</summary>
+            <p>
+              Estimaciones exactas de las reglas del juego para tu estado actual. Consultarlas no
+              ejecuta una acción.
+            </p>
+            <ul className="debrief-notes">
+              {OPERATION_EVENTS[ops.step].options.map((option) => {
+                const preview = operationPreview(ops, option.id, evaluation)
+                return (
+                  preview && (
+                    <li key={option.id}>
+                      <strong>{option.name}</strong>
+                      <p>{preview.summary}</p>
+                      {preview.warning && <p>{preview.warning}</p>}
+                    </li>
+                  )
+                )
+              })}
+            </ul>
+          </details>
           <div className="actions">
             {OPERATION_EVENTS[ops.step].options.map((option) => (
               <button key={option.id} type="button" onClick={() => operate(option.id)}>

@@ -98,3 +98,6 @@ La cápsula L01 de `ODYSSEY_LANDER_FINAL.rar` está integrada en el descenso de 
 ## Organización para continuar
 
 Las pantallas se agrupan en `src/ui/`; las reglas, el controlador y los almacenes de partida en `src/game/`; el renderizado y los controles en `src/world/` y `src/scene/`. Se mantienen los modelos y estilos existentes. El guardado conserva las claves anteriores y permite recuperar operaciones desde la plataforma con el mismo diseño revisado. Ver [arquitectura](docs/ARCHITECTURE.md) para responsabilidades, contratos y límites.
+
+
+La campaña ofrece requisitos consultables en TARS y las estaciones, consecuencias calculadas de cada decisión de operaciones e informes vinculados al encargo elegido. Volver a revisar un diseño ya aprobado conserva su vuelo guardado. Ver [narrativa e interfaz](docs/NARRATIVE_AND_INTERFACE.md).

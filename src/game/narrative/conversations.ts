@@ -1,3 +1,4 @@
+import { missionGuidance } from '../missionGuidance'
 import { loadBlueprint } from '../state/blueprintStore'
 import { getMission, OBJECTIVES, missionVerified } from '../campusMission'
 import type { SectorId } from '../missionTypes'
@@ -22,6 +23,7 @@ export function stationConversation(sector: SectorId): Conversation {
     reviewed = missionVerified(draft.config, draft.parts)
   const mission = getMission(),
     objective = OBJECTIVES.find((o) => o.id === mission.objective)?.name ?? 'tu pregunta científica'
+  const guidance = missionGuidance(mission, draft.config, draft.parts)
   const stories: Record<SectorId, Conversation> = {
     research: {
       speaker: 'DRA. VEGA',
@@ -41,7 +43,7 @@ export function stationConversation(sector: SectorId): Conversation {
       lines: mission.objective
         ? [
             `Vamos a construir ODYSSEY para ${objective.toLowerCase()}. Elige sus piezas y el instrumento que realmente necesitas.`,
-            'Más instrumentos también significan más masa, consumo, datos y coste. Decide cuánto durará la misión; después llevaremos el diseño a comunicaciones.',
+            guidance.explanation,
           ]
         : [
             'Aún no tenemos un encargo. La Dra. Vega te ayudará a elegirlo en el laboratorio; después sabremos qué necesita la nave.',
@@ -53,7 +55,7 @@ export function stationConversation(sector: SectorId): Conversation {
       speaker: 'TARS · COMUNICACIONES',
       lines: [
         'Una nave que observa, pero no devuelve sus datos, no termina su trabajo. Revisemos el enlace y los demás recursos.',
-        'Esta revisión corresponde a tu configuración actual. Si cambias la nave, la órbita o la duración, tendremos que revisarla otra vez.',
+        guidance.explanation,
       ],
       action: 'Revisar la misión',
       sector,

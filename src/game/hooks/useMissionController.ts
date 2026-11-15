@@ -1,4 +1,7 @@
 import { useCallback, useState } from 'react'
+import { missionGuidance } from '../missionGuidance'
+import { objectiveDebrief } from '../objectiveDebrief'
+import { operationPreview } from '../operationFeedback'
 import {
   useCampusMission,
   missionProblems,
@@ -11,7 +14,6 @@ import {
   INITIAL_DESIGN,
   evaluateDesign,
   startOperations,
-  applyOperation,
   missionScore,
   type InstrumentId,
   type DesignConfig,
@@ -47,7 +49,7 @@ export function useMissionController({
   launchAccess = false,
   onReturnToCampus,
 }: CampaignProps) {
-  useCampusMission()
+  const mission = useCampusMission()
   const { config, parts: assembly } = useBlueprint()
   const [resume] = useState(() =>
     campus && launchAccess && initialStage === 'launch' && missionVerified(config, assembly)
@@ -62,6 +64,8 @@ export function useMissionController({
   const [exploded, setExploded] = useState(false)
   const [notification, setNotification] = useState('')
   const evaluation = evaluateDesign(config)
+  const guidance = missionGuidance(mission, config, assembly)
+  const debrief = objectiveDebrief(mission.objective, config, ops)
   const launchProblems = campus
     ? [
         ...missionProblems(config, assembly),
@@ -165,7 +169,11 @@ export function useMissionController({
     setNotification('¡Lanzamiento simulado! El orbitador está en la fase de operaciones.')
   }
   const operate = (choice: OperationChoice) => {
-    const next = applyOperation(ops, choice, evaluation)
+    if (!launched || !operateReady) return
+    const preview = operationPreview(ops, choice, evaluation)
+    if (!preview) return
+    const next = preview.next
+    setNotification(`TARS · ${preview.summary}${preview.warning ? ` ${preview.warning}` : ''}`)
     if (campus) {
       saveOperationSession(blueprintKey(config, assembly), next)
       recordMission(next, missionScore(next, evaluation), config, assembly)
@@ -197,6 +205,8 @@ export function useMissionController({
     notification,
     launched,
     evaluation,
+    guidance,
+    debrief,
     launchProblems,
     engineeringProblems,
     stageIndex,

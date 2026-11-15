@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react'
+import { objectiveDebrief } from './objectiveDebrief'
 import {
   missionDebrief,
   evaluateDesign,
@@ -32,6 +33,8 @@ export const missionVerified = (config: DesignConfig, parts: ModuleId[]) =>
 export function verifyMission() {
   const { config, parts } = loadBlueprint()
   if (missionProblems(config, parts).length) return false
+  // Reopening an already approved design must not erase its flight or report.
+  if (missionVerified(config, parts)) return true
   clearOperationSession()
   missionStore.set({ ...getMission(), verified: blueprintKey(config, parts), result: null })
   return true
@@ -43,6 +46,7 @@ export function recordMission(
   parts: ModuleId[],
 ) {
   if (result.status === 'running' || !missionVerified(config, parts)) return
+  const debrief = objectiveDebrief(getMission().objective, config, result)
   missionStore.set({
     ...getMission(),
     result: {
@@ -50,7 +54,18 @@ export function recordMission(
       score,
       delivered: result.delivered,
       history: result.history,
-      lessons: missionDebrief(result, evaluateDesign(config)),
+      lessons: [
+        ...(debrief
+          ? [
+              `Encargo: ${debrief.objective.name}. ${debrief.objective.question}`,
+              debrief.title,
+              debrief.explanation,
+              debrief.limit,
+              debrief.reflection,
+            ]
+          : []),
+        ...missionDebrief(result, evaluateDesign(config)),
+      ],
     },
   })
 }

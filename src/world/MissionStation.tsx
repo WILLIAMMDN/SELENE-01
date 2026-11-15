@@ -1,3 +1,7 @@
+import { missionGuidance } from '../game/missionGuidance'
+import MissionChecklist from '../ui/campaign/MissionChecklist'
+import { loadOperationSession } from '../game/state/operationStore'
+import { blueprintKey } from '../game/campusMission'
 import { LAUNCH_MECHANISMS } from '../spacecraft/LaunchComplex'
 import { useState } from 'react'
 import {
@@ -30,6 +34,8 @@ export default function MissionStation({
     problems = missionProblems(config, parts),
     verified = missionVerified(config, parts),
     evaluation = evaluateDesign(config)
+  const guidance = missionGuidance(mission, config, parts)
+  const savedFlight = verified ? loadOperationSession(blueprintKey(config, parts)) : null
   const objective = OBJECTIVES.find((o) => o.id === mission.objective)
   if (mars)
     return (
@@ -47,6 +53,12 @@ export default function MissionStation({
           Entra al edificio y acércate a su mesa o consola para realizar esta actividad. En la
           plataforma y el mirador, utiliza el puesto señalizado.
         </p>
+      )}
+      {(sector === 'hangar' || sector === 'control' || sector === 'launch') && (
+        <>
+          <p>{guidance.explanation}</p>
+          <MissionChecklist requirements={guidance.requirements} />
+        </>
       )}
       {sector === 'research' && (
         <>
@@ -137,7 +149,7 @@ export default function MissionStation({
           )}
           <button
             className="primary-world"
-            disabled={!present || !!problems.length}
+            disabled={!present || !!problems.length || verified}
             onClick={() => {
               if (verifyMission())
                 setMessage(
@@ -145,7 +157,7 @@ export default function MissionStation({
                 )
             }}
           >
-            Registrar revisión
+            {verified ? '✓ Revisión registrada' : 'Registrar revisión'}
           </button>
           <small>Capacidades y presupuesto hipotéticos, definidos para el juego.</small>
           <a
@@ -210,7 +222,11 @@ export default function MissionStation({
             disabled={!present || !verified}
             onClick={() => onCampaign('launch')}
           >
-            Ir a la autorización de vuelo →
+            {savedFlight
+              ? savedFlight.ops.status === 'running'
+                ? 'Continuar operación guardada →'
+                : 'Abrir informe del vuelo →'
+              : 'Ir a la autorización de vuelo →'}
           </button>
           {!verified && (
             <p>Necesitas un objetivo aceptado y una revisión vigente en comunicaciones.</p>

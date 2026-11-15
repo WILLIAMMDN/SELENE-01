@@ -1,3 +1,5 @@
+import { missionGuidance } from '../game/missionGuidance'
+import MissionChecklist from '../ui/campaign/MissionChecklist'
 import { useBlueprint } from '../game/state/blueprintStore'
 import { useCampusMission, nextMissionStep, OBJECTIVES } from '../game/campusMission'
 import { useEffect, useState, type FormEvent } from 'react'
@@ -17,9 +19,10 @@ export default function TarsAssistant({
   position: PositionReport
   onVisit: (id: 'research' | 'hangar' | 'control' | 'launch' | 'observatory') => void
 }) {
-  useBlueprint()
+  const { config, parts } = useBlueprint()
   const mission = useCampusMission(),
     next = nextMissionStep()
+  const guidance = missionGuidance(mission, config, parts)
   const world = useWorld(),
     [crew, setCrew] = useState<CrewId>('crew-1')
   const [sessions, setSessions] = useState<Record<CrewId, CrewSession>>(() => {
@@ -105,6 +108,8 @@ export default function TarsAssistant({
             {OBJECTIVES.find((o) => o.id === mission.objective)?.requirement ??
               'Entra al laboratorio y elige una pregunta científica antes de construir.'}
           </p>
+          <p>{guidance.explanation}</p>
+          <MissionChecklist requirements={guidance.requirements} />
           <button className="text-button" onClick={() => onVisit(next.sector)}>
             Llévame a la entrada de esta estación →
           </button>
