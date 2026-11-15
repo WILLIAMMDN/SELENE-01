@@ -261,6 +261,18 @@ function Follower({
     if (isIndoors || isDriving) {
       // TARS stays waiting outside in idle state, not entering rooms or vehicles
       motion.current = 'idle'
+      if (!canWalk(body.position.x, body.position.z)) {
+        if (
+          lastOutsidePlayer.current.lengthSq() > 0 &&
+          canWalk(lastOutsidePlayer.current.x, lastOutsidePlayer.current.z)
+        ) {
+          body.position.set(
+            lastOutsidePlayer.current.x,
+            height(lastOutsidePlayer.current.x, lastOutsidePlayer.current.z) + clearance,
+            lastOutsidePlayer.current.z,
+          )
+        }
+      }
       body.position.y = height(body.position.x, body.position.z) + clearance
       const lookTarget =
         isIndoors && lastOutsidePlayer.current.lengthSq() > 0 ? lastOutsidePlayer.current : p
@@ -279,8 +291,8 @@ function Follower({
       request.current = { serial: request.current.serial + 1, kind: 'jump' }
     jumping.current = inJump
     lastPlayer.current.copy(p)
-    let x = p.x + Math.cos(a) * 1.8 - Math.sin(a) * 0.6,
-      z = p.z - Math.sin(a) * 1.8 - Math.cos(a) * 0.6
+    let x = p.x + Math.cos(a) * 2.2 - Math.sin(a) * 0.8,
+      z = p.z - Math.sin(a) * 2.2 - Math.cos(a) * 0.8
     if (
       !canWalk(x, z) ||
       ((!initialized.current || travelled > 3) && !lineClear(p, { x, z }, canWalk))

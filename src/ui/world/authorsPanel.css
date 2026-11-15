@@ -1,0 +1,345 @@
+.authors-modal-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 25;
+  background: rgba(32, 62, 70, 0.45);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.authors-paper-dialog {
+  position: relative;
+  width: min(1060px, 100%);
+  max-height: calc(100dvh - 48px);
+  overflow-y: auto;
+  background: #f8f9f4;
+  border: 2px solid #3e5158;
+  border-radius: 3px;
+  box-shadow: 8px 10px 0 #566971;
+  padding: 36px 36px 24px;
+  font-family: 'Trebuchet MS', sans-serif;
+  color: #303d42;
+  transform: rotate(-0.25deg);
+  scrollbar-width: thin;
+  scrollbar-color: #8da19a #f8f9f4;
+}
+
+.authors-tab {
+  position: absolute;
+  left: -8px;
+  top: -24px;
+  background: #ba6061;
+  color: #fffdf3;
+  padding: 8px 22px;
+  border: 2px solid #3e5158;
+  box-shadow: 3px 4px 0 #566971;
+  font: 21px 'Patrick Hand', cursive;
+  letter-spacing: 0.8px;
+  transform: rotate(-1deg);
+  z-index: 2;
+}
+
+.authors-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  background: none;
+  border: 0;
+  font-size: 26px;
+  color: #566971;
+  cursor: pointer;
+  padding: 4px 10px;
+  transition: color 0.15s, transform 0.15s;
+}
+
+.authors-close:hover {
+  color: #ba6061;
+  transform: scale(1.15);
+}
+
+.authors-header {
+  border-bottom: 2px dashed #40596030;
+  padding-bottom: 18px;
+  margin-bottom: 18px;
+}
+
+.authors-title {
+  font: 44px/1 'Patrick Hand', cursive;
+  color: #26343a;
+  margin: 4px 0 6px;
+  letter-spacing: 0.5px;
+}
+
+.authors-lead {
+  font: 20px 'Patrick Hand', cursive;
+  color: #ba6061;
+  margin: 0 0 12px;
+}
+
+.authors-statement-box {
+  background: #edf0df;
+  border: 1.5px solid #a8b8a3;
+  border-radius: 2px;
+  padding: 12px 18px;
+}
+
+.authors-statement {
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: #3b4e54;
+  margin: 0;
+}
+
+.authors-section-heading {
+  margin: 18px 0 14px;
+}
+
+.authors-section-heading h3 {
+  font: 26px 'Patrick Hand', cursive;
+  color: #3e595e;
+  margin: 0 0 4px;
+}
+
+.authors-section-heading small {
+  font-size: 11.5px;
+  color: #647a78;
+}
+
+/* 6 Authors Responsive Grid */
+.authors-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.author-card {
+  background: #ffffff;
+  border: 1.5px solid #405960;
+  border-radius: 2px;
+  box-shadow: 4px 5px 0 #52656b25;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.18s, box-shadow 0.18s;
+  cursor: pointer;
+}
+
+.author-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 5px 7px 0 #52656b40;
+}
+
+.author-card.selected {
+  border-color: #ba6061;
+  box-shadow: 5px 7px 0 #ba606145;
+}
+
+/* Polaroid Photo Slot */
+.author-photo-slot {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: #f0f2e8;
+  border: 1px solid #7a918f;
+  border-radius: 1px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin-bottom: 12px;
+}
+
+.author-photo-slot:hover .author-photo-placeholder {
+  background: #e6ebda;
+}
+
+.author-photo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.author-photo-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px;
+  transition: background 0.15s;
+}
+
+.author-avatar-svg {
+  width: 68px;
+  height: 68px;
+  display: block;
+}
+
+.photo-slot-label {
+  font: 11px monospace;
+  color: #556c6a;
+  letter-spacing: 0.8px;
+}
+
+.author-badge-number {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: #3e5158;
+  color: #f8f9f4;
+  font: 11px monospace;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 2px;
+}
+
+/* Card Content */
+.author-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.author-role-tag {
+  display: inline-block;
+  align-self: flex-start;
+  font: 11px monospace;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  background: var(--member-accent, #56878b);
+  color: #ffffff;
+  padding: 3px 8px;
+  border-radius: 2px;
+  margin-bottom: 6px;
+}
+
+.author-name {
+  font: 24px/1.1 'Patrick Hand', cursive;
+  color: #26343a;
+  margin: 2px 0 4px;
+}
+
+.author-specialty {
+  font-size: 11px;
+  color: #667c7b;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.author-subsystems {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 12px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: #3b4e54;
+  border-top: 1px solid #40596015;
+  padding-top: 8px;
+}
+
+.author-subsystems li {
+  margin-bottom: 3px;
+}
+
+.author-subsystems i {
+  color: #ba6061;
+  font-style: normal;
+  font-weight: bold;
+}
+
+.author-quote {
+  margin-top: auto;
+  padding: 8px 10px;
+  background: #f7f8f0;
+  border-left: 2px solid var(--member-accent, #56878b);
+  font: 14.5px/1.3 'Patrick Hand', cursive;
+  color: #40585f;
+}
+
+/* NASA Ack Footer */
+.authors-footer-section {
+  border-top: 2px dashed #40596030;
+  padding-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.nasa-ack-card {
+  background: #edf1e6;
+  border: 1px solid #9fb2a4;
+  padding: 12px 18px;
+  border-radius: 2px;
+}
+
+.nasa-ack-card h4 {
+  font: 18px 'Patrick Hand', cursive;
+  color: #3e595e;
+  margin: 0 0 6px;
+}
+
+.nasa-badges-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.nasa-badge {
+  font: 9.5px monospace;
+  font-weight: bold;
+  letter-spacing: 0.8px;
+  background: #3e5158;
+  color: #f6f7ee;
+  padding: 2px 8px;
+  border-radius: 2px;
+}
+
+.nasa-ack-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.5;
+  color: #4b6163;
+}
+
+.authors-bottom-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+
+.authors-version-stamp {
+  font: 11px monospace;
+  color: #728987;
+  letter-spacing: 1px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+  .authors-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .authors-grid {
+    grid-template-columns: 1fr;
+  }
+  .authors-paper-dialog {
+    padding: 28px 18px 18px;
+  }
+  .authors-title {
+    font-size: 34px;
+  }
+}

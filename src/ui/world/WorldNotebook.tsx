@@ -181,6 +181,15 @@ export default function WorldNotebook({
             <h2 id="dialog-title">Tu aventura.</h2>
             <div className="menu-grid">
               <button onClick={() => onClose()}>Continuar explorando</button>
+              <button
+                style={{ background: '#ba6061', color: '#f6f6ec', fontWeight: 'bold' }}
+                onClick={() => {
+                  onClose()
+                  window.dispatchEvent(new CustomEvent('selene-launch-cinematic'))
+                }}
+              >
+                🚀 Iniciar despegue cinematográfico (LC-01)
+              </button>
               <button onClick={() => onPanel('journal')}>Bitácora de misión</button>
               <button onClick={() => onPanel('map')}>Mapa de {world.place}</button>
               <button onClick={() => onMode('map')}>Vista aérea</button>
@@ -190,6 +199,12 @@ export default function WorldNotebook({
               {!offworld && <button onClick={() => onPanel('sky')}>Cielo y clima</button>}
               <button onClick={() => onPanel('settings')}>Opciones</button>
               <button onClick={() => onPanel('scale')}>El mundo y sus fuentes</button>
+              <button
+                style={{ background: '#457d80', color: '#f6f6ec' }}
+                onClick={() => onPanel('authors')}
+              >
+                👥 Equipo creador y autores
+              </button>
             </div>
             <div className="menu-worlds">
               <button aria-pressed={moon} onClick={() => onWorld('moon')}>
@@ -327,6 +342,18 @@ export default function WorldNotebook({
                 Visitar el sendero de la costa →
               </button>
             )}
+            {!offworld && (
+              <button
+                className="secondary-world"
+                style={{ borderLeft: '3px solid #ba6061', fontWeight: 600 }}
+                onClick={() => {
+                  onClose()
+                  window.dispatchEvent(new CustomEvent('selene-launch-cinematic'))
+                }}
+              >
+                🚀 Ver despegue en Plataforma LC-01 →
+              </button>
+            )}
             <button
               className="secondary-world"
               onClick={() => {
@@ -402,6 +429,18 @@ export default function WorldNotebook({
               />
               Mostrar minimapa mientras camino
             </label>
+            {!offworld && (
+              <button
+                className="secondary-world"
+                style={{ borderLeft: '3px solid #ba6061', fontWeight: 600 }}
+                onClick={() => {
+                  onClose()
+                  window.dispatchEvent(new CustomEvent('selene-launch-cinematic'))
+                }}
+              >
+                🚀 Ver despegue en Plataforma LC-01 →
+              </button>
+            )}
             <button
               className="secondary-world"
               onClick={() => {

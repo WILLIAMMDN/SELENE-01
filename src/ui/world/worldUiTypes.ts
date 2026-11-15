@@ -12,6 +12,7 @@ export type Panel =
   | 'map'
   | 'scale'
   | 'settings'
+  | 'authors'
   | SectorId
   | null
 export const OBJECTIVE_NAMES: Record<SectorId, string> = {
