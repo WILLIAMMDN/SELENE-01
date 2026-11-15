@@ -65,7 +65,7 @@ export default function CampusObservatory({
     return () => {
       window.removeEventListener('selene-observatory-action', command)
       asset.mixer.stopAllAction()
-      asset.mixer.uncacheRoot(asset.root)
+      // Keep actions bound through React StrictMode's effect replay.
     }
   }, [asset, animations, reduced])
   useEffect(

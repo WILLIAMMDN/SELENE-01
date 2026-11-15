@@ -115,13 +115,17 @@ function Asset({
       window.removeEventListener('odyssey-ground-services', services)
       window.removeEventListener('odyssey-mechanism', mechanism)
       mixer.stopAllAction()
-      mixer.uncacheRoot(root)
+      // Keep actions bound through React StrictMode's effect replay.
     }
   }, [platform, animations, mixer, root])
   useFrame((_, dt) => {
     if (flightClock) {
-      const frame = getLaunchFrame(flightClock.current, config?.launcher ?? 'aurora')
-      if (platform && frame.time >= 0.8 && !withdrawn.current) {
+      const frame = getLaunchFrame(
+        flightClock.current,
+        config?.launcher ?? 'aurora',
+        parts.includes('habitat'),
+      )
+      if (platform && frame.time >= 8 && !withdrawn.current) {
         const clip = animations.find((a) => a.name === 'SERVICIOS_RETIRADA')
         if (clip) {
           const action = mixer.clipAction(clip).reset().setLoop(T.LoopOnce, 1)
@@ -198,12 +202,12 @@ function LaunchPadDust({ clock }: { clock: LaunchClock }) {
   useFrame(() => {
     if (!puffs.current) return
     const t = clock.current
-    puffs.current.visible = t >= 5 && t < 14
+    puffs.current.visible = t >= 12 && t < 24
     puffs.current.children.forEach((child, i) => {
       const angle = (i / 14) * Math.PI * 2
-      const radius = 5 + (t - 5) * 2.25 + (i % 3)
+      const radius = 5 + (t - 12) * 2.25 + (i % 3)
       child.position.set(Math.cos(angle) * radius, 0.8 + ((i + t) % 4), Math.sin(angle) * radius)
-      child.scale.setScalar(Math.max(0.1, 1.3 + (t - 5) * 0.2))
+      child.scale.setScalar(Math.max(0.1, 1.3 + (t - 12) * 0.2))
     })
   })
   return (
@@ -236,7 +240,11 @@ export default function LaunchComplex({
   const rocket = useRef<T.Group>(null)
   useFrame(() => {
     if (!rocket.current || !flightClock) return
-    const frame = getLaunchFrame(flightClock.current, config?.launcher ?? 'aurora')
+    const frame = getLaunchFrame(
+      flightClock.current,
+      config?.launcher ?? 'aurora',
+      parts.includes('habitat'),
+    )
     rocket.current.position.y = frame.altitudeMeters / LAUNCH_SITE.scale
   })
   return (

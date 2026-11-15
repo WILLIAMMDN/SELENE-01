@@ -106,7 +106,7 @@ export default function OdysseyLander({ x, z, height, paused = false, training =
       window.removeEventListener('odyssey-lander-action', play)
       window.removeEventListener('keydown', key)
       mixer.stopAllAction()
-      mixer.uncacheRoot(root)
+      // Keep actions bound through React StrictMode's effect replay.
     }
   }, [animations, mixer, root, x, z])
   useFrame((_, dt) => {

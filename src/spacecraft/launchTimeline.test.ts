@@ -1,36 +1,43 @@
 import { describe, expect, it } from 'vitest'
-import { getLaunchFrame, LAUNCH_DURATION } from './launchTimeline'
+import { getLaunchFrame, LAUNCH_DURATION, LIFTOFF_AT } from './launchTimeline'
 
-describe('launch cinematic timeline', () => {
-  it('starts with a deterministic countdown and no movement', () => {
-    const frame = getLaunchFrame(0, 'aurora')
-    expect(frame.beat).toBe('countdown')
-    expect(frame.countdown).toBe(5)
-    expect(frame.altitudeMeters).toBe(0)
-    expect(frame.exhaust).toBe(0)
+describe('cinemática narrativa de lanzamiento', () => {
+  it('comienza con el embarque de la tripulación en LC-01', () => {
+    const initial = getLaunchFrame(0, 'aurora')
+    expect(initial.beat).toBe('boarding')
+    expect(initial.altitudeMeters).toBe(0)
+    expect(initial.exhaust).toBe(0)
+    expect(initial.speaker).toBe('DRA. VEGA')
   })
-  it('withdraws into ignition and then climbs', () => {
-    expect(getLaunchFrame(5, 'aurora').beat).toBe('ignition')
-    expect(getLaunchFrame(9.01, 'aurora').altitudeMeters).toBeGreaterThan(0)
-    expect(getLaunchFrame(9.01, 'aurora').beat).toBe('ascent')
+
+  it('presenta la retirada de servicios y la ignición antes del ascenso', () => {
+    expect(getLaunchFrame(8, 'aurora').beat).toBe('countdown')
+    expect(getLaunchFrame(8, 'aurora').countdown).toBe(10)
+    expect(getLaunchFrame(12, 'aurora').beat).toBe('ignition')
+    expect(getLaunchFrame(LIFTOFF_AT, 'aurora').beat).toBe('ascent')
+    expect(getLaunchFrame(LIFTOFF_AT, 'aurora').altitudeMeters).toBe(0)
+    expect(getLaunchFrame(LIFTOFF_AT + 1, 'aurora').altitudeMeters).toBeGreaterThan(0)
   })
-  it('plays the four GLB mechanism clips in the supplied order', () => {
-    expect(getLaunchFrame(15, 'aurora').mechanism).toBe('BOOSTERS_SEPARATION')
-    expect(getLaunchFrame(19, 'aurora').mechanism).toBe('CORE_STAGE_SEPARATION')
-    expect(getLaunchFrame(23, 'aurora').mechanism).toBe('FAIRING_JETTISON')
-    expect(getLaunchFrame(27, 'aurora').mechanism).toBe('ODYSSEY_RELEASE')
+
+  it('mantiene las fases reales del GLB sin introducir módulos no instalados', () => {
+    expect(getLaunchFrame(28, 'aurora').mechanism).toBe('BOOSTERS_SEPARATION')
+    expect(getLaunchFrame(32, 'aurora').mechanism).toBe('FAIRING_JETTISON')
+    expect(getLaunchFrame(35, 'aurora').mechanism).toBe('CORE_STAGE_SEPARATION')
+    expect(getLaunchFrame(38, 'aurora').mechanism).toBe('ODYSSEY_RELEASE')
   })
-  it('adapts its cinematic ascent profile to launcher selection', () => {
-    expect(getLaunchFrame(15, 'atlas').altitudeMeters).toBeGreaterThan(
-      getLaunchFrame(15, 'aurora').altitudeMeters,
+
+  it('distingue los perfiles hipotéticos del lanzador', () => {
+    expect(getLaunchFrame(27, 'atlas').altitudeMeters).toBeGreaterThan(
+      getLaunchFrame(27, 'aurora').altitudeMeters,
     )
   })
-  it('handles invalid or out-of-range timings without NaN', () => {
-    expect(getLaunchFrame(NaN, 'aurora').time).toBe(0)
-    expect(getLaunchFrame(-8, 'aurora').time).toBe(0)
-    const end = getLaunchFrame(Infinity, 'aurora')
-    expect(end.time).toBe(0)
-    expect(getLaunchFrame(10000, 'atlas').time).toBe(LAUNCH_DURATION)
-    expect(getLaunchFrame(10000, 'atlas').progress).toBe(1)
+
+  it('mantiene una sola cronología para todos los valores', () => {
+    expect(getLaunchFrame(-1, 'aurora').time).toBe(0)
+    expect(getLaunchFrame(Number.NaN, 'aurora').time).toBe(0)
+    expect(getLaunchFrame(100, 'aurora').time).toBe(LAUNCH_DURATION)
+    expect(getLaunchFrame(100, 'aurora').progress).toBe(1)
+    expect(getLaunchFrame(100, 'aurora').beat).toBe('orbital')
+    expect(getLaunchFrame(100, 'aurora').mechanism).toBe('ODYSSEY_RELEASE')
   })
 })

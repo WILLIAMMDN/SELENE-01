@@ -96,7 +96,7 @@ export default function EarthTools({ paused, reduced }: { paused: boolean; reduc
       window.removeEventListener('selene-tool-action', play)
       window.removeEventListener('keydown', open)
       asset.mixer.stopAllAction()
-      asset.mixer.uncacheRoot(asset.root)
+      // Keep actions bound through React StrictMode's effect replay.
     }
   }, [asset])
   useEffect(() => () => asset.materials.forEach((m) => m.dispose()), [asset])

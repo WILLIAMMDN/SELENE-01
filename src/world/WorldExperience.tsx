@@ -2,7 +2,16 @@ import { roomLabel } from './buildingEntrances'
 import VehicleDashboard from '../ui/world/VehicleDashboard'
 import WorldNotebook from '../ui/world/WorldNotebook'
 import { OBJECTIVE_NAMES, type Panel } from '../ui/world/worldUiTypes'
-import { useCampusMission, nextMissionStep, missionVerified } from '../game/campusMission'
+import {
+  useCampusMission,
+  nextMissionStep,
+  missionVerified,
+  blueprintKey,
+} from '../game/campusMission'
+import { loadOperationSession, saveOperationSession } from '../game/state/operationStore'
+import { startOperations } from '../game/missionDesign'
+import type { BoardingMotion, BoardingPhase } from '../spacecraft/boardingRoute'
+import LaunchCinematicOverlay from '../spacecraft/LaunchCinematicOverlay'
 import { loadBlueprint, useBlueprint } from '../game/state/blueprintStore'
 import Icon from '../ui/world/Icon'
 import CampusMap from '../ui/world/CampusMap'
@@ -18,7 +27,7 @@ import { WorldContext, WORLDS, useWorld, type WorldId } from './worldConfig'
 
 const Campaign = lazy(() => import('../App'))
 function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
-  useBlueprint()
+  const blueprint = useBlueprint()
   useCampusMission()
   const world = useWorld(),
     mars = world.id === 'mars',
@@ -36,6 +45,35 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
     [miniMap, setMiniMap] = useState(false)
   const [campaign, setCampaign] = useState(false),
     [campaignStage, setCampaignStage] = useState<'briefing' | 'design' | 'launch'>('briefing')
+  const [launchPhase, setLaunchPhase] = useState<BoardingPhase>('idle')
+  const boardingMotion = useRef<BoardingMotion>({ lift: 0 })
+  const flightClock = useRef({ current: 0 })
+  const [flightElapsed, setFlightElapsed] = useState(0)
+  const [flightFinished, setFlightFinished] = useState(false)
+  const recordedFlight = useRef(false)
+  const onLaunchPhase = useCallback((phase: BoardingPhase) => {
+    if (phase === 'flight') {
+      flightClock.current.current = 0
+      setFlightElapsed(0)
+    }
+    setLaunchPhase(phase)
+  }, [])
+  const finishLaunch = useCallback(() => setFlightFinished(true), [])
+  useEffect(() => {
+    if (!flightFinished) return
+    if (!recordedFlight.current) {
+      recordedFlight.current = true
+      const draft = loadBlueprint()
+      if (missionVerified(draft.config, draft.parts)) {
+        const key = blueprintKey(draft.config, draft.parts)
+        if (!loadOperationSession(key)) saveOperationSession(key, startOperations())
+        setCampaignStage('launch')
+        setCampaign(true)
+      }
+    }
+    setLaunchPhase('idle')
+    setFlightFinished(false)
+  }, [flightFinished])
   const [position, setPosition] = useState<PositionReport>({ x: 0, z: 37, nearby: null, fps: 0 }),
     [travel, setTravel] = useState<Travel>({ id: 'start', serial: 0 })
   const [quality, setQuality] = useState<'standard' | 'light'>('standard'),
@@ -107,7 +145,15 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
   }, [panel, conversation])
   useEffect(() => {
     const key = (e: KeyboardEvent) => {
-      if (conversation || campaign) return
+      if (campaign) return
+      if (launchPhase === 'flight') {
+        if (e.code === 'Escape') {
+          e.preventDefault()
+          finishLaunch()
+        }
+        return
+      }
+      if (conversation) return
       if (e.code === 'Escape') {
         setPanel((p) => (p ? null : 'menu'))
         return
@@ -128,7 +174,7 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
     }
     window.addEventListener('keydown', key)
     return () => window.removeEventListener('keydown', key)
-  }, [conversation, campaign])
+  }, [conversation, campaign, launchPhase, finishLaunch])
   useEffect(() => {
     const observe = (e: Event) => {
       if (panel || conversation || mode !== 'walk' || campaign) return
@@ -192,13 +238,28 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
   const openCampaign = (id: SectorId) => {
     if (offworld || position.nearby !== id) return
     const draft = loadBlueprint()
-    if (id === 'launch' && !missionVerified(draft.config, draft.parts)) return
-    setCampaignStage(id === 'hangar' ? 'design' : 'launch')
+    if (id === 'launch') {
+      if (!missionVerified(draft.config, draft.parts)) return
+      const key = blueprintKey(draft.config, draft.parts)
+      if (loadOperationSession(key)) {
+        setCampaignStage('launch')
+        setCampaign(true)
+      } else {
+        recordedFlight.current = false
+        onLaunchPhase('access')
+      }
+      setPanel(null)
+      setConversation(null)
+      input.current.keys.clear()
+      return
+    }
+    setCampaignStage('design')
     setCampaign(true)
     setPanel(null)
     input.current.keys.clear()
   }
   const returnToCampus = () => {
+    setLaunchPhase('idle')
     setTravel((t) => ({ id: t.id, point: [position.x, position.z], serial: t.serial + 1 }))
     setCampaign(false)
   }
@@ -233,8 +294,14 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
           tourIndex={tourIndex}
           travel={travel}
           input={input}
-          paused={!!panel || !!conversation}
+          paused={!!panel || !!conversation || launchPhase === 'flight'}
           reduced={reduced}
+          launchPhase={launchPhase}
+          boardingMotion={boardingMotion}
+          flightClock={flightClock}
+          onLaunchPhase={onLaunchPhase}
+          onCinematicProgress={setFlightElapsed}
+          onCinematicComplete={finishLaunch}
           onPosition={onPosition}
           onInteract={onInteract}
           quality={quality}
@@ -247,7 +314,51 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
           <h1>Bienvenida a {world.place}.</h1>
         </div>
       )}
-      {!conversation && !panel && !(mode === 'walk' && position.room) && (
+      {launchPhase === 'flight' && (
+        <LaunchCinematicOverlay
+          seconds={flightElapsed}
+          config={blueprint.config}
+          onSkip={finishLaunch}
+        />
+      )}
+      {launchPhase === 'cockpit' && (
+        <div className="boarding-cockpit-prompt">
+          <strong>ODYSSEY · Cabina asegurada</strong>
+          <span>TARS: Sistemas listos para la secuencia de despegue.</span>
+          <button type="button" onClick={() => onLaunchPhase('flight')}>
+            Iniciar despegue
+          </button>
+        </div>
+      )}
+      {launchPhase === 'access' && !position.boardingSpot && (
+        <div className="boarding-guidance" role="status">
+          Sigue la vía señalizada hasta el ascensor de LC-01.
+          <button type="button" onClick={() => onLaunchPhase('idle')}>
+            Cancelar
+          </button>
+        </div>
+      )}
+      {launchPhase === 'bridge' && !position.boardingSpot && (
+        <div className="boarding-guidance" role="status">
+          Cruza la pasarela hasta la escotilla de ODYSSEY.
+        </div>
+      )}
+      {launchPhase !== 'idle' && position.boardingSpot && (
+        <button
+          className="station-prompt boarding-interact"
+          type="button"
+          onClick={() => onLaunchPhase(position.boardingSpot === 'lift' ? 'ascending' : 'cockpit')}
+        >
+          <kbd>E</kbd>{' '}
+          {position.boardingSpot === 'lift' ? 'Subir al ascensor' : 'Entrar a la cabina'}
+        </button>
+      )}
+      {launchPhase === 'ascending' && (
+        <div className="boarding-guidance" role="status">
+          Ascendiendo a la pasarela…
+        </div>
+      )}
+      {!conversation && !panel && launchPhase === 'idle' && !(mode === 'walk' && position.room) && (
         <button className="quest-slip" onClick={() => setPanel('journal')}>
           <span>{offworld ? (moon ? 'LUNA' : 'ARES') : `MISIÓN ${next.number} / 05`}</span>
           <strong>{offworld ? 'Explora el paisaje' : objectiveNames[next.sector]}</strong>
@@ -259,21 +370,23 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
           </small>
         </button>
       )}
-      <button
-        className="paper-icon menu-toggle"
-        aria-label="Abrir menú"
-        title="Menú · Esc"
-        onClick={() => {
-          closeConversation()
-          setPanel('menu')
-        }}
-      >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M9 6h12M9 12h12M9 18h12" />
-          <path d="M3 5h2v2H3zm0 6h2v2H3zm0 6h2v2H3z" />
-        </svg>
-      </button>
-      {!panel && !conversation && (
+      {launchPhase !== 'flight' && launchPhase !== 'ascending' && launchPhase !== 'cockpit' && (
+        <button
+          className="paper-icon menu-toggle"
+          aria-label="Abrir menú"
+          title="Menú · Esc"
+          onClick={() => {
+            closeConversation()
+            setPanel('menu')
+          }}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M9 6h12M9 12h12M9 18h12" />
+            <path d="M3 5h2v2H3zm0 6h2v2H3zm0 6h2v2H3z" />
+          </svg>
+        </button>
+      )}
+      {launchPhase === 'idle' && !panel && !conversation && (
         <nav className="paper-dock" aria-label="Herramientas">
           <button
             className="paper-icon"
@@ -301,36 +414,52 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
           </button>
         </nav>
       )}
-      {miniMap && !panel && !conversation && (
+      {miniMap && launchPhase === 'idle' && !panel && !conversation && (
         <aside className="small-map">
           <CampusMap position={position} visited={visited} />
         </aside>
       )}
-      {mode === 'walk' && nearby && !position.vehicle && !panel && !conversation && (
-        <button className="station-prompt" onClick={() => onInteract(nearby.id)}>
-          <kbd>E</kbd> {nearby.id === 'research' ? 'Hablar con la Dra. Vega' : 'Usar estación'}{' '}
-          <span>▶</span>
-        </button>
-      )}
-      {mode === 'walk' && position.vehicle === 'driving' && !panel && !conversation && (
-        <VehicleDashboard
-          exitBlocked={position.exitBlocked}
-          onExit={() => input.current.actions.push('interact')}
-        />
-      )}
-      {mode === 'walk' && position.vehicle === 'near' && !panel && !conversation && (
-        <div className="vehicle-controls">
-          <button className="station-prompt" onClick={() => input.current.actions.push('interact')}>
-            <kbd>E</kbd> Conducir buggy <span>▶</span>
+      {launchPhase === 'idle' &&
+        mode === 'walk' &&
+        nearby &&
+        !position.vehicle &&
+        !panel &&
+        !conversation && (
+          <button className="station-prompt" onClick={() => onInteract(nearby.id)}>
+            <kbd>E</kbd> {nearby.id === 'research' ? 'Hablar con la Dra. Vega' : 'Usar estación'}{' '}
+            <span>▶</span>
           </button>
-        </div>
-      )}
-      {mode === 'walk' && position.room && !panel && !conversation && (
+        )}
+      {launchPhase === 'idle' &&
+        mode === 'walk' &&
+        position.vehicle === 'driving' &&
+        !panel &&
+        !conversation && (
+          <VehicleDashboard
+            exitBlocked={position.exitBlocked}
+            onExit={() => input.current.actions.push('interact')}
+          />
+        )}
+      {launchPhase === 'idle' &&
+        mode === 'walk' &&
+        position.vehicle === 'near' &&
+        !panel &&
+        !conversation && (
+          <div className="vehicle-controls">
+            <button
+              className="station-prompt"
+              onClick={() => input.current.actions.push('interact')}
+            >
+              <kbd>E</kbd> Conducir buggy <span>▶</span>
+            </button>
+          </div>
+        )}
+      {launchPhase === 'idle' && mode === 'walk' && position.room && !panel && !conversation && (
         <div className="interior-caption">
           {roomLabel(position.room)} <small>Primera persona · arrastra para mirar</small>
         </div>
       )}
-      {mode !== 'walk' && !panel && !conversation && (
+      {launchPhase === 'idle' && mode !== 'walk' && !panel && !conversation && (
         <div className="view-controls">
           <button onClick={() => chooseMode('walk')}>← Volver a caminar</button>
           {mode === 'tour' && (
@@ -344,73 +473,78 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
           )}
         </div>
       )}
-      {!panel && !conversation && mode === 'walk' && (
-        <>
-          <div className="touch-movement" aria-label="Movimiento táctil">
-            {[
-              { key: 'KeyW', label: '↑' },
-              { key: 'KeyA', label: '←' },
-              { key: 'KeyS', label: '↓' },
-              { key: 'KeyD', label: '→' },
-            ].map((b) => (
+      {!panel &&
+        !conversation &&
+        launchPhase !== 'flight' &&
+        launchPhase !== 'ascending' &&
+        launchPhase !== 'cockpit' &&
+        mode === 'walk' && (
+          <>
+            <div className="touch-movement" aria-label="Movimiento táctil">
+              {[
+                { key: 'KeyW', label: '↑' },
+                { key: 'KeyA', label: '←' },
+                { key: 'KeyS', label: '↓' },
+                { key: 'KeyD', label: '→' },
+              ].map((b) => (
+                <button
+                  key={b.key}
+                  aria-label={`Mover ${b.label}`}
+                  onPointerDown={(e) => {
+                    e.preventDefault()
+                    e.currentTarget.setPointerCapture(e.pointerId)
+                    input.current.keys.add(b.key)
+                  }}
+                  onPointerUp={() => input.current.keys.delete(b.key)}
+                  onPointerCancel={() => input.current.keys.delete(b.key)}
+                  onLostPointerCapture={() => input.current.keys.delete(b.key)}
+                >
+                  {b.label}
+                </button>
+              ))}
+            </div>
+            <div className="touch-actions">
               <button
-                key={b.key}
-                aria-label={`Mover ${b.label}`}
+                aria-label={
+                  position.vehicle === 'driving'
+                    ? 'Frenar, mantener pulsado'
+                    : 'Correr, mantener pulsado'
+                }
                 onPointerDown={(e) => {
                   e.preventDefault()
                   e.currentTarget.setPointerCapture(e.pointerId)
-                  input.current.keys.add(b.key)
+                  input.current.keys.add(position.vehicle === 'driving' ? 'Space' : 'ShiftLeft')
                 }}
-                onPointerUp={() => input.current.keys.delete(b.key)}
-                onPointerCancel={() => input.current.keys.delete(b.key)}
-                onLostPointerCapture={() => input.current.keys.delete(b.key)}
+                onPointerUp={() => {
+                  input.current.keys.delete('ShiftLeft')
+                  input.current.keys.delete('Space')
+                }}
+                onPointerCancel={() => {
+                  input.current.keys.delete('ShiftLeft')
+                  input.current.keys.delete('Space')
+                }}
+                onLostPointerCapture={() => {
+                  input.current.keys.delete('ShiftLeft')
+                  input.current.keys.delete('Space')
+                }}
               >
-                {b.label}
+                {position.vehicle === 'driving' ? 'Frenar' : 'Correr'}
               </button>
-            ))}
-          </div>
-          <div className="touch-actions">
-            <button
-              aria-label={
-                position.vehicle === 'driving'
-                  ? 'Frenar, mantener pulsado'
-                  : 'Correr, mantener pulsado'
-              }
-              onPointerDown={(e) => {
-                e.preventDefault()
-                e.currentTarget.setPointerCapture(e.pointerId)
-                input.current.keys.add(position.vehicle === 'driving' ? 'Space' : 'ShiftLeft')
-              }}
-              onPointerUp={() => {
-                input.current.keys.delete('ShiftLeft')
-                input.current.keys.delete('Space')
-              }}
-              onPointerCancel={() => {
-                input.current.keys.delete('ShiftLeft')
-                input.current.keys.delete('Space')
-              }}
-              onLostPointerCapture={() => {
-                input.current.keys.delete('ShiftLeft')
-                input.current.keys.delete('Space')
-              }}
-            >
-              {position.vehicle === 'driving' ? 'Frenar' : 'Correr'}
+              {!offworld && position.vehicle !== 'driving' && !position.room && (
+                <button
+                  onClick={() => {
+                    if (!position.room) input.current.actions.push('jump')
+                  }}
+                >
+                  Saltar
+                </button>
+              )}
+            </div>
+            <button className="controls-hint" onClick={() => setPanel('controls')}>
+              ? Controles
             </button>
-            {!offworld && position.vehicle !== 'driving' && !position.room && (
-              <button
-                onClick={() => {
-                  if (!position.room) input.current.actions.push('jump')
-                }}
-              >
-                Saltar
-              </button>
-            )}
-          </div>
-          <button className="controls-hint" onClick={() => setPanel('controls')}>
-            ? Controles
-          </button>
-        </>
-      )}
+          </>
+        )}
       {conversation && (
         <StoryDialogue
           conversation={conversation}

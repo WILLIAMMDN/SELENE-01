@@ -58,7 +58,11 @@ export default function LaunchPanel({ controller }: { controller: MissionControl
         </p>
       </div>
       <button className="action-primary" onClick={fly} disabled={!operateReady}>
-        {operateReady ? 'Autorizar lanzamiento simulado →' : 'Corrige los problemas para lanzar'}
+        {operateReady
+          ? assembly.includes('habitat')
+            ? 'Autorizar embarque y lanzamiento →'
+            : 'Autorizar lanzamiento autónomo →'
+          : 'Corrige los problemas para lanzar'}
       </button>
       {campus && (
         <button className="action-secondary" onClick={onReturnToCampus}>

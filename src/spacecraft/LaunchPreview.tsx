@@ -15,7 +15,9 @@ const COMPACT_ASSEMBLY: ModuleId[] = COMPLETE_ASSEMBLY.filter(
 
 export default function LaunchPreview() {
   const blueprint = useBlueprint()
-  const [preset, setPreset] = useState<Preset>('saved')
+  const [preset, setPreset] = useState<Preset>(() =>
+    assemblyReady(blueprint.parts) ? 'saved' : 'habitat',
+  )
   const [launcher, setLauncher] = useState<LauncherId>(blueprint.config.launcher)
   const [playing, setPlaying] = useState(false)
   const [elapsed, setElapsed] = useState(0)

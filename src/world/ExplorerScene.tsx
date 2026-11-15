@@ -7,6 +7,9 @@ import Environment from './Environment'
 import MarsEnvironment from './MarsEnvironment'
 import { useWorld } from './worldConfig'
 import PlayerRig from './player/PlayerRig'
+import LaunchCinematicDirector from '../spacecraft/LaunchCinematicDirector'
+import { LAUNCH_SITE } from '../spacecraft/LaunchComplex'
+import { useBlueprint } from '../game/state/blueprintStore'
 import type { SceneProps } from './player/types'
 export type { Travel, InputState, PositionReport } from './player/types'
 
@@ -40,12 +43,13 @@ export default memo(function ExplorerScene(
   props: SceneProps & { quality: 'standard' | 'light'; onReady: () => void },
 ) {
   const world = useWorld(),
+    blueprint = useBlueprint(),
     mars = world.id === 'mars',
     moon = world.id === 'moon'
   return (
     <SceneBoundary onFailure={props.onReady}>
       <Canvas
-        camera={{ position: [0, 2.7, 44.5], fov: 50, near: 0.15, far: 650 }}
+        camera={{ position: [0, 2.7, 44.5], fov: 50, near: 0.15, far: 8000 }}
         dpr={props.quality === 'light' ? 1 : [1, 1.5]}
         shadows={props.quality === 'standard' ? 'percentage' : false}
         gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
@@ -91,9 +95,29 @@ export default memo(function ExplorerScene(
               paused={props.paused || props.mode !== 'walk'}
             />
           ) : (
-            <Environment reduced={props.reduced} paused={props.paused || props.mode !== 'walk'} />
+            <Environment
+              reduced={props.reduced}
+              paused={props.paused || props.mode !== 'walk' || props.launchPhase === 'flight'}
+              boardingMotion={props.boardingMotion}
+              flightClock={props.launchPhase === 'flight' ? props.flightClock?.current : undefined}
+            />
           )}
           <PlayerRig {...props} />
+          {!mars &&
+            !moon &&
+            props.launchPhase === 'flight' &&
+            props.flightClock &&
+            props.onCinematicProgress &&
+            props.onCinematicComplete && (
+              <LaunchCinematicDirector
+                clock={props.flightClock.current}
+                launcher={blueprint.config.launcher}
+                habitat={blueprint.parts.includes('habitat')}
+                origin={[LAUNCH_SITE.x, 0, LAUNCH_SITE.z]}
+                onElapsed={props.onCinematicProgress}
+                onComplete={props.onCinematicComplete}
+              />
+            )}
           <SceneReady onReady={props.onReady} />
           <AdaptiveResolution enabled={props.quality === 'standard'} />
         </Suspense>

@@ -158,7 +158,7 @@ export default function ExplorerCharacter({
     return () => {
       window.removeEventListener('selene-avatar-preview', perform)
       asset.mixer.stopAllAction()
-      asset.mixer.uncacheRoot(asset.actor)
+      // Keep actions bound through React StrictMode's effect replay.
       const geometries = new Set<T.BufferGeometry>(),
         materials = new Set<T.Material>()
       asset.actor.traverse((n) => {
