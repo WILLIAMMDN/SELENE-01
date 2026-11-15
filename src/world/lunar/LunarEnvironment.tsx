@@ -5,7 +5,9 @@ import { clone } from 'three/addons/utils/SkeletonUtils.js'
 import * as T from 'three'
 import { Sign, toon } from '../ArtKit'
 import OdysseyLander from '../../spacecraft/OdysseyLander'
-import { LUNAR_LANDER, LUNAR_SECTORS, lunarTerrainHeight } from './lunarNavigation'
+import { LUNAR_LANDER, LUNAR_SECTORS, lunarTerrainHeight, lunarCanWalk } from './lunarNavigation'
+import RoverLunar from './RoverLunar'
+import { roberRemote } from '../roberControl'
 
 export default function LunarEnvironment({
   paused,
@@ -81,6 +83,15 @@ export default function LunarEnvironment({
         z={LUNAR_LANDER.z}
         height={lunarTerrainHeight}
         paused={paused}
+      />
+      <RoverLunar
+        position={[53, 0, 63]}
+        heightAt={lunarTerrainHeight}
+        canMove={(pos) => lunarCanWalk(pos.x, pos.z)}
+        paused={paused}
+        onControlChange={(vehicle) => {
+          roberRemote.current = vehicle
+        }}
       />
       {LUNAR_SECTORS.map((s) => (
         <Sign

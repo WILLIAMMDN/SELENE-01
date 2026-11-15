@@ -19,7 +19,7 @@ export default function BuggyModel() {
   useFrame(() => {
     for (const { wheel, steering, front } of wheels) {
       if (wheel) wheel.rotation.x = (buggy.distance / 0.38) % (Math.PI * 2)
-      if (steering && front) steering.rotation.y = buggy.steer
+      if (steering && front) steering.rotation.y = -buggy.steer
     }
   })
   return <primitive object={actor} dispose={null} />

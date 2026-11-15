@@ -1,4 +1,5 @@
 import { roomLabel } from './buildingEntrances'
+import VehicleDashboard from '../ui/world/VehicleDashboard'
 import WorldNotebook from '../ui/world/WorldNotebook'
 import { OBJECTIVE_NAMES, type Panel } from '../ui/world/worldUiTypes'
 import { useCampusMission, nextMissionStep, missionVerified } from '../game/campusMission'
@@ -223,7 +224,9 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
       </>
     )
   return (
-    <main className={`selene-world clean-world ${offworld ? 'mars-world' : 'earth-world'}`}>
+    <main
+      className={`selene-world clean-world ${offworld ? 'mars-world' : 'earth-world'} ${position.vehicle === 'driving' ? 'is-driving' : ''}`}
+    >
       <div className="world-viewport">
         <ExplorerScene
           mode={mode}
@@ -309,16 +312,16 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
           <span>▶</span>
         </button>
       )}
-      {mode === 'walk' && position.vehicle && !panel && !conversation && (
+      {mode === 'walk' && position.vehicle === 'driving' && !panel && !conversation && (
+        <VehicleDashboard
+          exitBlocked={position.exitBlocked}
+          onExit={() => input.current.actions.push('interact')}
+        />
+      )}
+      {mode === 'walk' && position.vehicle === 'near' && !panel && !conversation && (
         <div className="vehicle-controls">
-          {position.vehicle === 'driving' && (
-            <span>
-              {Math.round(position.speed ?? 0)} km/h · W/S acelerar y retroceder · A/D girar
-            </span>
-          )}
-          {position.exitBlocked && <span>Acércate a una zona abierta para bajar.</span>}
           <button className="station-prompt" onClick={() => input.current.actions.push('interact')}>
-            <kbd>E</kbd> {position.vehicle === 'driving' ? 'Detenerse y bajar' : 'Conducir buggy'}
+            <kbd>E</kbd> Conducir buggy <span>▶</span>
           </button>
         </div>
       )}

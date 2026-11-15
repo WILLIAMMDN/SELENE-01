@@ -3,7 +3,8 @@ import BuggyModel from '../BuggyModel'
 import { lunarStationAt } from '../lunar/lunarNavigation'
 import CharacterBoundary from './CharacterBoundary'
 import { moveWithCollisions } from '../navigation/collision'
-import { useEffect, useRef } from 'react'
+import FirstPersonArms from './FirstPersonArms'
+import { useEffect, useRef, useState } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import * as T from 'three'
@@ -40,6 +41,8 @@ export default function PlayerRig({
   const moon = world.id === 'moon'
   const canWalk = (x: number, z: number) =>
     worldClear(x, z) && (world.id !== 'earth' || outsideBuggy(x, z))
+  const tarsCanWalk = (x: number, z: number) =>
+    canWalk(x, z) && (world.id !== 'earth' || !buildingAt(x, z, true))
   const carClear = (x: number, z: number) => worldClear(x, z) && !buildingAt(x, z)
   const canBoard = (x: number, z: number) =>
     nearBuggy(x, z) &&
@@ -53,6 +56,7 @@ export default function PlayerRig({
 
   const vehicle = useRef<T.Group>(null)
   const firstPerson = useRef(false)
+  const [isFirstPerson, setIsFirstPerson] = useState(false)
   const exitBlocked = useRef(false)
   const player = useRef<T.Group>(null),
     moving = useRef(0),
@@ -73,6 +77,7 @@ export default function PlayerRig({
     buggy.driving = false
     buggy.speed = 0
     firstPerson.current = false
+    setIsFirstPerson(false)
     location.current.set(p[0], groundHeight(...p), p[1])
     if (world.id === 'earth' && !outsideBuggy(p[0], p[1])) {
       const exit = buggyExit(worldClear)
@@ -315,17 +320,20 @@ export default function PlayerRig({
     if (indoors !== firstPerson.current) {
       input.current.pitch = indoors ? 0 : 0.14
       firstPerson.current = indoors
+      setIsFirstPerson(indoors)
     }
     if (mode === 'walk' && roberRemote.current) {
       const rover = roberRemote.current
       camTarget.set(0, 4.5, -8).applyAxisAngle(upAxis, rover.rotation.y).add(rover.position)
       camera.position.lerp(camTarget, 1 - Math.exp(-delta * 5))
+      camera.up.set(0, 1, 0)
       camera.lookAt(rover.position.x, rover.position.y + 1, rover.position.z)
     } else if (mode === 'walk') {
       const { yaw, pitch, zoom } = input.current
       if (indoors) {
-        // Place the lens at eye level immediately: interpolation would pass through walls.
+        // Steady eye level and level horizon: camera.up ensures zero roll
         camera.position.set(p.x, p.y + (motion.current.seat ? 1.1 : 1.62), p.z)
+        camera.up.set(0, 1, 0)
         camera.lookAt(
           lookTarget.set(
             p.x - Math.sin(yaw) * Math.cos(pitch),
@@ -354,6 +362,7 @@ export default function PlayerRig({
           }
         }
         camera.position.lerp(camTarget, 1 - Math.exp(-delta * 7))
+        camera.up.set(0, 1, 0)
         camera.lookAt(lookTarget.set(p.x, p.y + MOTION_SCALE.cameraTarget, p.z))
       }
     } else if (mode === 'tour') {
@@ -368,6 +377,7 @@ export default function PlayerRig({
       )
       lookTarget.set(s.x, groundHeight(s.x, s.z) + (tall ? 47 : hangar ? 9 : 4), s.z)
       camera.position.lerp(camTarget, 1 - Math.exp(-delta * 1.4))
+      camera.up.set(0, 1, 0)
       camera.lookAt(lookTarget)
     }
     report.current += delta
@@ -428,10 +438,25 @@ export default function PlayerRig({
         </CharacterBoundary>
       </group>
       <TarsCompanions
-        targets={[{ id: 'crew-1', body: player, motion }]}
+        targets={[
+          {
+            id: 'crew-1',
+            body: player,
+            motion,
+            isIndoors: () => !!roomAt(location.current.x, location.current.z),
+            isDriving: () => buggy.driving,
+          },
+        ]}
         height={groundHeight}
-        canWalk={canWalk}
+        canWalk={tarsCanWalk}
         reduced={reduced}
+      />
+      <FirstPersonArms
+        active={mode === 'walk' && isFirstPerson}
+        motion={motion}
+        input={input}
+        reduced={reduced}
+        outfit={world.id === 'earth' ? wardrobe.earth : 'eva'}
       />
       {mode === 'map' && (
         <OrbitControls

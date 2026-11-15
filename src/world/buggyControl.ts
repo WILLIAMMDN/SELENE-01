@@ -39,20 +39,25 @@ function fits(x: number, z: number, yaw: number, clear: Clear, height: Height) {
 export function driveBuggy(keys: Set<string>, dt: number, clear: Clear, height: Height) {
   const forward = keys.has('KeyW') || keys.has('ArrowUp')
   const reverse = keys.has('KeyS') || keys.has('ArrowDown')
+  const boost = keys.has('ShiftLeft') || keys.has('ShiftRight')
   const brake = keys.has('Space') || (forward && reverse)
-  const target = brake ? 0 : forward ? 5 : reverse ? -2 : 0
+  // Higher velocity: standard 12.5 m/s (45 km/h), boost 18.5 m/s (66.6 km/h)
+  const topSpeed = boost ? 18.5 : 12.5
+  const target = brake ? 0 : forward ? topSpeed : reverse ? -5.5 : 0
   const decelerating = target === 0 || target * buggy.speed < 0
-  const change = (brake ? 7 : decelerating ? 4 : 2.2) * dt
+  const change = (brake ? 14 : decelerating ? 8.5 : boost ? 7.5 : 5.5) * dt
   buggy.speed += Math.max(-change, Math.min(change, target - buggy.speed))
   const steer =
     Number(keys.has('KeyD') || keys.has('ArrowRight')) -
     Number(keys.has('KeyA') || keys.has('ArrowLeft'))
-  buggy.steer += (steer * 0.48 - buggy.steer) * Math.min(1, dt * 8)
+  const speedFactor = Math.max(0.48, 1 - Math.abs(buggy.speed) / 36)
+  const maxSteerAngle = 0.52 * speedFactor
+  buggy.steer += (steer * maxSteerAngle - buggy.steer) * Math.min(1, dt * 9)
   if (Math.abs(buggy.speed) < 0.0001) {
     buggy.speed = 0
     return 0
   }
-  const turn = ((Math.tan(buggy.steer) * buggy.speed) / 2.1) * dt
+  const turn = -((Math.tan(buggy.steer) * buggy.speed) / 2.1) * dt
   const steps = Math.max(1, Math.ceil(Math.abs(buggy.speed * dt) / 0.08))
   const before = buggy.yaw
   for (let i = 0; i < steps; i++) {
