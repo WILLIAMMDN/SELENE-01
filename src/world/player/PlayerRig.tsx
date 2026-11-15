@@ -1,3 +1,5 @@
+import { buggy, buggyExit, driveBuggy, nearBuggy, outsideBuggy } from '../buggyControl'
+import BuggyModel from '../BuggyModel'
 import { lunarStationAt } from '../lunar/lunarNavigation'
 import CharacterBoundary from './CharacterBoundary'
 import { moveWithCollisions } from '../navigation/collision'
@@ -34,14 +36,24 @@ export default function PlayerRig({
 }: SceneProps) {
   const wardrobe = useWardrobe()
   const world = useWorld(),
-    { sectors: SECTORS, start: START, height: terrainHeight, canWalk } = world
+    { sectors: SECTORS, start: START, height: terrainHeight, canWalk: worldClear } = world
   const moon = world.id === 'moon'
+  const canWalk = (x: number, z: number) =>
+    worldClear(x, z) && (world.id !== 'earth' || outsideBuggy(x, z))
+  const carClear = (x: number, z: number) => worldClear(x, z) && !buildingAt(x, z)
+  const canBoard = (x: number, z: number) =>
+    nearBuggy(x, z) &&
+    !buildingAt(x, z) &&
+    [0.2, 0.4, 0.6, 0.8].every((t) => worldClear(x + (buggy.x - x) * t, z + (buggy.z - z) * t))
   const groundHeight = (x: number, z: number) =>
     moon ? terrainHeight(x, z) : walkingHeight(x, z, terrainHeight, world.id === 'earth')
   const roomAt = (x: number, z: number) => (moon ? null : buildingAt(x, z, world.id === 'earth'))
   const stationFor = (x: number, z: number) =>
     moon ? lunarStationAt(x, z) : stationAt(x, z, world.id === 'earth')
 
+  const vehicle = useRef<T.Group>(null)
+  const firstPerson = useRef(false)
+  const exitBlocked = useRef(false)
   const player = useRef<T.Group>(null),
     moving = useRef(0),
     phase = useRef(0),
@@ -58,7 +70,14 @@ export default function PlayerRig({
   useEffect(() => {
     const s = SECTORS.find((s) => s.id === travel.id)
     const p = travel.point ?? (s ? s.entry : START)
+    buggy.driving = false
+    buggy.speed = 0
+    firstPerson.current = false
     location.current.set(p[0], groundHeight(...p), p[1])
+    if (world.id === 'earth' && !outsideBuggy(p[0], p[1])) {
+      const exit = buggyExit(worldClear)
+      if (exit) location.current.set(exit.x, groundHeight(exit.x, exit.z), exit.z)
+    }
     input.current.keys.clear()
     input.current.actions.length = 0
     motion.current = createCharacterMotion()
@@ -67,10 +86,32 @@ export default function PlayerRig({
     camera.position.set(p[0], groundHeight(...p) + 2.7, p[1] + MOTION_SCALE.zoom)
   }, [travel, camera, input])
   useEffect(() => {
+    const stop = () => {
+      buggy.speed = 0
+      input.current.keys.clear()
+    }
+    window.addEventListener('blur', stop)
+    document.addEventListener('visibilitychange', stop)
+    return () => {
+      stop()
+      buggy.driving = false
+      window.removeEventListener('blur', stop)
+      document.removeEventListener('visibilitychange', stop)
+    }
+  }, [input])
+  useEffect(() => {
     const releaseKeyboard = bindCharacterKeyboard({
       controls: input.current,
       enabled: () => !paused && modeRef.current === 'walk' && !roberRemote.current,
       onAction: (e) => {
+        if (world.id === 'earth' && buggy.driving) {
+          if (e.code === 'Space') {
+            e.preventDefault()
+            input.current.keys.add('Space')
+          }
+          if (e.code === 'KeyE' && !e.repeat) input.current.actions.push('interact')
+          return
+        }
         if (e.code === 'Space' && roomAt(location.current.x, location.current.z)) return
         if (world.id === 'earth' && CHARACTER_KEYS[e.code]) {
           e.preventDefault()
@@ -97,7 +138,7 @@ export default function PlayerRig({
       input.current.yaw -= (e.clientX - lastX) * 0.005
       input.current.pitch = T.MathUtils.clamp(
         input.current.pitch + (e.clientY - lastY) * 0.004,
-        -0.08,
+        firstPerson.current ? -1.15 : -0.08,
         1.1,
       )
       lastX = e.clientX
@@ -107,7 +148,7 @@ export default function PlayerRig({
       dragging = false
     }
     const wheel = (e: WheelEvent) => {
-      if (modeRef.current !== 'walk') return
+      if (modeRef.current !== 'walk' || firstPerson.current) return
       e.preventDefault()
       input.current.zoom = T.MathUtils.clamp(input.current.zoom + e.deltaY * 0.006, 4, 15)
     }
@@ -151,7 +192,41 @@ export default function PlayerRig({
       }
       lastMode.current = mode
     }
-    if (world.id === 'earth') {
+    if (
+      world.id === 'earth' &&
+      mode === 'walk' &&
+      !paused &&
+      !roberRemote.current &&
+      input.current.actions.includes('interact') &&
+      (buggy.driving || canBoard(p.x, p.z))
+    ) {
+      input.current.actions.length = 0
+      if (buggy.driving) {
+        buggy.speed = 0
+        const exit = buggyExit(carClear)
+        exitBlocked.current = !exit
+        if (exit) {
+          buggy.driving = false
+          p.set(exit.x, groundHeight(exit.x, exit.z), exit.z)
+        }
+      } else if (motion.current.phase === 'ground' && !motion.current.seat) {
+        buggy.driving = true
+        exitBlocked.current = false
+        input.current.yaw = buggy.yaw + Math.PI
+        input.current.pitch = 0.22
+      }
+      input.current.keys.clear()
+      motion.current = createCharacterMotion()
+    }
+    if (world.id === 'earth' && buggy.driving) {
+      input.current.actions.length = 0
+      if (mode === 'walk' && !paused && !roberRemote.current)
+        input.current.yaw += driveBuggy(k, delta, carClear, terrainHeight)
+      else buggy.speed = 0
+      p.set(buggy.x, groundHeight(buggy.x, buggy.z), buggy.z)
+      motion.current.speed = 0
+      motion.current.clip = 'Sit_Idle'
+    } else if (world.id === 'earth') {
       if (mode === 'walk' && !paused) {
         const result = stepCharacter(
           motion.current,
@@ -222,7 +297,25 @@ export default function PlayerRig({
     occupant.z = p.z
     occupant.active = mode === 'walk'
     occupant.earth = world.id === 'earth'
-    if (player.current) player.current.position.copy(p)
+    const indoors = !!roomAt(p.x, p.z)
+    if (player.current) {
+      player.current.position.copy(p)
+      player.current.visible = !(mode === 'walk' && indoors)
+      if (world.id === 'earth' && buggy.driving) {
+        player.current.position.x -= Math.cos(buggy.yaw) * 0.28
+        player.current.position.z += Math.sin(buggy.yaw) * 0.28
+        player.current.position.y += 0.18
+        player.current.rotation.y = buggy.yaw
+      }
+    }
+    if (vehicle.current) {
+      vehicle.current.position.set(buggy.x, groundHeight(buggy.x, buggy.z) + 0.025, buggy.z)
+      vehicle.current.rotation.y = buggy.yaw
+    }
+    if (indoors !== firstPerson.current) {
+      input.current.pitch = indoors ? 0 : 0.14
+      firstPerson.current = indoors
+    }
     if (mode === 'walk' && roberRemote.current) {
       const rover = roberRemote.current
       camTarget.set(0, 4.5, -8).applyAxisAngle(upAxis, rover.rotation.y).add(rover.position)
@@ -230,26 +323,39 @@ export default function PlayerRig({
       camera.lookAt(rover.position.x, rover.position.y + 1, rover.position.z)
     } else if (mode === 'walk') {
       const { yaw, pitch, zoom } = input.current
-      const indoors = !!roomAt(p.x, p.z)
-      const h = Math.cos(pitch) * (indoors ? 2.6 : zoom)
-      camTarget.set(
-        p.x + Math.sin(yaw) * h,
-        p.y + MOTION_SCALE.cameraHeight + Math.sin(pitch) * (indoors ? 2.6 : zoom),
-        p.z + Math.cos(yaw) * h,
-      )
-      // Pull the follow camera toward the player when a building blocks its line of sight.
-      for (let i = 1; i <= 12; i++) {
-        const t = i / 12
-        const x = T.MathUtils.lerp(p.x, camTarget.x, t),
-          z = T.MathUtils.lerp(p.z, camTarget.z, t)
-        if (!canWalk(x, z)) {
-          camTarget.lerpVectors(p, camTarget, Math.max(0.12, (i - 1) / 12))
-          camTarget.y = Math.max(camTarget.y, p.y + 2.1)
-          break
+      if (indoors) {
+        // Place the lens at eye level immediately: interpolation would pass through walls.
+        camera.position.set(p.x, p.y + (motion.current.seat ? 1.1 : 1.62), p.z)
+        camera.lookAt(
+          lookTarget.set(
+            p.x - Math.sin(yaw) * Math.cos(pitch),
+            camera.position.y - Math.sin(pitch),
+            p.z - Math.cos(yaw) * Math.cos(pitch),
+          ),
+        )
+      } else {
+        const h = Math.cos(pitch) * (buggy.driving && world.id === 'earth' ? 8 : zoom)
+        camTarget.set(
+          p.x + Math.sin(yaw) * h,
+          p.y +
+            MOTION_SCALE.cameraHeight +
+            Math.sin(pitch) * (buggy.driving && world.id === 'earth' ? 8 : zoom),
+          p.z + Math.cos(yaw) * h,
+        )
+        // Pull the follow camera toward the player when a building blocks its line of sight.
+        for (let i = 1; i <= 12; i++) {
+          const t = i / 12
+          const x = T.MathUtils.lerp(p.x, camTarget.x, t),
+            z = T.MathUtils.lerp(p.z, camTarget.z, t)
+          if (!worldClear(x, z)) {
+            camTarget.lerpVectors(p, camTarget, Math.max(0.12, (i - 1) / 12))
+            camTarget.y = Math.max(camTarget.y, p.y + 2.1)
+            break
+          }
         }
+        camera.position.lerp(camTarget, 1 - Math.exp(-delta * 7))
+        camera.lookAt(lookTarget.set(p.x, p.y + MOTION_SCALE.cameraTarget, p.z))
       }
-      camera.position.lerp(camTarget, 1 - Math.exp(-delta * 7))
-      camera.lookAt(lookTarget.set(p.x, p.y + MOTION_SCALE.cameraTarget, p.z))
     } else if (mode === 'tour') {
       const s = SECTORS[tourIndex],
         drift = reduced ? 0 : Math.sin(state.clock.elapsedTime * 0.12) * 3
@@ -270,7 +376,12 @@ export default function PlayerRig({
       onPosition({
         x: p.x,
         z: p.z,
-        nearby: stationFor(p.x, p.z)?.sector ?? null,
+        nearby:
+          world.id === 'earth' && buggy.driving ? null : (stationFor(p.x, p.z)?.sector ?? null),
+        vehicle:
+          world.id === 'earth' && (buggy.driving ? 'driving' : canBoard(p.x, p.z) ? 'near' : null),
+        speed: world.id === 'earth' ? Math.abs(buggy.speed) * 3.6 : 0,
+        exitBlocked: buggy.driving && exitBlocked.current,
         fps: fps.current,
         room: roomAt(p.x, p.z),
       })
@@ -278,6 +389,15 @@ export default function PlayerRig({
   })
   return (
     <>
+      {world.id === 'earth' && (
+        <group
+          ref={vehicle}
+          position={[buggy.x, groundHeight(buggy.x, buggy.z) + 0.025, buggy.z]}
+          rotation={[0, buggy.yaw, 0]}
+        >
+          <BuggyModel />
+        </group>
+      )}
       <group ref={player} position={[START[0], 0, START[1]]} rotation={[0, Math.PI, 0]}>
         <CharacterBoundary
           key={`${world.id}-${wardrobe.character}-${wardrobe[world.id]}`}

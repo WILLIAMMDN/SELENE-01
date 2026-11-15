@@ -1,3 +1,4 @@
+import { buggy, nearBuggy } from '../world/buggyControl'
 import { useEffect, useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { useGLTF } from '@react-three/drei'
@@ -82,6 +83,7 @@ export default function OdysseyLander({ x, z, height, paused = false, training =
       }
     }
     const key = (e: KeyboardEvent) => {
+      if (occupant.earth && (buggy.driving || nearBuggy(occupant.x, occupant.z))) return
       if (
         pausedRef.current ||
         !occupant.active ||

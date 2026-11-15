@@ -9,7 +9,6 @@ export const SCENERY_BLOCKERS = [
   { x: 87, z: -13, hx: 2.65, hz: 2.65 },
   { x: 30, z: 43, hx: 1.2, hz: 2.2 },
   { x: 61, z: 31, hx: 1.3, hz: 2.5 },
-  { x: 30, z: 20, hx: 1.1, hz: 1.8 },
 ]
 export const sceneryClear = (x: number, z: number) =>
   coastDistance(x, z) > 1.025 &&

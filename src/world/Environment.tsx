@@ -2,10 +2,8 @@ import EarthTools from './tools/EarthTools'
 import OdysseyLander from '../spacecraft/OdysseyLander'
 import EnvironmentProps from './EnvironmentProps'
 import CampusWildlife from './CampusWildlife'
-import { useFrame } from '@react-three/fiber'
-import type { Group } from 'three'
 import OdysseyShip from '../spacecraft/OdysseyShip'
-import { occupant, buildingAt, INTERIOR_STATIONS } from './buildingNavigation'
+import { INTERIOR_STATIONS } from './buildingNavigation'
 import CampusObservatory from './CampusObservatory'
 import CampusAtmosphere from './CampusAtmosphere'
 import ArtemisaBuildings from './ArtemisaBuildings'
@@ -15,15 +13,11 @@ import Tree from './IllustratedTrees'
 import Rober from './Rober'
 import LaunchComplex, { LAUNCH_SITE } from '../spacecraft/LaunchComplex'
 import { OdysseyDisplay } from '../spacecraft/OdysseyShip'
-import { memo, useRef } from 'react'
+import { memo } from 'react'
 import { Solid, Sign, Window, Door, Solar, Bench, Stroke } from './ArtKit'
 import { canWalk, groundHeight, PALETTE as P } from './worldData'
 
 function Hangar() {
-  const roof = useRef<Group>(null)
-  useFrame(() => {
-    if (roof.current) roof.current.visible = buildingAt(occupant.x, occupant.z) !== 'hangar'
-  })
   return (
     <group position={[24, 0, -16]}>
       <Solid position={[0, 0.15, 0]} scale={[25, 0.3, 23]} color="#afb2a0" />
@@ -39,7 +33,7 @@ function Hangar() {
         />
       ))}
       <Solid position={[0, 23.3, 9.85]} scale={[15, 2, 0.3]} color={P.teal} />
-      <group ref={roof}>
+      <group>
         <Solid position={[0, 24.55, 0]} scale={[24, 0.5, 21]} color={P.teal} />
         <Solar position={[-5, 24.8, 0]} />
         <Solar position={[4, 24.8, 0]} />

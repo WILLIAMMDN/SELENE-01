@@ -24,7 +24,7 @@ export default function CampusSky({
       startHour: 10,
       daySeconds: 300,
       nightSeconds: 60,
-      cloudCount: quality === 'light' ? 20 : 36,
+      cloudCount: quality === 'light' ? 16 : 28,
       rainCount: quality === 'light' ? 250 : 650,
     })
     sky.current = instance

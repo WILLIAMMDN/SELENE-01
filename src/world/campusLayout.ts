@@ -16,6 +16,22 @@ export const CAMPUS_BUILDINGS = [
 export const CAMPUS_ROADS: { points: [number, number][]; width: number; main?: boolean }[] = [
   {
     points: [
+      [-41, -4],
+      [-40, 8.1],
+      [-45, 8.1],
+    ],
+    width: 1.6,
+  },
+  {
+    points: [
+      [23, 23],
+      [28, 26],
+      [31, 26],
+    ],
+    width: 1.6,
+  },
+  {
+    points: [
       [0, 68],
       [0, 40],
       [-1, 22],

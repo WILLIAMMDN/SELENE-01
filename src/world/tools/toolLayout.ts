@@ -1,4 +1,4 @@
-export const TOOL_STATION = { x: 29, z: 21, height: 0.45, entry: [29, 24] as [number, number] }
+export const TOOL_STATION = { x: 31, z: 23, height: 0.45, entry: [31, 26] as [number, number] }
 export const TOOL_ACTIONS = [
   ['Llave_Inglesa', 'Llave inglesa', 'Abre y ajusta la mandíbula.'],
   ['Destornillador', 'Destornillador', 'Gira el eje para mostrar su funcionamiento.'],

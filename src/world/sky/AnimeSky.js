@@ -159,9 +159,13 @@ export class AnimeSky {
           sun: { value: new THREE.Vector3(1, 1, 0) },
           flash: { value: 0 },
         },
-        vertexShader: `attribute float shadeBand; varying float vBand;
+        vertexShader: `attribute float shadeBand; attribute vec4 cloudShape; varying float vBand;
         void main(){ vBand=shadeBand;
-          gl_Position=projectionMatrix*modelViewMatrix*instanceMatrix*vec4(position,1.); }`,
+          vec3 p=position;
+          p.y += sin(p.x*4.1+cloudShape.x)*cloudShape.y;
+          p.x += p.y*cloudShape.z;
+          p.x *= cloudShape.w;
+          gl_Position=projectionMatrix*modelViewMatrix*instanceMatrix*vec4(p,1.); }`,
         fragmentShader: `varying float vBand; uniform vec3 top,shadow; uniform float flash;
         void main(){
           vec3 ink=mix(shadow,vec3(.24,.36,.39),.18);
@@ -175,41 +179,71 @@ export class AnimeSky {
     this._puffs = []
     this.cloudMeshes = []
     const facing = new THREE.Object3D()
+    const placed = []
     for (let variant = 0; variant < 4; variant++) {
       const amount = Math.floor(count / 4) + (variant < count % 4 ? 1 : 0)
-      const mesh = new THREE.InstancedMesh(
-        this._geometry(paintedCloudGeometry(variant)),
-        this.cloudMaterial,
-        amount,
-      )
+      const geometry = this._geometry(paintedCloudGeometry(variant))
+      const shapes = new Float32Array(amount * 4)
+      geometry.setAttribute('cloudShape', new THREE.InstancedBufferAttribute(shapes, 4))
+      const mesh = new THREE.InstancedMesh(geometry, this.cloudMaterial, amount)
       mesh.frustumCulled = false
       mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage)
       this.cloudMeshes.push(mesh)
       this.group.add(mesh)
       for (let j = 0; j < amount; j++) {
-        const angle = (j / amount) * TAU + variant * 0.71 + (this._random() - 0.5) * 0.25
-        const low = variant === 3,
-          tower = variant === 2
-        const radius = low ? 390 : tower ? 330 : 280 + this._random() * 50
-        const height = low
-          ? 18 + this._random() * 26
-          : tower
-            ? 48 + this._random() * 45
-            : 75 + this._random() * 95
-        const center = new THREE.Vector3(Math.cos(angle) * radius, height, Math.sin(angle) * radius)
+        // Best-candidate placement in angular space prevents rows and stacked copies.
+        // Each candidate sees ALL previous families, not its own circular ring.
+        const low = variant === 3
+        const radius = 270 + this._random() * 125
+        const width = (low ? 37 : 22) + this._random() * (low ? 28 : 25)
+        const aspect = low ? 0.35 + this._random() * 0.22 : 0.5 + this._random() * 0.42
+        let best,
+          bestScore = -Infinity
+        for (let attempt = 0; attempt < 48; attempt++) {
+          const angle = this._random() * TAU
+          const elevation = low ? 0.035 + this._random() * 0.1 : 0.16 + this._random() * 0.49
+          const halfWidth = (width * 1.25) / radius
+          const halfHeight = (width * aspect * (variant === 2 ? 1.6 : 1.1)) / radius
+          let score = 10
+          for (const p of placed) {
+            const az = Math.abs(Math.atan2(Math.sin(angle - p.angle), Math.cos(angle - p.angle)))
+            const el = Math.abs(elevation - p.elevation)
+            score = Math.min(
+              score,
+              Math.hypot(az / (halfWidth + p.halfWidth), el / (halfHeight + p.halfHeight)),
+            )
+          }
+          // Leave a soft opening around the sunward sky, avoiding uniform coverage.
+          score *= 0.82 + 0.18 * Math.sin(angle * 1.7 + 0.8) ** 2
+          if (score > bestScore) {
+            bestScore = score
+            best = { angle, elevation, halfWidth, halfHeight }
+          }
+        }
+        placed.push(best)
+        const center = new THREE.Vector3(
+          Math.cos(best.angle) * radius,
+          Math.tan(best.elevation) * radius,
+          Math.sin(best.angle) * radius,
+        )
         facing.position.copy(center)
         facing.lookAt(0, 0, 0)
-        const width = low
-          ? 65 + this._random() * 30
-          : tower
-            ? 42 + this._random() * 24
-            : 30 + this._random() * 30
+        facing.rotateZ((this._random() - 0.5) * 0.08)
+        shapes.set(
+          [
+            this._random() * TAU,
+            0.025 + this._random() * 0.1,
+            (this._random() - 0.5) * 0.3,
+            this._random() < 0.5 ? -1 : 1,
+          ],
+          j * 4,
+        )
         this._puffs.push({
           mesh,
           index: j,
           center,
           rotation: facing.quaternion.clone(),
-          scale: new THREE.Vector3(width, width * (low ? 0.42 : tower ? 0.95 : 0.65), 1),
+          scale: new THREE.Vector3(width, width * aspect, 1),
           phase: this._random() * TAU,
         })
       }

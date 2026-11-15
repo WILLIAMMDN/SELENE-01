@@ -1,3 +1,5 @@
+import { BUILDING_ENTRANCES } from '../../world/buildingEntrances'
+import { buggyExit } from '../../world/buggyControl'
 import ToolsPanel from './ToolsPanel'
 import { TOOL_STATION } from '../../world/tools/toolLayout'
 import { LUNAR_LANDER } from '../../world/lunar/lunarNavigation'
@@ -280,6 +282,37 @@ export default function WorldNotebook({
               </div>
             </div>
             {!offworld && (
+              <>
+                <details className="building-directory">
+                  <summary>Explorar los edificios</summary>
+                  <p>
+                    Acércate a la puerta: se abre automáticamente. Dentro caminarás en primera
+                    persona; arrastra para mirar.
+                  </p>
+                  <div className="building-links">
+                    {BUILDING_ENTRANCES.map((entry) => (
+                      <button
+                        key={entry.id}
+                        className="secondary-world"
+                        onClick={() => onTravelPoint(entry.point)}
+                      >
+                        {entry.label} →
+                      </button>
+                    ))}
+                  </div>
+                </details>
+                <button
+                  className="secondary-world"
+                  onClick={() => {
+                    const exit = buggyExit(world.canWalk)
+                    if (exit) onTravelPoint([exit.x, exit.z])
+                  }}
+                >
+                  Ir al buggy del campus →
+                </button>
+              </>
+            )}
+            {!offworld && (
               <button className="secondary-world" onClick={() => onTravelPoint(TOOL_STATION.entry)}>
                 Visitar el banco de herramientas →
               </button>
@@ -327,7 +360,13 @@ export default function WorldNotebook({
               <dt>Ctrl</dt>
               <dd>Sentarse junto a un banco</dd>
               <dt>E</dt>
-              <dd>Conversar o usar una estación</dd>
+              <dd>Conversar, usar una estación o subir y bajar del buggy</dd>
+              <dt>Buggy</dt>
+              <dd>W/↑: acelerar · S/↓: frenar y retroceder · A/D o ←/→: girar · Espacio: frenar</dd>
+              <dt>Interiores</dt>
+              <dd>
+                Primera persona automática; arrastra para mirar. Al salir vuelve la cámara exterior.
+              </dd>
             </dl>
             <button className="secondary-world" onClick={() => onVisit('start')}>
               Volver a la entrada del campus

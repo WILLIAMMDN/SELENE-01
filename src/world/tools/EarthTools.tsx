@@ -1,3 +1,4 @@
+import { buggy, nearBuggy } from '../buggyControl'
 import { useEffect, useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { useGLTF } from '@react-three/drei'
@@ -76,6 +77,7 @@ export default function EarthTools({ paused, reduced }: { paused: boolean; reduc
       seek(start)
     }
     const open = (e: KeyboardEvent) => {
+      if (buggy.driving || nearBuggy(occupant.x, occupant.z)) return
       if (pausedRef.current || !occupant.active || !occupant.earth || e.repeat || e.code !== 'KeyE')
         return
       if (Math.hypot(occupant.x - TOOL_STATION.entry[0], occupant.z - TOOL_STATION.entry[1]) > 2.5)

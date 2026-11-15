@@ -1,3 +1,4 @@
+import { roomLabel } from './buildingEntrances'
 import WorldNotebook from '../ui/world/WorldNotebook'
 import { OBJECTIVE_NAMES, type Panel } from '../ui/world/worldUiTypes'
 import { useCampusMission, nextMissionStep, missionVerified } from '../game/campusMission'
@@ -243,7 +244,7 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
           <h1>Bienvenida a {world.place}.</h1>
         </div>
       )}
-      {!conversation && !panel && (
+      {!conversation && !panel && !(mode === 'walk' && position.room) && (
         <button className="quest-slip" onClick={() => setPanel('journal')}>
           <span>{offworld ? (moon ? 'LUNA' : 'ARES') : `MISIÓN ${next.number} / 05`}</span>
           <strong>{offworld ? 'Explora el paisaje' : objectiveNames[next.sector]}</strong>
@@ -302,11 +303,29 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
           <CampusMap position={position} visited={visited} />
         </aside>
       )}
-      {mode === 'walk' && nearby && !panel && !conversation && (
+      {mode === 'walk' && nearby && !position.vehicle && !panel && !conversation && (
         <button className="station-prompt" onClick={() => onInteract(nearby.id)}>
           <kbd>E</kbd> {nearby.id === 'research' ? 'Hablar con la Dra. Vega' : 'Usar estación'}{' '}
           <span>▶</span>
         </button>
+      )}
+      {mode === 'walk' && position.vehicle && !panel && !conversation && (
+        <div className="vehicle-controls">
+          {position.vehicle === 'driving' && (
+            <span>
+              {Math.round(position.speed ?? 0)} km/h · W/S acelerar y retroceder · A/D girar
+            </span>
+          )}
+          {position.exitBlocked && <span>Acércate a una zona abierta para bajar.</span>}
+          <button className="station-prompt" onClick={() => input.current.actions.push('interact')}>
+            <kbd>E</kbd> {position.vehicle === 'driving' ? 'Detenerse y bajar' : 'Conducir buggy'}
+          </button>
+        </div>
+      )}
+      {mode === 'walk' && position.room && !panel && !conversation && (
+        <div className="interior-caption">
+          {roomLabel(position.room)} <small>Primera persona · arrastra para mirar</small>
+        </div>
       )}
       {mode !== 'walk' && !panel && !conversation && (
         <div className="view-controls">
@@ -349,19 +368,32 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
           </div>
           <div className="touch-actions">
             <button
-              aria-label="Correr, mantener pulsado"
+              aria-label={
+                position.vehicle === 'driving'
+                  ? 'Frenar, mantener pulsado'
+                  : 'Correr, mantener pulsado'
+              }
               onPointerDown={(e) => {
                 e.preventDefault()
                 e.currentTarget.setPointerCapture(e.pointerId)
-                input.current.keys.add('ShiftLeft')
+                input.current.keys.add(position.vehicle === 'driving' ? 'Space' : 'ShiftLeft')
               }}
-              onPointerUp={() => input.current.keys.delete('ShiftLeft')}
-              onPointerCancel={() => input.current.keys.delete('ShiftLeft')}
-              onLostPointerCapture={() => input.current.keys.delete('ShiftLeft')}
+              onPointerUp={() => {
+                input.current.keys.delete('ShiftLeft')
+                input.current.keys.delete('Space')
+              }}
+              onPointerCancel={() => {
+                input.current.keys.delete('ShiftLeft')
+                input.current.keys.delete('Space')
+              }}
+              onLostPointerCapture={() => {
+                input.current.keys.delete('ShiftLeft')
+                input.current.keys.delete('Space')
+              }}
             >
-              Correr
+              {position.vehicle === 'driving' ? 'Frenar' : 'Correr'}
             </button>
-            {!offworld && (
+            {!offworld && position.vehicle !== 'driving' && !position.room && (
               <button
                 onClick={() => {
                   if (!position.room) input.current.actions.push('jump')
