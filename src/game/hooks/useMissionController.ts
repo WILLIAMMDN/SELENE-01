@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { missionGuidance } from '../missionGuidance'
 import { objectiveDebrief } from '../objectiveDebrief'
 import { operationPreview } from '../operationFeedback'
@@ -61,6 +61,9 @@ export function useMissionController({
   )
   const [ops, setOps] = useState(() => resume?.ops ?? startOperations())
   const [launched, setLaunched] = useState(!!resume)
+  const [launching, setLaunching] = useState(false)
+  const [launchElapsed, setLaunchElapsed] = useState(0)
+  const completedLaunch = useRef(false)
   const [exploded, setExploded] = useState(false)
   const [notification, setNotification] = useState('')
   const evaluation = evaluateDesign(config)
@@ -87,6 +90,9 @@ export function useMissionController({
     (!campus || (launchAccess && missionVerified(config, assembly)))
   function resetFlight() {
     clearOperationSession()
+    completedLaunch.current = false
+    setLaunching(false)
+    setLaunchElapsed(0)
     setLaunched(false)
     setOps(startOperations())
   }
@@ -157,16 +163,27 @@ export function useMissionController({
     })
   }
   const fly = () => {
+    if (launching) return
     if (!operateReady) {
       go('design')
       return
     }
+    completedLaunch.current = false
+    setLaunchElapsed(0)
+    setLaunching(true)
+    setNotification('')
+  }
+  /** Skipping completes the same authorized simulated launch: no alternative save path. */
+  const finishLaunch = () => {
+    if (!launching || !operateReady || completedLaunch.current) return
+    completedLaunch.current = true
     const next = startOperations()
     if (campus) saveOperationSession(blueprintKey(config, assembly), next)
     setOps(next)
     setLaunched(true)
+    setLaunching(false)
     setStage('operations')
-    setNotification('¡Lanzamiento simulado! El orbitador está en la fase de operaciones.')
+    setNotification('ODYSSEY ha completado la secuencia de lanzamiento simulado. Inicia operaciones.')
   }
   const operate = (choice: OperationChoice) => {
     if (!launched || !operateReady) return
@@ -204,6 +221,10 @@ export function useMissionController({
     ops,
     notification,
     launched,
+    launching,
+    launchElapsed,
+    setLaunchElapsed,
+    finishLaunch,
     evaluation,
     guidance,
     debrief,
