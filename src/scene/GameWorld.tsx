@@ -148,15 +148,18 @@ function ShipStage({
   const originZ = mode === 'launch' ? LAUNCH_SITE.z : 0
   useEffect(() => {
     camera.position.set(
-      originX + (mode === 'launch' ? 96 : mode === 'workshop' ? 18 : 24),
+      originX + (mode === 'launch' ? 96 : mode === 'workshop' ? 17 : 24),
       focus + 7,
-      originZ + (mode === 'launch' ? 115 : mode === 'workshop' ? 24 : 30),
+      originZ + (mode === 'launch' ? 115 : mode === 'workshop' ? 22 : 30),
     )
     camera.lookAt(originX, focus, originZ)
   }, [camera, mode, focus, originX, originZ])
   return (
     <>
-      <color attach="background" args={[mode === 'orbit' ? '#202f3d' : '#b8c8bd']} />
+      <color
+        attach="background"
+        args={[mode === 'orbit' ? '#202f3d' : mode === 'workshop' ? '#172b38' : '#b8c8bd']}
+      />
       <ambientLight intensity={1.5} />
       <directionalLight
         position={[-8, 18, 10]}
@@ -179,16 +182,32 @@ function ShipStage({
         </>
       ) : mode === 'workshop' ? (
         <>
+          <mesh position={[0, 8, -17]} receiveShadow>
+            <planeGeometry args={[90, 28]} />
+            <meshStandardMaterial color="#203a49" roughness={0.9} />
+          </mesh>
+          {[-20, -10, 0, 10, 20].map((x) => (
+            <mesh key={x} position={[x, 8, -16.8]}>
+              <boxGeometry args={[0.16, 16, 0.2]} />
+              <meshStandardMaterial color="#365463" />
+            </mesh>
+          ))}
+          {[4, 12].map((y) => (
+            <mesh key={y} position={[0, y, -16.7]}>
+              <boxGeometry args={[90, 0.14, 0.2]} />
+              <meshStandardMaterial color="#365463" />
+            </mesh>
+          ))}
           <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
             <planeGeometry args={[100, 100]} />
-            <meshToonMaterial color="#9cab9c" />
+            <meshStandardMaterial color="#1b3441" roughness={0.96} />
           </mesh>
           <mesh position={[0, -0.12, 0]} receiveShadow>
             <cylinderGeometry args={[7, 7, 0.24, 48]} />
-            <meshToonMaterial color="#e2dbc6" />
-            <Edges color="#3a4c50" />
+            <meshStandardMaterial color="#455866" metalness={0.3} roughness={0.7} />
+            <Edges color="#c49b53" />
           </mesh>
-          <gridHelper args={[30, 30, '#6c8581', '#97a496']} position={[0, 0.015, 0]} />
+          <gridHelper args={[30, 30, '#637d88', '#34505e']} position={[0, 0.015, 0]} />
         </>
       ) : (
         <>

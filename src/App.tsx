@@ -5,6 +5,7 @@ import { useMissionController, type CampaignProps } from './game/hooks/useMissio
 import { STAGES, TIPS } from './game/campaignContent'
 import './styles.css'
 import './campaignPaper.css'
+import './designConsole.css'
 import BriefingPanel from './ui/campaign/BriefingPanel'
 import DesignPanel from './ui/campaign/DesignPanel'
 import LaunchPanel from './ui/campaign/LaunchPanel'
@@ -49,7 +50,7 @@ export default function App(props: CampaignProps) {
     return () => document.body.classList.remove('selene-film-active')
   }, [launching])
   return (
-    <div className={launching ? 'app-shell cinematic-active' : 'app-shell'}>
+    <div className={`app-shell stage-${stage}${launching ? ' cinematic-active' : ''}`}>
       <header className="topbar">
         <div className="brand">
           <span className="brand-symbol">◐</span>
