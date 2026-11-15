@@ -25,7 +25,7 @@ export const LUNAR_RESOURCES: LunarResource[] = [
     science:
       'Depósitos de hielo en trampas frías de cráteres polares. Esencial para soporte vital humano y electrólisis en hidrógeno y oxígeno líquidos como propelente.',
     color: '#38bdf8',
-    position: [44, 60],
+    position: [28, 70],
     action: 'Extraer hielo',
   },
   {
@@ -36,7 +36,7 @@ export const LUNAR_RESOURCES: LunarResource[] = [
     science:
       'Materia prima de silicatos y óxidos metálicos. Base para sinterizado por microondas y fabricación aditiva de bloques de hábitat y escudos antirradiación.',
     color: '#e2e8f0',
-    position: [38, 56],
+    position: [10, 52],
     action: 'Recoger regolito',
   },
   {
@@ -47,7 +47,7 @@ export const LUNAR_RESOURCES: LunarResource[] = [
     science:
       'Isótopo implantado por el viento solar en el regolito. Recurso estratégico para futuros reactores de fusión nuclear limpia y generación de energía de alta densidad.',
     color: '#4ade80',
-    position: [32, 62],
+    position: [-12, 68],
     action: 'Detectar Helio-3',
   },
   {
@@ -58,7 +58,7 @@ export const LUNAR_RESOURCES: LunarResource[] = [
     science:
       'Mineral ilmenita (FeTiO3) en basaltos lunares. Fuente de aleaciones ultraligeras para estructuras espaciales y extracción piroclástica de oxígeno.',
     color: '#a78bfa',
-    position: [26, 54],
+    position: [-34, 52],
     action: 'Muestrear ilmenita',
   },
   {
@@ -69,7 +69,7 @@ export const LUNAR_RESOURCES: LunarResource[] = [
     science:
       'Granos metálicos de hierro puro en el regolito. Fundición in-situ para componentes estructurales, conductores y herramientas mecánicas sin transporte terrestre.',
     color: '#fb923c',
-    position: [33, 48],
+    position: [-56, 72],
     action: 'Fracturar mena',
   },
   {
@@ -80,7 +80,7 @@ export const LUNAR_RESOURCES: LunarResource[] = [
     science:
       'Brecha anortosítica de las tierras altas polares. Sellada al vacío para análisis petrológico y cronología de impactos en laboratorios de la Tierra.',
     color: '#facc15',
-    position: [41, 50],
+    position: [-74, 64],
     action: 'Embalar muestra',
   },
 ]
@@ -118,6 +118,9 @@ export default function LunarResourcesMission({ heightAt, paused, onConversation
       const updated = [...prev, id]
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
+        window.dispatchEvent(
+          new CustomEvent('selene-lunar-resource-collected', { detail: updated }),
+        )
       } catch {
         /* ignore */
       }
@@ -161,10 +164,10 @@ export default function LunarResourcesMission({ heightAt, paused, onConversation
     // Proximidad al jugador estimada vía distancia a la cámara
     const camPos = camera.position
     const distGeol = Math.hypot(camPos.x - geologistPos[0], camPos.z - geologistPos[1])
-    setNearGeologist(distGeol < 12)
+    setNearGeologist(distGeol < 14)
 
     let closest: LunarResource | null = null
-    let minDist = 11 // ~3-4m del jugador (con zoom de cámara de 7.5)
+    let minDist = 14 // Cómoda distancia de interacción en terreno abierto
     for (const res of LUNAR_RESOURCES) {
       const d = Math.hypot(camPos.x - res.position[0], camPos.z - res.position[1])
       if (d < minDist) {
@@ -461,13 +464,13 @@ export default function LunarResourcesMission({ heightAt, paused, onConversation
               <meshToonMaterial color="#64748b" />
             </mesh>
 
-            {/* Poste y baliza indicadora */}
-            <mesh position={[-0.65, 0.65, -0.65]}>
-              <cylinderGeometry args={[0.04, 0.04, 1.3, 8]} />
+            {/* Poste y baliza indicadora visible a distancia */}
+            <mesh position={[-0.65, 1.1, -0.65]}>
+              <cylinderGeometry args={[0.05, 0.05, 2.2, 8]} />
               <meshToonMaterial color="#243338" />
             </mesh>
-            <mesh position={[-0.65, 1.35, -0.65]}>
-              <sphereGeometry args={[0.1, 12, 12]} />
+            <mesh position={[-0.65, 2.25, -0.65]}>
+              <sphereGeometry args={[0.18, 12, 12]} />
               <meshBasicMaterial color={isCollected ? '#4ade80' : res.color} />
             </mesh>
 

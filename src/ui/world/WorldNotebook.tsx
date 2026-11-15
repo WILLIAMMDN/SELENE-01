@@ -19,6 +19,7 @@ import type { PositionReport, Travel } from '../../world/ExplorerScene'
 import type { SectorId, ViewMode } from '../../world/worldData'
 import CampusMap from './CampusMap'
 import { OBJECTIVE_NAMES, type Panel } from './worldUiTypes'
+import LunarMissionJournal from './LunarMissionJournal'
 
 type Props = {
   panel: Exclude<Panel, null>
@@ -205,56 +206,64 @@ export default function WorldNotebook({
             <small>Una aventura de diseño de misiones. Partida local.</small>
           </>
         )}
-        {panel === 'journal' && (
-          <>
-            <span className="paper-kicker">BITÁCORA DE LA TRIPULACIÓN</span>
-            <h2 id="dialog-title">Una pregunta. Una misión.</h2>
-            <p>
-              Tu encargo: diseñar ODYSSEY, enviarla a estudiar el polo sur lunar y recuperar
-              información que permita responder a tu pregunta.
-            </p>
-            <ol className="quest-list">
-              {(['research', 'hangar', 'control', 'launch', 'observatory'] as SectorId[]).map(
-                (id, i) => (
-                  <li key={id} className={next.sector === id ? 'current' : ''}>
-                    <button onClick={() => onPanel(id)}>
-                      <span>{i + 1}</span>
-                      <strong>{objectiveNames[id]}</strong>
-                      {next.sector === id && <small>Ahora</small>}
-                    </button>
-                  </li>
-                ),
+        {panel === 'journal' &&
+          (moon ? (
+            <LunarMissionJournal
+              onClose={onClose}
+              onPanel={onPanel}
+              onConversation={onConversation}
+              onTravelPoint={onTravelPoint}
+            />
+          ) : (
+            <>
+              <span className="paper-kicker">BITÁCORA DE LA TRIPULACIÓN</span>
+              <h2 id="dialog-title">Una pregunta. Una misión.</h2>
+              <p>
+                Tu encargo: diseñar ODYSSEY, enviarla a estudiar el polo sur lunar y recuperar
+                información que permita responder a tu pregunta.
+              </p>
+              <ol className="quest-list">
+                {(['research', 'hangar', 'control', 'launch', 'observatory'] as SectorId[]).map(
+                  (id, i) => (
+                    <li key={id} className={next.sector === id ? 'current' : ''}>
+                      <button onClick={() => onPanel(id)}>
+                        <span>{i + 1}</span>
+                        <strong>{objectiveNames[id]}</strong>
+                        {next.sector === id && <small>Ahora</small>}
+                      </button>
+                    </li>
+                  ),
+                )}
+              </ol>
+              {mission.result && (
+                <p>
+                  Último vuelo: {mission.result.score} puntos · {mission.result.delivered} GB
+                  recuperados.
+                </p>
               )}
-            </ol>
-            {mission.result && (
-              <p>
-                Último vuelo: {mission.result.score} puntos · {mission.result.delivered} GB
-                recuperados.
-              </p>
-            )}
-            <button
-              className="primary-world"
-              onClick={() => {
-                onClose()
-                onConversation(stationConversation(next.sector))
-              }}
-            >
-              TARS, explícame el siguiente paso
-            </button>
-            <details>
-              <summary>Por qué importan tus decisiones</summary>
-              <p>
-                Instrumentos, masa, energía, presupuesto, comunicaciones, órbita y duración compiten
-                por recursos. Un diseño compatible debe responder a su objetivo y devolver datos.
-                Puedes rediseñar después de cada vuelo.
-              </p>
-              <p>
-                Los parámetros son educativos. Juegas individualmente; los cuatro cuadernos de TARS
-                no son multijugador en línea.
-              </p>
-            </details>
-          </>
-        )}
+              <button
+                className="primary-world"
+                onClick={() => {
+                  onClose()
+                  onConversation(stationConversation(next.sector))
+                }}
+              >
+                TARS, explícame el siguiente paso
+              </button>
+              <details>
+                <summary>Por qué importan tus decisiones</summary>
+                <p>
+                  Instrumentos, masa, energía, presupuesto, comunicaciones, órbita y duración compiten
+                  por recursos. Un diseño compatible debe responder a su objetivo y devolver datos.
+                  Puedes rediseñar después de cada vuelo.
+                </p>
+                <p>
+                  Los parámetros son educativos. Juegas individualmente; los cuatro cuadernos de TARS
+                  no son multijugador en línea.
+                </p>
+              </details>
+            </>
+          ))}
         {panel === 'tars' && <TarsAssistant position={position} onVisit={onVisit} />}
         {panel === 'map' && (
           <>
