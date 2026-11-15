@@ -44,20 +44,16 @@ export default function CampusObservatory({
   }, [scene])
   useEffect(() => {
     const play = (id: string, finish = false) => {
-      try {
-        const clip = animations.find((a) => a.name === id)
-        if (!clip) return
-        asset.mixer.stopAllAction()
-        const action = asset.mixer.clipAction(clip).reset().setLoop(T.LoopOnce, 1)
-        action.clampWhenFinished = true
-        action.play()
-        if (finish) {
-          action.time = clip.duration
-          asset.mixer.update(0)
-          action.paused = true
-        }
-      } catch (err) {
-        console.warn('CampusObservatory animation warning:', err)
+      const clip = animations.find((a) => a.name === id)
+      if (!clip) return
+      asset.mixer.stopAllAction()
+      const action = asset.mixer.clipAction(clip).reset().setLoop(T.LoopOnce, 1)
+      action.clampWhenFinished = true
+      action.play()
+      if (finish) {
+        action.time = clip.duration
+        asset.mixer.update(0)
+        action.paused = true
       }
     }
     play('Obs_Close_Park', true)
@@ -68,11 +64,8 @@ export default function CampusObservatory({
     window.addEventListener('selene-observatory-action', command)
     return () => {
       window.removeEventListener('selene-observatory-action', command)
-      try {
-        asset.mixer.stopAllAction()
-      } catch {
-        /* no-op */
-      }
+      asset.mixer.stopAllAction()
+      // Keep actions bound through React StrictMode's effect replay.
     }
   }, [asset, animations, reduced])
   useEffect(
@@ -82,11 +75,7 @@ export default function CampusObservatory({
     [asset],
   )
   useFrame((_, dt) => {
-    try {
-      if (!paused && !reduced) asset.mixer.update(Math.min(dt, 0.05))
-    } catch {
-      /* ignore */
-    }
+    if (!paused && !reduced) asset.mixer.update(Math.min(dt, 0.05))
   })
   return (
     <group

@@ -7,7 +7,7 @@ import './styles.css'
 import BriefingPanel from './ui/campaign/BriefingPanel'
 import DesignPanel from './ui/campaign/DesignPanel'
 import LaunchPanel from './ui/campaign/LaunchPanel'
-import LaunchCinematicHud from './ui/campaign/LaunchCinematicHud'
+import LaunchCinematicOverlay from './spacecraft/LaunchCinematicOverlay'
 import './spacecraft/launchCinematic.css'
 import OperationsPanel from './ui/campaign/OperationsPanel'
 import ReportPanel from './ui/campaign/ReportPanel'
@@ -43,6 +43,10 @@ export default function App(props: CampaignProps) {
     window.addEventListener('keydown', handleSkip)
     return () => window.removeEventListener('keydown', handleSkip)
   }, [launching, finishLaunch])
+  useEffect(() => {
+    document.body.classList.toggle('selene-film-active', launching)
+    return () => document.body.classList.remove('selene-film-active')
+  }, [launching])
   return (
     <div className={launching ? 'app-shell cinematic-active' : 'app-shell'}>
       <header className="topbar">
@@ -98,12 +102,11 @@ export default function App(props: CampaignProps) {
             onCinematicComplete={finishLaunch}
           />
           {launching && (
-            <LaunchCinematicHud
+            <LaunchCinematicOverlay
               seconds={launchElapsed}
               config={config}
-              parts={assembly}
-              destination={launchDestination}
               onSkip={finishLaunch}
+              destination={launchDestination}
             />
           )}
           <div className="exploration-story">

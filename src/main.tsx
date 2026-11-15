@@ -7,8 +7,10 @@ import { worldLocation } from './world/worldLocation'
 import './styles.css'
 
 const App = lazy(() => import('./App'))
+const LaunchPreview = lazy(() => import('./spacecraft/LaunchPreview'))
 
 const params = new URLSearchParams(window.location.search)
+const preview = params.get('preview') === 'launch'
 const stageParam = params.get('stage')
 const isCampaign =
   params.get('campaign') === 'true' || params.get('mode') === 'campaign' || Boolean(stageParam)
@@ -37,8 +39,14 @@ function GameEntry() {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <CharacterGate>
-      <GameEntry />
-    </CharacterGate>
+    {preview ? (
+      <Suspense fallback={<p role="status">Preparando la vista previa de ODYSSEY…</p>}>
+        <LaunchPreview />
+      </Suspense>
+    ) : (
+      <CharacterGate>
+        <GameEntry />
+      </CharacterGate>
+    )}
   </StrictMode>,
 )

@@ -14,14 +14,27 @@ import { CAMPUS_TREES } from './campusLayout'
 import Tree from './IllustratedTrees'
 import Rober from './Rober'
 import LaunchComplex, { LAUNCH_SITE } from '../spacecraft/LaunchComplex'
-import type { LaunchClock } from '../spacecraft/launchTimeline'
 import { memo } from 'react'
 import { useBlueprint } from '../game/state/blueprintStore'
+import { useCampusMission, missionVerified } from '../game/campusMission'
+import type { ModuleId } from '../spacecraft/assembly'
+import type { DesignConfig } from '../game/missionDesign'
+import type { LaunchClock } from '../spacecraft/launchTimeline'
+import BoardingAccess from '../spacecraft/BoardingAccess'
+import { useRef, type RefObject } from 'react'
+import type { BoardingMotion } from '../spacecraft/boardingRoute'
 import { Solid, Sign, Window, Door, Solar, Bench, Stroke } from './ArtKit'
 import { canWalk, groundHeight, PALETTE as P } from './worldData'
 
-function Hangar() {
-  const { config, parts } = useBlueprint()
+function Hangar({
+  parts,
+  config,
+  transferred,
+}: {
+  parts: ModuleId[]
+  config: DesignConfig
+  transferred: boolean
+}) {
   return (
     <group position={[24, 0, -16]}>
       <Solid position={[0, 0.15, 0]} scale={[25, 0.3, 23]} color="#afb2a0" />
@@ -43,7 +56,23 @@ function Hangar() {
         <Solar position={[4, 24.8, 0]} />
       </group>
       <group position={[0, 0.31, -2]}>
-        <OdysseyShip parts={parts} config={config} />
+        {transferred ? (
+          <Sign
+            text="ODYSSEY TRANSFERIDA"
+            sub="PLATAFORMA LC-01 · LISTA PARA VUELO"
+            position={[0, 3, 0]}
+            scale={[5, 1.3, 1]}
+          />
+        ) : (
+          <OdysseyShip parts={parts} config={config} />
+        )}
+        <Solid position={[0, 0.05, 0]} scale={[7.7, 0.12, 7.7]} color="#6d8179" />
+        {[-4.5, 4.5].map((x) => (
+          <group key={x}>
+            <Solid position={[x, 2.8, 0]} scale={[0.14, 5.6, 0.16]} color="#bb8464" />
+            <Solid position={[x, 5.6, 0]} scale={[0.55, 0.25, 5.7]} color="#bb8464" />
+          </group>
+        ))}
       </group>
       <group position={[-6, 0.31, 5]}>
         <Solid position={[0, 0.5, 0]} scale={[1.4, 1, 0.65]} color={P.teal} />
@@ -94,8 +123,15 @@ function Hangar() {
     </group>
   )
 }
-function Launch({ flightClock }: { flightClock?: LaunchClock }) {
-  const { config, parts } = useBlueprint()
+function Launch({
+  parts,
+  config,
+  flightClock,
+}: {
+  parts: ModuleId[]
+  config: DesignConfig
+  flightClock?: LaunchClock
+}) {
   return (
     <>
       <group position={[LAUNCH_SITE.x, 0, LAUNCH_SITE.z]}>
@@ -103,7 +139,7 @@ function Launch({ flightClock }: { flightClock?: LaunchClock }) {
       </group>
       <Sign
         text="04 / LANZAMIENTO ODYSSEY"
-        sub="PLATAFORMA LC-01 · PUESTO DE AUTORIZACIÓN"
+        sub="VEHÍCULO FICTICIO · AUTORIZACIÓN EN ESTE PUESTO"
         position={[64, 1.6, -35]}
         scale={[4.5, 1.12, 1]}
       />
@@ -116,14 +152,6 @@ function Launch({ flightClock }: { flightClock?: LaunchClock }) {
           color={P.aqua}
         />
       </group>
-      <Sign
-        text="PASARELA DE ACCESO · TRIPULACIÓN"
-        sub="CREW ACCESS ARM · TORRE LC-01 · CABINA ODYSSEY"
-        position={[61, 2.6, -44]}
-        scale={[5.2, 1.25, 1]}
-        bg={P.teal}
-        fg={P.cream}
-      />
     </>
   )
 }
@@ -227,12 +255,26 @@ function Landscape({ reduced = false }: { reduced?: boolean }) {
 export default memo(function Environment({
   reduced = false,
   paused = false,
+  launchParts,
+  launchConfig,
   flightClock,
+  boardingMotion,
 }: {
   reduced?: boolean
   paused?: boolean
+  /** The launch director may supply a snapshot, without changing a saved mission. */
+  launchParts?: ModuleId[]
+  launchConfig?: DesignConfig
   flightClock?: LaunchClock
+  boardingMotion?: RefObject<BoardingMotion>
 }) {
+  const idleMotion = useRef<BoardingMotion>({ lift: 0 })
+  const blueprint = useBlueprint()
+  useCampusMission()
+  const authorized = missionVerified(blueprint.config, blueprint.parts)
+  const selectedParts = launchParts ?? blueprint.parts
+  const selectedConfig = launchConfig ?? blueprint.config
+  const transferred = launchParts !== undefined || authorized
   return (
     <>
       <IllustratedGround />
@@ -253,8 +295,13 @@ export default memo(function Environment({
           scale={[1.2, 0.3, 1]}
         />
       ))}
-      <Hangar />
-      <Launch flightClock={flightClock} />
+      <Hangar parts={blueprint.parts} config={blueprint.config} transferred={transferred} />
+      <Launch
+        parts={transferred ? selectedParts : []}
+        config={selectedConfig}
+        flightClock={flightClock}
+      />
+      <BoardingAccess motion={boardingMotion ?? idleMotion} />
       <Observatory />
       <CampusObservatory paused={paused} reduced={reduced} />
       <Rober

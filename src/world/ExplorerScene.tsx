@@ -1,6 +1,6 @@
-import LunarEnvironment from './lunar/LunarEnvironment'
 import LunarLanding from './lunar/LunarLanding'
 import MissionGuide from './MissionGuide'
+import LunarEnvironment from './lunar/LunarEnvironment'
 import CampusSky from './sky/CampusSky'
 import AdaptiveResolution from './performance/AdaptiveResolution'
 import { Canvas } from '@react-three/fiber'
@@ -9,12 +9,11 @@ import Environment from './Environment'
 import MarsEnvironment from './MarsEnvironment'
 import { useWorld } from './worldConfig'
 import PlayerRig from './player/PlayerRig'
-import type { SceneProps } from './player/types'
 import LaunchCinematicDirector from '../spacecraft/LaunchCinematicDirector'
+import LaunchCloudLayers from '../spacecraft/LaunchCloudLayers'
 import { LAUNCH_SITE } from '../spacecraft/LaunchComplex'
 import { useBlueprint } from '../game/state/blueprintStore'
-import { Stars } from '@react-three/drei'
-import type { LaunchClock } from '../spacecraft/launchTimeline'
+import type { SceneProps } from './player/types'
 export type { Travel, InputState, PositionReport } from './player/types'
 
 class SceneBoundary extends Component<
@@ -43,33 +42,17 @@ function SceneReady({ onReady }: { onReady: () => void }) {
   useEffect(onReady, [onReady])
   return null
 }
-const LAUNCH_ORIGIN: [number, number, number] = [LAUNCH_SITE.x, 0, LAUNCH_SITE.z]
-
 export default memo(function ExplorerScene(
-  props: SceneProps & {
-    quality: 'standard' | 'light'
-    onReady: () => void
-    cinematic?: boolean
-    launchClock?: React.MutableRefObject<LaunchClock>
-    launchElapsed?: number
-    onCinematicProgress?: (seconds: number) => void
-    onCinematicComplete?: () => void
-  },
+  props: SceneProps & { quality: 'standard' | 'light'; onReady: () => void },
 ) {
   const world = useWorld(),
+    blueprint = useBlueprint(),
     mars = world.id === 'mars',
     moon = world.id === 'moon'
-  const { config, parts } = useBlueprint()
-
   return (
     <SceneBoundary onFailure={props.onReady}>
       <Canvas
-        camera={{
-          position: [0, 2.7, 44.5],
-          fov: 50,
-          near: 0.15,
-          far: props.cinematic ? 5000 : 650,
-        }}
+        camera={{ position: [0, 2.7, 44.5], fov: 50, near: 0.15, far: 8000 }}
         dpr={props.quality === 'light' ? 1 : [1, 1.5]}
         shadows={props.quality === 'standard' ? 'percentage' : false}
         gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
@@ -78,15 +61,13 @@ export default memo(function ExplorerScene(
         }}
       >
         <color attach="background" args={[world.sky]} />
-        <fog
-          attach="fog"
-          args={[world.sky, props.cinematic ? 2000 : 300, props.cinematic ? 6000 : 580]}
-        />
+        <fog attach="fog" args={[world.sky, 300, 580]} />
         {!mars && !moon ? (
           <CampusSky
             quality={props.quality}
             reduced={props.reduced}
-            paused={props.paused || props.mode !== 'walk' || !!props.cinematic}
+            paused={props.paused || props.mode !== 'walk'}
+            launchClock={props.launchPhase === 'flight' ? props.flightClock?.current : undefined}
           />
         ) : (
           <>
@@ -121,35 +102,44 @@ export default memo(function ExplorerScene(
           ) : (
             <Environment
               reduced={props.reduced}
-              paused={props.paused || props.mode !== 'walk'}
-              flightClock={props.launchClock?.current}
+              paused={props.paused || props.mode !== 'walk' || props.launchPhase === 'flight'}
+              boardingMotion={props.boardingMotion}
+              flightClock={props.launchPhase === 'flight' ? props.flightClock?.current : undefined}
             />
           )}
-          <PlayerRig {...props} cinematic={props.cinematic} />
-          {props.cinematic && props.launchClock && (
-            <LaunchCinematicDirector
-              clock={props.launchClock.current}
-              launcher={config.launcher}
-              habitat={parts.includes('habitat')}
-              origin={LAUNCH_ORIGIN}
-              onElapsed={props.onCinematicProgress ?? (() => {})}
-              onComplete={props.onCinematicComplete ?? (() => {})}
-            />
-          )}
-          {props.cinematic && (props.launchElapsed ?? 0) >= 18 && (
-            <Stars radius={2800} depth={100} count={800} factor={4} saturation={0} fade speed={0} />
-          )}
+          <PlayerRig {...props} />
           {moon && props.landing && props.onLandingComplete && (
             <LunarLanding onComplete={props.onLandingComplete} />
           )}
           {!mars && !moon && props.guideSector && (
             <MissionGuide
               sector={props.guideSector}
-              enabled={!props.paused && !props.cinematic && props.mode === 'walk'}
+              enabled={!props.paused && props.launchPhase === 'idle' && props.mode === 'walk'}
               reduced={props.reduced}
               onUpdate={props.onGuide}
             />
           )}
+          {!mars && !moon && props.launchPhase === 'flight' && props.flightClock && (
+            <LaunchCloudLayers
+              clock={props.flightClock.current}
+              launcher={blueprint.config.launcher}
+            />
+          )}
+          {!mars &&
+            !moon &&
+            props.launchPhase === 'flight' &&
+            props.flightClock &&
+            props.onCinematicProgress &&
+            props.onCinematicComplete && (
+              <LaunchCinematicDirector
+                clock={props.flightClock.current}
+                launcher={blueprint.config.launcher}
+                habitat={blueprint.parts.includes('habitat')}
+                origin={[LAUNCH_SITE.x, 0, LAUNCH_SITE.z]}
+                onElapsed={props.onCinematicProgress}
+                onComplete={props.onCinematicComplete}
+              />
+            )}
           <SceneReady onReady={props.onReady} />
           <AdaptiveResolution enabled={props.quality === 'standard'} />
         </Suspense>

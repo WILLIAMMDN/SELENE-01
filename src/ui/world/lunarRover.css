@@ -19,7 +19,8 @@
 .clean-world.is-landing > :not(.world-viewport):not(.world-loading):not(.lunar-landing-skip) {
   display: none;
 }
-.clean-world.is-launching > :not(.world-viewport):not(.world-loading):not(.launch-film) {
+.clean-world.is-launching
+  > :not(.world-viewport):not(.world-loading):not(.launch-film):not(.selene-cutscene) {
   display: none;
 }
 .lunar-landing-skip {
@@ -76,6 +77,26 @@
 }
 .moon-world .interior-caption small {
   font-size: 10px;
+}
+.moon-world .mission-arrival {
+  top: auto;
+  bottom: 84px;
+  left: 18px;
+  right: auto;
+  transform: none;
+  width: max-content;
+  max-width: calc(100vw - 36px);
+  padding: 8px 12px;
+}
+.moon-world .mission-arrival h1,
+.moon-world .mission-arrival h2,
+.moon-world .mission-arrival p,
+.moon-world .mission-arrival .paper-kicker {
+  display: none;
+}
+.moon-world .mission-arrival-actions {
+  margin: 0;
+  gap: 8px;
 }
 .clean-world.is-driving:has(.lunar-rover-hud) .paper-dock {
   bottom: 92px;

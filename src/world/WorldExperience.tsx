@@ -1,18 +1,33 @@
-import { roomLabel } from './buildingEntrances'
 import MissionDirection from '../ui/world/MissionDirection'
 import type { MissionGuideReport } from './navigation/missionDestination'
 import { canUseWardrobe } from './wardrobeStation'
-import VehicleDashboard from '../ui/world/VehicleDashboard'
 import LunarRoverHud from '../ui/world/LunarRoverHud'
+import { createLaunchJourney } from '../game/launchJourney'
+import { useLaunchDestination } from '../game/state/launchDestinationStore'
+import { equipForLaunch } from './wardrobe'
+import { worldLocation } from './worldLocation'
+import { roomLabel } from './buildingEntrances'
+import VehicleDashboard from '../ui/world/VehicleDashboard'
 import WorldNotebook from '../ui/world/WorldNotebook'
-import AuthorsPanel from '../ui/world/AuthorsPanel'
 import { OBJECTIVE_NAMES, type Panel } from '../ui/world/worldUiTypes'
 import {
   useCampusMission,
   nextMissionStep,
   missionVerified,
   blueprintKey,
+  getMission,
 } from '../game/campusMission'
+import { loadOperationSession, saveOperationSession } from '../game/state/operationStore'
+import { wardrobeStore } from './wardrobe'
+import {
+  makeMissionArrival,
+  savePendingMissionArrival,
+  loadPendingMissionArrival,
+  clearPendingMissionArrival,
+} from '../game/missionArrival'
+import { startOperations } from '../game/missionDesign'
+import type { BoardingMotion, BoardingPhase } from '../spacecraft/boardingRoute'
+import LaunchCinematicOverlay from '../spacecraft/LaunchCinematicOverlay'
 import { loadBlueprint, useBlueprint } from '../game/state/blueprintStore'
 import Icon from '../ui/world/Icon'
 import CampusMap from '../ui/world/CampusMap'
@@ -25,16 +40,6 @@ import StoryDialogue from '../ui/world/StoryDialogue'
 import { ARRIVAL, stationConversation, type Conversation } from '../game/narrative/conversations'
 import { MOTION_SCALE } from './physicalScale'
 import { WorldContext, WORLDS, useWorld, type WorldId } from './worldConfig'
-import LaunchCinematicHud from '../ui/campaign/LaunchCinematicHud'
-import '../spacecraft/launchCinematic.css'
-import { startOperations } from '../game/missionDesign'
-import { loadOperationSession, saveOperationSession } from '../game/state/operationStore'
-import type { LaunchClock } from '../spacecraft/launchTimeline'
-import { createLaunchJourney } from '../game/launchJourney'
-import { useLaunchDestination } from '../game/state/launchDestinationStore'
-import { equipForLaunch, wardrobeStore } from './wardrobe'
-
-import { worldLocation } from './worldLocation'
 
 const Campaign = lazy(() => import('../App'))
 function WorldExperience({
@@ -48,9 +53,8 @@ function WorldExperience({
 }) {
   const blueprint = useBlueprint()
   const destinationChoice = useLaunchDestination()
-  const [launchDestination, setLaunchDestination] = useState(destinationChoice)
   const [journey] = useState(createLaunchJourney)
-  const launchInProgress = useRef(false)
+  const selectedDestination = useRef(destinationChoice)
   useCampusMission()
   const world = useWorld(),
     mars = world.id === 'mars',
@@ -68,9 +72,69 @@ function WorldExperience({
     [miniMap, setMiniMap] = useState(false)
   const [campaign, setCampaign] = useState(false),
     [campaignStage, setCampaignStage] = useState<'briefing' | 'design' | 'launch'>('briefing')
-  const [launching, setLaunching] = useState(false),
-    [launchElapsed, setLaunchElapsed] = useState(0)
-  const launchClock = useRef<LaunchClock>({ current: 0 })
+  const [arrival, setArrival] = useState(() =>
+    offworld ? loadPendingMissionArrival(world.id as 'moon' | 'mars') : null,
+  )
+  const [launchPhase, setLaunchPhase] = useState<BoardingPhase>('idle')
+  const launching = launchPhase === 'flight'
+  const boardingMotion = useRef<BoardingMotion>({ lift: 0 })
+  const flightClock = useRef({ current: 0 })
+  const [flightElapsed, setFlightElapsed] = useState(0)
+  const [flightFinished, setFlightFinished] = useState(false)
+  const recordedFlight = useRef(false)
+  const onLaunchPhase = useCallback(
+    (phase: BoardingPhase) => {
+      if (phase === 'suiting') {
+        const draft = loadBlueprint()
+        if (
+          !journey.begin(
+            destinationChoice,
+            blueprintKey(draft.config, draft.parts),
+            missionVerified(draft.config, draft.parts),
+          )
+        )
+          return
+        selectedDestination.current = destinationChoice
+      }
+      if (phase === 'idle') journey.cancel()
+      if (phase === 'access') {
+        // The same playable explorer equips the existing EVA character model.
+        const wardrobe = wardrobeStore.getSnapshot()
+        wardrobeStore.set({ ...wardrobe, earth: 'eva', moon: 'eva', helmet: true })
+      }
+      if (phase === 'flight') {
+        flightClock.current.current = 0
+        setFlightElapsed(0)
+      }
+      setLaunchPhase(phase)
+    },
+    [destinationChoice, journey],
+  )
+  const finishLaunch = useCallback(() => setFlightFinished(true), [])
+  useEffect(() => {
+    if (!flightFinished) return
+    if (!recordedFlight.current) {
+      recordedFlight.current = true
+      const draft = loadBlueprint()
+      const completed = journey.finish(
+        blueprintKey(draft.config, draft.parts),
+        missionVerified(draft.config, draft.parts),
+      )
+      if (completed) {
+        const key = blueprintKey(draft.config, draft.parts)
+        if (!loadOperationSession(key)) saveOperationSession(key, startOperations())
+        const objective = getMission().objective
+        const arrival = makeMissionArrival(key, objective, completed.destination)
+        savePendingMissionArrival(arrival)
+        // The same Earth scene is used for lift-off; then transition into
+        // the destination scene already built by the other world team.
+        wardrobeStore.set(equipForLaunch(wardrobeStore.getSnapshot(), arrival.world))
+        onWorld(arrival.world, true)
+      }
+    }
+    setLaunchPhase('idle')
+    setFlightFinished(false)
+  }, [flightFinished, onWorld, journey])
   const [position, setPosition] = useState<PositionReport>({ x: 0, z: 37, nearby: null, fps: 0 }),
     [travel, setTravel] = useState<Travel>({ id: 'start', serial: 0 })
   const [quality, setQuality] = useState<'standard' | 'light'>('standard'),
@@ -167,8 +231,15 @@ function WorldExperience({
         }
         return
       }
-      if (launching) return
-      if (conversation || campaign) return
+      if (campaign) return
+      if (launchPhase === 'flight') {
+        if (e.code === 'Escape') {
+          e.preventDefault()
+          finishLaunch()
+        }
+        return
+      }
+      if (conversation) return
       if (e.code === 'Escape') {
         setPanel((p) => (p ? null : 'menu'))
         return
@@ -189,7 +260,23 @@ function WorldExperience({
     }
     window.addEventListener('keydown', key)
     return () => window.removeEventListener('keydown', key)
-  }, [conversation, campaign, landing, launching, onLandingComplete])
+  }, [conversation, campaign, launchPhase, finishLaunch, landing, onLandingComplete])
+  // The latest campus menu uses a shared event for cinematic previews.
+  // Keep that shortcut functional without bypassing mission authorization.
+  useEffect(() => {
+    const previewLaunch = () => {
+      const url = new URL(window.location.href)
+      url.searchParams.set('preview', 'launch')
+      window.location.assign(url.toString())
+    }
+    window.addEventListener('selene-launch-cinematic', previewLaunch)
+    return () => window.removeEventListener('selene-launch-cinematic', previewLaunch)
+  }, [])
+  useEffect(() => {
+    const showTeam = () => setPanel('authors')
+    window.addEventListener('selene-authors-panel', showTeam)
+    return () => window.removeEventListener('selene-authors-panel', showTeam)
+  }, [])
   useEffect(() => {
     const observe = (e: Event) => {
       if (panel || conversation || mode !== 'walk' || campaign) return
@@ -239,13 +326,6 @@ function WorldExperience({
     window.addEventListener('selene-tools-panel', open)
     return () => window.removeEventListener('selene-tools-panel', open)
   }, [offworld, panel, conversation, campaign, mode])
-  useEffect(() => {
-    const open = () => {
-      if (!panel && !conversation && !campaign) setPanel('authors')
-    }
-    window.addEventListener('selene-authors-panel', open)
-    return () => window.removeEventListener('selene-authors-panel', open)
-  }, [panel, conversation, campaign])
   const chooseMode = (m: ViewMode) => {
     setMode(m)
     setPanel(null)
@@ -257,105 +337,31 @@ function WorldExperience({
     setPanel(null)
     setConversation(null)
   }
-  const finishInSituLaunch = useCallback(() => {
-    if (!launchInProgress.current) return
-    launchInProgress.current = false
-    setLaunching(false)
-    const draft = loadBlueprint()
-    const arrival = journey.finish(
-      blueprintKey(draft.config, draft.parts),
-      missionVerified(draft.config, draft.parts),
-    )
-    if (arrival) {
-      saveOperationSession(arrival.blueprintKey, startOperations())
-      wardrobeStore.set(equipForLaunch(wardrobeStore.getSnapshot(), arrival.destination))
-      onWorld(arrival.destination, true)
-      return
-    }
-    setConversation({
-      speaker: 'TARS · DIRECTOR DE VUELO',
-      lines: [
-        'La demostración de despegue ha terminado.',
-        'Autoriza una misión revisada en la plataforma para viajar al destino que elegiste en el hangar.',
-      ],
-      action: 'Seguir explorando',
-    })
-  }, [journey, onWorld])
-
-  const beginInSituLaunch = useCallback(
-    (travelToDestination = false) => {
-      if (offworld || landing || launchInProgress.current) return
-      const draft = loadBlueprint()
-      if (
-        travelToDestination &&
-        !journey.begin(
-          destinationChoice,
-          blueprintKey(draft.config, draft.parts),
-          missionVerified(draft.config, draft.parts),
-        )
-      )
-        return
-      if (!travelToDestination) journey.cancel()
-      launchInProgress.current = true
-      setLaunchDestination(destinationChoice)
-      setPanel(null)
-      setConversation(null)
-      input.current.keys.clear()
-      input.current.actions.length = 0
-      launchClock.current.current = 0
-      setLaunchElapsed(0)
-      setLaunching(true)
-    },
-    [offworld, landing, journey, destinationChoice],
-  )
-
-  const previewStarted = useRef(false)
-  useEffect(() => {
-    if (!ready || offworld || previewStarted.current) return
-    const params = new URLSearchParams(window.location.search)
-    if (params.get('launch') === 'true' || params.get('cinematic') === 'true') {
-      previewStarted.current = true
-      beginInSituLaunch()
-    }
-  }, [ready, offworld, beginInSituLaunch])
-
-  useEffect(() => {
-    if (!launching) return
-    const handleSkip = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.preventDefault()
-        finishInSituLaunch()
-      }
-    }
-    window.addEventListener('keydown', handleSkip)
-    return () => window.removeEventListener('keydown', handleSkip)
-  }, [launching, finishInSituLaunch])
-
-  useEffect(() => {
-    const launchReplay = () => {
-      beginInSituLaunch()
-    }
-    window.addEventListener('selene-launch-cinematic', launchReplay)
-    return () => window.removeEventListener('selene-launch-cinematic', launchReplay)
-  }, [beginInSituLaunch])
-
   const openCampaign = (id: SectorId) => {
     if (offworld || position.nearby !== id) return
     const draft = loadBlueprint()
     if (id === 'launch') {
       if (!missionVerified(draft.config, draft.parts)) return
-      const saved = loadOperationSession(blueprintKey(draft.config, draft.parts))
-      if (!saved) {
-        beginInSituLaunch(true)
-        return
+      const key = blueprintKey(draft.config, draft.parts)
+      if (loadOperationSession(key)) {
+        setCampaignStage('launch')
+        setCampaign(true)
+      } else {
+        recordedFlight.current = false
+        onLaunchPhase('suiting')
       }
+      setPanel(null)
+      setConversation(null)
+      input.current.keys.clear()
+      return
     }
-    setCampaignStage(id === 'hangar' ? 'design' : 'launch')
+    setCampaignStage('design')
     setCampaign(true)
     setPanel(null)
     input.current.keys.clear()
   }
   const returnToCampus = () => {
+    setLaunchPhase('idle')
     setTravel((t) => ({ id: t.id, point: [position.x, position.z], serial: t.serial + 1 }))
     setCampaign(false)
   }
@@ -383,7 +389,7 @@ function WorldExperience({
     )
   return (
     <main
-      className={`selene-world clean-world ${offworld ? 'mars-world' : 'earth-world'} ${moon ? 'moon-world' : ''} ${position.vehicle === 'driving' ? 'is-driving' : ''} ${landing ? 'is-landing' : ''} ${launching ? 'is-launching' : ''}`}
+      className={`selene-world clean-world ${offworld ? 'mars-world' : 'earth-world'} ${position.vehicle === 'driving' ? 'is-driving' : ''} ${moon ? 'moon-world' : ''} ${landing ? 'is-landing' : ''} ${launching ? 'is-launching' : ''}`}
     >
       <div className="world-viewport">
         <ExplorerScene
@@ -391,10 +397,17 @@ function WorldExperience({
           tourIndex={tourIndex}
           travel={travel}
           input={input}
-          paused={!!panel || !!conversation || landing || launching}
+          paused={!!panel || !!conversation || launchPhase === 'flight' || landing}
           landing={landing}
           onLandingComplete={onLandingComplete}
           reduced={reduced}
+          launchPhase={launchPhase}
+          boardingMotion={boardingMotion}
+          flightClock={flightClock}
+          onLaunchPhase={onLaunchPhase}
+          onCinematicProgress={setFlightElapsed}
+          onCinematicComplete={finishLaunch}
+          targetSector={!offworld ? next.sector : undefined}
           onPosition={onPosition}
           onInteract={onInteract}
           onWardrobe={openWardrobe}
@@ -402,22 +415,8 @@ function WorldExperience({
           onGuide={onGuide}
           quality={quality}
           onReady={onReady}
-          cinematic={launching}
-          launchClock={launchClock}
-          launchElapsed={launchElapsed}
-          onCinematicProgress={setLaunchElapsed}
-          onCinematicComplete={finishInSituLaunch}
         />
       </div>
-      {launching && (
-        <LaunchCinematicHud
-          seconds={launchElapsed}
-          config={blueprint.config}
-          parts={blueprint.parts}
-          destination={launchDestination}
-          onSkip={finishInSituLaunch}
-        />
-      )}
       {landing && (
         <button className="lunar-landing-skip" onClick={onLandingComplete}>
           Omitir llegada <kbd>Esc</kbd>
@@ -429,7 +428,101 @@ function WorldExperience({
           <h1>Bienvenida a {world.place}.</h1>
         </div>
       )}
-      {!launching &&
+      {launchPhase === 'flight' && (
+        <LaunchCinematicOverlay
+          seconds={flightElapsed}
+          destination={selectedDestination.current}
+          config={blueprint.config}
+          onSkip={finishLaunch}
+        />
+      )}
+      {arrival && (
+        <div className="mission-arrival" role="region" aria-label="Llegada a la misión">
+          <span className="mission-arrival-label">TARS · DESTINO ALCANZADO</span>
+          <strong>{arrival.title}</strong>
+          <p>{arrival.narrative.replace(/^TARS:\s*/, '')}</p>
+          <div className="mission-arrival-actions">
+            <button
+              type="button"
+              onClick={() => {
+                clearPendingMissionArrival()
+                setArrival(null)
+              }}
+            >
+              Explorar el escenario
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                clearPendingMissionArrival()
+                setArrival(null)
+                setCampaignStage('launch')
+                setCampaign(true)
+              }}
+            >
+              Continuar operaciones
+            </button>
+          </div>
+        </div>
+      )}
+      {launchPhase === 'cockpit' && (
+        <div className="boarding-cockpit-prompt">
+          <strong>ODYSSEY · Cabina asegurada</strong>
+          <span>TARS: Sistemas listos para la secuencia de despegue.</span>
+          <button type="button" onClick={() => onLaunchPhase('flight')}>
+            Iniciar despegue
+          </button>
+        </div>
+      )}
+      {launchPhase === 'suiting' && !position.boardingSpot && (
+        <div className="boarding-guidance" role="status">
+          Acércate al vestuario EVA junto a la plataforma.
+          <button type="button" onClick={() => onLaunchPhase('idle')}>
+            Cancelar
+          </button>
+        </div>
+      )}
+      {launchPhase === 'access' && !position.boardingSpot && (
+        <div className="boarding-guidance" role="status">
+          Sigue el sendero, sube las escaleras y toma el ascensor de LC-01.
+          <button type="button" onClick={() => onLaunchPhase('idle')}>
+            Cancelar
+          </button>
+        </div>
+      )}
+      {launchPhase === 'bridge' && !position.boardingSpot && (
+        <div className="boarding-guidance" role="status">
+          Cruza la pasarela hasta la escotilla de ODYSSEY.
+        </div>
+      )}
+      {launchPhase !== 'idle' && position.boardingSpot && (
+        <button
+          className="station-prompt boarding-interact"
+          type="button"
+          onClick={() =>
+            onLaunchPhase(
+              position.boardingSpot === 'suit'
+                ? 'access'
+                : position.boardingSpot === 'lift'
+                  ? 'ascending'
+                  : 'cockpit',
+            )
+          }
+        >
+          <kbd>E</kbd>{' '}
+          {position.boardingSpot === 'suit'
+            ? 'Equipar traje de astronauta'
+            : position.boardingSpot === 'lift'
+              ? 'Subir al ascensor'
+              : 'Entrar a la cabina'}
+        </button>
+      )}
+      {launchPhase === 'ascending' && (
+        <div className="boarding-guidance" role="status">
+          Ascendiendo a la pasarela…
+        </div>
+      )}
+      {launchPhase === 'idle' &&
         !offworld &&
         !conversation &&
         !panel &&
@@ -458,7 +551,7 @@ function WorldExperience({
             </small>
           </button>
         )}
-      {!launching && (
+      {launchPhase !== 'flight' && launchPhase !== 'ascending' && launchPhase !== 'cockpit' && (
         <button
           className="paper-icon menu-toggle"
           aria-label="Abrir menú"
@@ -474,7 +567,7 @@ function WorldExperience({
           </svg>
         </button>
       )}
-      {!launching && !panel && !conversation && (
+      {launchPhase === 'idle' && !panel && !conversation && (
         <nav className="paper-dock" aria-label="Herramientas">
           <button
             className="paper-icon"
@@ -502,7 +595,7 @@ function WorldExperience({
           </button>
         </nav>
       )}
-      {miniMap && !launching && !panel && !conversation && (
+      {miniMap && launchPhase === 'idle' && !panel && !conversation && (
         <aside className="small-map">
           <CampusMap
             position={position}
@@ -511,7 +604,7 @@ function WorldExperience({
           />
         </aside>
       )}
-      {!launching &&
+      {launchPhase === 'idle' &&
         mode === 'walk' &&
         !nearby &&
         !position.vehicle &&
@@ -584,7 +677,7 @@ function WorldExperience({
           {roomLabel(position.room)} <small>Primera persona · arrastra para mirar</small>
         </div>
       )}
-      {!launching && mode !== 'walk' && !panel && !conversation && (
+      {launchPhase === 'idle' && mode !== 'walk' && !panel && !conversation && (
         <div className="view-controls">
           <button onClick={() => chooseMode('walk')}>← Volver a caminar</button>
           {mode === 'tour' && (
@@ -598,73 +691,78 @@ function WorldExperience({
           )}
         </div>
       )}
-      {!launching && !panel && !conversation && mode === 'walk' && (
-        <>
-          <div className="touch-movement" aria-label="Movimiento táctil">
-            {[
-              { key: 'KeyW', label: '↑' },
-              { key: 'KeyA', label: '←' },
-              { key: 'KeyS', label: '↓' },
-              { key: 'KeyD', label: '→' },
-            ].map((b) => (
+      {!panel &&
+        !conversation &&
+        launchPhase !== 'flight' &&
+        launchPhase !== 'ascending' &&
+        launchPhase !== 'cockpit' &&
+        mode === 'walk' && (
+          <>
+            <div className="touch-movement" aria-label="Movimiento táctil">
+              {[
+                { key: 'KeyW', label: '↑' },
+                { key: 'KeyA', label: '←' },
+                { key: 'KeyS', label: '↓' },
+                { key: 'KeyD', label: '→' },
+              ].map((b) => (
+                <button
+                  key={b.key}
+                  aria-label={`Mover ${b.label}`}
+                  onPointerDown={(e) => {
+                    e.preventDefault()
+                    e.currentTarget.setPointerCapture(e.pointerId)
+                    input.current.keys.add(b.key)
+                  }}
+                  onPointerUp={() => input.current.keys.delete(b.key)}
+                  onPointerCancel={() => input.current.keys.delete(b.key)}
+                  onLostPointerCapture={() => input.current.keys.delete(b.key)}
+                >
+                  {b.label}
+                </button>
+              ))}
+            </div>
+            <div className="touch-actions">
               <button
-                key={b.key}
-                aria-label={`Mover ${b.label}`}
+                aria-label={
+                  position.vehicle === 'driving'
+                    ? 'Frenar, mantener pulsado'
+                    : 'Correr, mantener pulsado'
+                }
                 onPointerDown={(e) => {
                   e.preventDefault()
                   e.currentTarget.setPointerCapture(e.pointerId)
-                  input.current.keys.add(b.key)
+                  input.current.keys.add(position.vehicle === 'driving' ? 'Space' : 'ShiftLeft')
                 }}
-                onPointerUp={() => input.current.keys.delete(b.key)}
-                onPointerCancel={() => input.current.keys.delete(b.key)}
-                onLostPointerCapture={() => input.current.keys.delete(b.key)}
+                onPointerUp={() => {
+                  input.current.keys.delete('ShiftLeft')
+                  input.current.keys.delete('Space')
+                }}
+                onPointerCancel={() => {
+                  input.current.keys.delete('ShiftLeft')
+                  input.current.keys.delete('Space')
+                }}
+                onLostPointerCapture={() => {
+                  input.current.keys.delete('ShiftLeft')
+                  input.current.keys.delete('Space')
+                }}
               >
-                {b.label}
+                {position.vehicle === 'driving' ? 'Frenar' : 'Correr'}
               </button>
-            ))}
-          </div>
-          <div className="touch-actions">
-            <button
-              aria-label={
-                position.vehicle === 'driving'
-                  ? 'Frenar, mantener pulsado'
-                  : 'Correr, mantener pulsado'
-              }
-              onPointerDown={(e) => {
-                e.preventDefault()
-                e.currentTarget.setPointerCapture(e.pointerId)
-                input.current.keys.add(position.vehicle === 'driving' ? 'Space' : 'ShiftLeft')
-              }}
-              onPointerUp={() => {
-                input.current.keys.delete('ShiftLeft')
-                input.current.keys.delete('Space')
-              }}
-              onPointerCancel={() => {
-                input.current.keys.delete('ShiftLeft')
-                input.current.keys.delete('Space')
-              }}
-              onLostPointerCapture={() => {
-                input.current.keys.delete('ShiftLeft')
-                input.current.keys.delete('Space')
-              }}
-            >
-              {position.vehicle === 'driving' ? 'Frenar' : 'Correr'}
+              {!offworld && position.vehicle !== 'driving' && !position.room && (
+                <button
+                  onClick={() => {
+                    if (!position.room) input.current.actions.push('jump')
+                  }}
+                >
+                  Saltar
+                </button>
+              )}
+            </div>
+            <button className="controls-hint" onClick={() => setPanel('controls')}>
+              ? Controles
             </button>
-            {!offworld && position.vehicle !== 'driving' && !position.room && (
-              <button
-                onClick={() => {
-                  if (!position.room) input.current.actions.push('jump')
-                }}
-              >
-                Saltar
-              </button>
-            )}
-          </div>
-          <button className="controls-hint" onClick={() => setPanel('controls')}>
-            ? Controles
-          </button>
-        </>
-      )}
+          </>
+        )}
       {conversation && (
         <StoryDialogue
           conversation={conversation}
@@ -674,25 +772,11 @@ function WorldExperience({
               kind = conversation.kind
             closeConversation()
             if (kind === 'lander') setPanel('lander')
-            else if (sector) {
-              if (sector === 'launch') {
-                const draft = loadBlueprint()
-                const saved = loadOperationSession(blueprintKey(draft.config, draft.parts))
-                if (saved) {
-                  setCampaignStage('launch')
-                  setCampaign(true)
-                } else {
-                  setPanel(sector)
-                }
-              } else {
-                setPanel(sector)
-              }
-            }
+            else if (sector) setPanel(sector)
           }}
         />
       )}
-      {panel === 'authors' && <AuthorsPanel onClose={() => setPanel(null)} />}
-      {panel && panel !== 'authors' && (
+      {panel && (
         <WorldNotebook
           panel={panel}
           position={position}
