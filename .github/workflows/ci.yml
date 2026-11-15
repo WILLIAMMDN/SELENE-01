@@ -4,32 +4,18 @@ on:
     branches: [main]
   pull_request:
 permissions:
-  contents: write
+  contents: read
 jobs:
   validation:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref || github.ref_name }}
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: npm
       - name: Install
         run: npm ci --no-audit --no-fund
-      - name: Format new cinematic files
-        run: npm run format
-      - name: Save automatic formatting to feature branch
-        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add src
-          if ! git diff --cached --quiet; then
-            git commit -m "style: format launch cinematic source"
-            git push origin HEAD:${{ github.head_ref }}
-          fi
       - name: TypeScript formatting
         run: npm run format:check
       - name: Unit tests
