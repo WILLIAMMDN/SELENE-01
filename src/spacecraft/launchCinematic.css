@@ -1,0 +1,130 @@
+/* SELENE-01 launch film: restrained flat-color game HUD, kept separate from the campus UI. */
+.cinematic-active { max-width: none; }
+.cinematic-active .topbar,
+.cinematic-active .stage-nav,
+.cinematic-active .campaign-panel,
+.cinematic-active .engineering-panel,
+.cinematic-active .exploration-story,
+.cinematic-active .orbi,
+.cinematic-active footer { display: none !important; }
+.cinematic-active .game-layout { display: block; min-height: 0; }
+.cinematic-active .world-column {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  min-height: 0;
+  overflow: hidden;
+  background: #101b2c;
+}
+.cinematic-active .world-frame { height: 100dvh; min-height: 0; }
+.cinematic-active .world-overlay, .cinematic-active .world-help { display: none; }
+.launch-film {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  pointer-events: none;
+  color: #f8f2df;
+  font-family: 'DM Sans', sans-serif;
+}
+.launch-film-top {
+  position: absolute;
+  top: clamp(15px, 3.5vh, 42px);
+  left: clamp(18px, 3.5vw, 66px);
+  right: clamp(18px, 3.5vw, 66px);
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  justify-content: space-between;
+}
+.launch-film-brand {
+  display: inline-flex;
+  gap: 13px;
+  align-items: center;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .16em;
+  text-shadow: 0 1px 4px #142534;
+}
+.launch-film-brand span:last-child { font-weight: 500; opacity: .85; }
+.launch-film-dot { width: 8px; height: 8px; border-radius: 50%; background: #b8d7c8; }
+.launch-film-divider { opacity: .5; }
+.launch-film-skip {
+  pointer-events: auto;
+  background: #f2eedf;
+  border: 1px solid #c9cebd;
+  border-radius: 4px;
+  padding: 10px 13px;
+  color: #273f45;
+  font-size: 12px;
+  font-weight: 700;
+}
+.launch-film-skip:hover { background: #fff9e9; }
+.launch-film-skip kbd {
+  display: inline-block;
+  margin-left: 12px;
+  color: #607b79;
+  font-size: 10px;
+  border: 1px solid #bdc5bb;
+  padding: 3px 5px;
+}
+.launch-film-specs {
+  position: absolute;
+  top: clamp(85px, 17vh, 170px);
+  left: clamp(18px, 3.5vw, 66px);
+  display: grid;
+  gap: 6px;
+  width: min(290px, 34vw);
+  padding: 14px 0 14px 17px;
+  border-left: 2px solid #e3ae79;
+  background: #1d323ecb;
+}
+.launch-film-specs span:first-child { color: #d5ded1; font-size: 9px; letter-spacing: .18em; }
+.launch-film-specs strong { font-size: clamp(18px, 1.8vw, 27px); font-family: 'Space Grotesk',sans-serif; }
+.launch-film-specs span:nth-child(3) { font-size: 11px; letter-spacing: .05em; }
+.launch-film-specs small { color: #bdccca; line-height: 1.5; font-size: 10px; }
+.launch-film-countdown {
+  position: absolute;
+  right: clamp(20px, 6vw, 120px);
+  top: 34%;
+  text-align: center;
+  color: #f5e6c5;
+  text-shadow: 0 2px 10px #1a3038;
+}
+.launch-film-countdown span { display: block; font-size: 10px; letter-spacing: .24em; }
+.launch-film-countdown strong { display: block; font: 700 clamp(64px, 9vw, 150px)/1 'Space Grotesk',sans-serif; font-variant-numeric: tabular-nums; }
+.launch-film-footer {
+  position: absolute;
+  bottom: clamp(18px, 5vh, 55px);
+  left: 50%;
+  width: min(660px, calc(100% - 36px));
+  transform: translateX(-50%);
+  display: grid;
+  gap: 10px;
+}
+.launch-film-subtitles {
+  background: #172d38ed;
+  border-left: 3px solid #e2ad77;
+  padding: 16px 22px;
+  text-align: left;
+  box-shadow: 0 8px 30px #0b1f2a35;
+}
+.launch-film-subtitles span { display: block; color: #c1d5cc; font-size: 9px; letter-spacing: .18em; margin-bottom: 5px; }
+.launch-film-subtitles strong { display: block; font: 700 clamp(17px, 2vw, 23px) 'Space Grotesk',sans-serif; }
+.launch-film-subtitles p { margin: 8px 0 0; font-size: clamp(12px,1.35vw,15px); line-height:1.5; }
+.launch-film-data { display:flex; justify-content:space-between; gap:10px; font-size:11px; color:#ecf0e4; font-variant-numeric:tabular-nums; text-shadow:0 1px 5px #132733; }
+.launch-film-progress { background:#cad2c488; height:3px; overflow:hidden; }
+.launch-film-progress > div { height:100%; background:#e6b57b; transition:width .12s linear; }
+.launch-film-disclaimer { font-size:9px; color:#e9e5d6; text-align:center; text-shadow:0 1px 5px #14212c; }
+@media(max-width:720px) {
+  .launch-film-top { flex-wrap:wrap; }
+  .launch-film-brand { letter-spacing:.07em; }
+  .launch-film-brand span:last-child { display:none; }
+  .launch-film-specs { top:100px; width:55vw; }
+  .launch-film-countdown { top:30%; right:7vw; }
+  .launch-film-subtitles { padding:12px 14px; }
+  .launch-film-footer { bottom:18px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .launch-film-progress > div { transition:none; }
+}
