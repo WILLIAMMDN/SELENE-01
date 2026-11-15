@@ -60,3 +60,18 @@ L01 ocupa la zona de llegada de Ares y una plataforma de entrenamiento al este d
 ## Corrección de arranque
 
 Se corrigió la condición del diálogo del mirador en StoryDialogue.tsx que impedía a Vite transformar el módulo. Tras el error reportado por el usuario se ejecutó npm run build: TypeScript y Vite finalizaron sin errores. No se realizaron capturas ni se comprobó visualmente el recorrido.
+
+
+## Recorrido guiado y resultados por encargo
+
+La misión comparte una guía de seis requisitos entre ingeniería, estaciones y TARS: pregunta elegida, sistemas montados, instrumento del encargo, cobertura polar, recursos compatibles y revisión registrada. La lista detallada se abre a petición del jugador. El texto breve señala el primer requisito pendiente; no completa actividades ni autoriza un vuelo por sí mismo.
+
+El encargo elegido aparece en diseño y en el plan de vuelo: cámara, espectrómetro o radar. Los diálogos de ingeniería y comunicaciones consultan el estado actual. En la plataforma, el botón distingue autorizar un vuelo, continuar operaciones guardadas y consultar un informe existente.
+
+Durante las operaciones, el desplegable de TARS muestra la batería resultante, la memoria y los datos transmitidos por cada opción. Usa la misma función de transición que el juego, incluidos los costes por duración. Consultarlo no modifica el estado. Después de elegir, la notificación existente muestra las consecuencias reales y las advertencias de batería, memoria o ausencia de datos.
+
+El informe conecta el resultado con la pregunta elegida y distingue operación pendiente, diseño incompatible, ausencia de datos recuperados, recuperación parcial antes de un fallo y datos devueltos. Los GB siguen siendo agregados del simulador: no se inventan mediciones por instrumento, descubrimientos ni respuestas científicas. Cada encargo tiene una pregunta de reflexión y conserva su enlace NASA. El resumen se guarda con el informe del mirador utilizando el formato de lecciones existente; las partidas antiguas siguen siendo válidas.
+
+Registrar de nuevo una revisión que continúa vigente ya no borra una operación ni un informe. Una revisión de una configuración diferente sí inicia una nueva preparación. El botón de revisión queda deshabilitado cuando esa misma configuración ya fue aprobada.
+
+Esta entrega conserva todos los modelos, posiciones y CSS. Amplía contenido y controles usando los paneles, listas y desplegables del diseño actual. La validación automatizada incluye recorridos completos para los tres encargos; no sustituye una revisión visual o una sesión de juego del equipo.

@@ -10,6 +10,7 @@ import {
 export default function DesignPanel({ controller }: { controller: MissionController }) {
   const {
     assembly,
+    guidance,
     exploded,
     setExploded,
     config,
@@ -30,6 +31,11 @@ export default function DesignPanel({ controller }: { controller: MissionControl
         Selecciona instrumentos, lanzador y órbita. TARS te recordará los compromisos de cada
         decisión.
       </p>
+      {campus && guidance.objective && (
+        <p className="field-help">
+          <strong>Tu encargo: {guidance.objective.name}.</strong> {guidance.objective.requirement}
+        </p>
+      )}
       <div className="odyssey-assembly">
         <div className="assembly-heading">
           <h2>Ensamblaje de la nave</h2>

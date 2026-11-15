@@ -84,3 +84,13 @@ Las pruebas cubren recursos, consultas NASA, navegación, flujo de objetivo a in
 La carga inicial ahora espera el montaje del contenido principal de la escena, no solo la creación de Canvas. Los recursos con límites de carga propios mantienen sus alternativas existentes. No se midió FPS ni se cambió el presupuesto gráfico en esta reorganización.
 
 El bundle principal sigue necesitando una futura evaluación de carga y rendimiento. Los eventos ambientales actuales y el estado de ocupación de la escena siguen limitados a un mundo visible; no deben utilizarse como base de una implementación multijugador sin revisar ese contrato.
+
+
+## Ayuda y explicación de resultados
+
+- `game/missionGuidance.ts`: describe los requisitos y el siguiente paso; las autorizaciones continúan en `missionRules` y `campusMission`.
+- `game/operationFeedback.ts`: previsualiza las consecuencias llamando a `applyOperation`; no mantiene un segundo motor de cálculo ni escribe en el guardado.
+- `game/objectiveDebrief.ts`: interpreta el resultado educativo según el encargo, distinguiendo datos agregados de evidencia científica real.
+- `ui/campaign/MissionChecklist.tsx`: lista reutilizable bajo demanda, presentada dentro de los paneles existentes.
+
+El controlador protege la ejecución de acciones con las condiciones de lanzamiento y registra el informe contextual. `verifyMission` es idempotente para el mismo diseño aprobado: no elimina su vuelo ni su informe al volver a comunicaciones. La recuperación de un guardado antiguo no exige nuevos campos obligatorios.

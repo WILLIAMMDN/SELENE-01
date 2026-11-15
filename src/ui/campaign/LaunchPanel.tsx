@@ -1,8 +1,17 @@
 import type { MissionController } from '../../game/hooks/useMissionController'
 import { assemblyReady } from '../../spacecraft/assembly'
 export default function LaunchPanel({ controller }: { controller: MissionController }) {
-  const { operateReady, launchProblems, assembly, evaluation, fly, campus, onReturnToCampus, go } =
-    controller
+  const {
+    operateReady,
+    launchProblems,
+    assembly,
+    evaluation,
+    guidance,
+    fly,
+    campus,
+    onReturnToCampus,
+    go,
+  } = controller
   return (
     <>
       <span className="eyebrow">CAPÍTULO 03 · COMPROBACIÓN</span>
@@ -45,7 +54,7 @@ export default function LaunchPanel({ controller }: { controller: MissionControl
           <b>Duración:</b> {evaluation.durationDays} días
         </p>
         <p>
-          <b>Objetivo:</b> cartografía y estudio del polo sur lunar
+          <b>Objetivo:</b> {guidance.objective?.name ?? 'Estudio del polo sur lunar'}
         </p>
       </div>
       <button className="action-primary" onClick={fly} disabled={!operateReady}>

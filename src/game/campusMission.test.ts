@@ -145,3 +145,44 @@ describe('campus mission workflow', () => {
     expect(mission.verifyMission()).toBe(false)
   })
 })
+
+describe('complete objective journeys', () => {
+  it.each(['camera', 'spectrometer', 'radar'] as const)(
+    'completes and restores the %s report',
+    async (objective) => {
+      let { mission, blueprint, flight } = await services()
+      const config = { ...INITIAL_DESIGN, instruments: [objective] }
+      mission.acceptObjective(objective)
+      blueprint.saveBlueprint({ config, parts })
+      expect(mission.verifyMission()).toBe(true)
+      const key = mission.blueprintKey(config, parts)
+      const evaluation = evaluateDesign(config)
+      let state = startOperations()
+      state = applyOperation(state, 'observe', evaluation)
+      flight.saveOperationSession(key, state)
+      // Visiting communications again must not reset a valid in-progress flight.
+      expect(mission.verifyMission()).toBe(true)
+      expect(flight.loadOperationSession(key)?.ops.step).toBe(1)
+      state = applyOperation(state, 'downlink', evaluation)
+      state = applyOperation(state, 'safemode', evaluation)
+      flight.saveOperationSession(key, state)
+      mission.recordMission(state, missionScore(state, evaluation), config, parts)
+      const saved = mission.getMission().result
+      expect(saved?.lessons?.[0]).toContain(
+        mission.OBJECTIVES.find((o) => o.id === objective)!.name,
+      )
+      expect(mission.verifyMission()).toBe(true)
+      expect(mission.getMission().result).toEqual(saved)
+      vi.resetModules()
+      ;({ mission, blueprint, flight } = await services())
+      expect(mission.getMission().result).toEqual(saved)
+      expect(mission.nextMissionStep().sector).toBe('observatory')
+      expect(flight.loadOperationSession(key)?.ops.status).toBe('completed')
+      // A changed design still has to be reviewed and starts a separate flight.
+      blueprint.saveBlueprint({ config: { ...config, durationDays: 30 }, parts })
+      expect(mission.verifyMission()).toBe(true)
+      expect(flight.loadOperationSession(key)).toBeNull()
+      expect(mission.getMission().result).toBeNull()
+    },
+  )
+})

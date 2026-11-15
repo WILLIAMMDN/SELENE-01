@@ -1,6 +1,7 @@
+import MissionChecklist from './MissionChecklist'
 import type { MissionController } from '../../game/hooks/useMissionController'
 export default function EngineeringPanel({ controller }: { controller: MissionController }) {
-  const { evaluation, engineeringProblems } = controller
+  const { evaluation, engineeringProblems, guidance, campus } = controller
   return (
     <aside className="engineering-panel">
       <span className="eyebrow">TABLERO DE INGENIERÍA</span>
@@ -60,6 +61,7 @@ export default function EngineeringPanel({ controller }: { controller: MissionCo
               ? ` · ${engineeringProblems.length - 2} requisitos más por resolver`
               : '')}
       </div>
+      {campus && <MissionChecklist requirements={guidance.requirements} />}
       <div className="mission-links">
         <a href="https://science.nasa.gov/moon/facts/" target="_blank" rel="noopener noreferrer">
           Datos científicos de NASA ↗
