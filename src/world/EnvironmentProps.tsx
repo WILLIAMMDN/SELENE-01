@@ -15,6 +15,37 @@ const palette = (m: T.Material) => {
   return c.lerp(new T.Color('#95b4aa'), 0.18)
 }
 const preparedProps = new WeakMap<T.Object3D, T.Object3D>()
+export function cloneScenery(source: T.Object3D) {
+  const cached = preparedProps.get(source)
+  if (cached) return cached.clone(true)
+  const root = source.clone(true)
+  root.position.set(0, 0, 0)
+  const meshes: T.Mesh[] = []
+  root.traverse((o) => {
+    if (o instanceof T.Mesh) meshes.push(o)
+  })
+  for (const mesh of meshes) {
+    const convert = (m: T.Material) =>
+      new T.MeshToonMaterial({
+        color: palette(m),
+        map: (m as T.MeshStandardMaterial).map,
+        gradientMap: toon('#dce0cf').gradientMap,
+        side: m.side,
+      })
+    mesh.material = Array.isArray(mesh.material)
+      ? mesh.material.map(convert)
+      : convert(mesh.material)
+    mesh.castShadow = true
+    mesh.receiveShadow = true
+    const ink = new T.LineSegments(
+      new T.EdgesGeometry(mesh.geometry, 40),
+      new T.LineBasicMaterial({ color: '#3a5152', transparent: true, opacity: 0.6 }),
+    )
+    mesh.add(ink)
+  }
+  preparedProps.set(source, root)
+  return root.clone(true)
+}
 export function SceneryProp({
   name,
   position,
@@ -30,35 +61,7 @@ export function SceneryProp({
   const actor = useMemo(() => {
     const source = scene.getObjectByName(name)
     if (!source) return null
-    const cached = preparedProps.get(source)
-    if (cached) return cached.clone(true)
-    const root = source.clone(true)
-    root.position.set(0, 0, 0)
-    const meshes: T.Mesh[] = []
-    root.traverse((o) => {
-      if (o instanceof T.Mesh) meshes.push(o)
-    })
-    for (const mesh of meshes) {
-      const convert = (m: T.Material) =>
-        new T.MeshToonMaterial({
-          color: palette(m),
-          map: (m as T.MeshStandardMaterial).map,
-          gradientMap: toon('#dce0cf').gradientMap,
-          side: m.side,
-        })
-      mesh.material = Array.isArray(mesh.material)
-        ? mesh.material.map(convert)
-        : convert(mesh.material)
-      mesh.castShadow = true
-      mesh.receiveShadow = true
-      const ink = new T.LineSegments(
-        new T.EdgesGeometry(mesh.geometry, 40),
-        new T.LineBasicMaterial({ color: '#3a5152', transparent: true, opacity: 0.6 }),
-      )
-      mesh.add(ink)
-    }
-    preparedProps.set(source, root)
-    return root.clone(true)
+    return cloneScenery(source)
   }, [scene, name])
   return actor ? (
     <group position={position} rotation={[0, rotation, 0]} scale={scale}>
@@ -75,7 +78,6 @@ export default function EnvironmentProps() {
       <SceneryProp name="Env_Parking_Bloque_Acceso_Vial" position={[61, 0, 38.4]} scale={0.55} />
       <SceneryProp name="Vehiculo_Van_Transporte" position={[30, 0.13, 43]} />
       <SceneryProp name="Vehiculo_Camion_Carga" position={[61, 0.13, 31]} />
-      <SceneryProp name="Vehiculo_Buggy_Colonia" position={[30, 0, 20]} />
       <Sign text="TRANSPORTE / ARTEMISA" position={[42, 1.5, 48]} scale={[2.3, 0.575, 1]} />
       {BENCHES.map(([x, z, r], i) => (
         <SceneryProp

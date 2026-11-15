@@ -5,6 +5,7 @@ import type { LauncherId } from '../game/missionDesign'
  * The scene reuses one ODYSSEY launch-vehicle model for both selectable profiles.
  */
 export const LAUNCH_DURATION = 34
+export type LaunchClock = { current: number }
 export type LaunchBeat =
   | 'countdown'
   | 'ignition'

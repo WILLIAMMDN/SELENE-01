@@ -1,3 +1,4 @@
+import { OBSERVATORY } from './observatoryLayout'
 import { coastDistance, PARKING } from './environmentLayout'
 import modules from './artemisaModules.json'
 export const CAMPUS_BUILDINGS = [
@@ -13,6 +14,22 @@ export const CAMPUS_BUILDINGS = [
   { id: 'logistics', x: 78, z: 22, label: 'LOGÍSTICA / DESCENSO' },
 ].map((p) => ({ ...p, ...modules.find((m) => m.id === p.id)! }))
 export const CAMPUS_ROADS: { points: [number, number][]; width: number; main?: boolean }[] = [
+  {
+    points: [
+      [-41, -4],
+      [-40, 8.1],
+      [-45, 8.1],
+    ],
+    width: 1.6,
+  },
+  {
+    points: [
+      [23, 23],
+      [28, 26],
+      [31, 26],
+    ],
+    width: 1.6,
+  },
   {
     points: [
       [0, 68],
@@ -219,6 +236,7 @@ export const CAMPUS_TREES = [
   ...nearTrees,
 ].filter(
   ([x, z]) =>
+    Math.hypot(x - OBSERVATORY.x, z - OBSERVATORY.z) > 11 &&
     coastDistance(x, z) > 1.2 &&
     Math.hypot(x - 87, z + 13) > 11 &&
     !PARKING.some((b) => Math.abs(x - b.x) < b.hx + 3 && Math.abs(z - b.z) < b.hz + 3) &&

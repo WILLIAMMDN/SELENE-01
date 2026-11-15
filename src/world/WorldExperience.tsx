@@ -1,3 +1,5 @@
+import { roomLabel } from './buildingEntrances'
+import VehicleDashboard from '../ui/world/VehicleDashboard'
 import WorldNotebook from '../ui/world/WorldNotebook'
 import { OBJECTIVE_NAMES, type Panel } from '../ui/world/worldUiTypes'
 import { useCampusMission, nextMissionStep, missionVerified } from '../game/campusMission'
@@ -20,6 +22,8 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
   useCampusMission()
   const world = useWorld(),
     mars = world.id === 'mars',
+    moon = world.id === 'moon',
+    offworld = world.id !== 'earth',
     SECTORS = world.sectors
   const next = nextMissionStep(),
     destination = SECTORS.find((s) => s.id === next.sector)!
@@ -50,6 +54,10 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
     onReady = useCallback(() => setReady(true), [])
   const onInteract = useCallback(
     (id: SectorId) => {
+      if (moon) {
+        setPanel(id)
+        return
+      }
       setPanel(null)
       setConversation(
         mars
@@ -64,17 +72,17 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
           : stationConversation(id),
       )
     },
-    [mars],
+    [mars, moon],
   )
   useEffect(() => {
-    if (!ready || mars) return
+    if (!ready || offworld) return
     try {
       if (localStorage.getItem('selene-arrival-story-v1')) return
     } catch {
       /* Show the introduction once per mount. */
     }
     setConversation(ARRIVAL)
-  }, [ready, mars])
+  }, [ready, offworld])
   const closeConversation = () => {
     if (conversation === ARRIVAL)
       try {
@@ -144,7 +152,7 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
         speaker: 'TARS · DESCENSO L01',
         kind: 'lander',
         lines: [
-          mars
+          offworld
             ? 'Esta es la cápsula L01: aquí se representa la llegada a la superficie. Su etapa superior puede separarse para el ascenso.'
             : 'Este módulo de entrenamiento nos permite estudiar otra etapa del viaje: llegar a una superficie y separar después la cápsula de ascenso.',
           'El encargo lunar actual es orbital. Estas animaciones muestran los mecanismos del modelo; no calculan una trayectoria real de aterrizaje.',
@@ -154,7 +162,22 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
     }
     window.addEventListener('selene-lander-panel', open)
     return () => window.removeEventListener('selene-lander-panel', open)
-  }, [panel, conversation, campaign, mars])
+  }, [panel, conversation, campaign, offworld])
+  useEffect(() => {
+    const open = () => {
+      if (!offworld && !panel && !conversation && !campaign && mode === 'walk')
+        setPanel('observatory-demo')
+    }
+    window.addEventListener('selene-observatory-panel', open)
+    return () => window.removeEventListener('selene-observatory-panel', open)
+  }, [offworld, panel, conversation, campaign, mode])
+  useEffect(() => {
+    const open = () => {
+      if (!offworld && !panel && !conversation && !campaign && mode === 'walk') setPanel('tools')
+    }
+    window.addEventListener('selene-tools-panel', open)
+    return () => window.removeEventListener('selene-tools-panel', open)
+  }, [offworld, panel, conversation, campaign, mode])
   const chooseMode = (m: ViewMode) => {
     setMode(m)
     setPanel(null)
@@ -167,7 +190,7 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
     setConversation(null)
   }
   const openCampaign = (id: SectorId) => {
-    if (mars || position.nearby !== id) return
+    if (offworld || position.nearby !== id) return
     const draft = loadBlueprint()
     if (id === 'launch' && !missionVerified(draft.config, draft.parts)) return
     setCampaignStage(id === 'hangar' ? 'design' : 'launch')
@@ -201,7 +224,9 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
       </>
     )
   return (
-    <main className={`selene-world clean-world ${mars ? 'mars-world' : 'earth-world'}`}>
+    <main
+      className={`selene-world clean-world ${offworld ? 'mars-world' : 'earth-world'} ${position.vehicle === 'driving' ? 'is-driving' : ''}`}
+    >
       <div className="world-viewport">
         <ExplorerScene
           mode={mode}
@@ -222,12 +247,12 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
           <h1>Bienvenida a {world.place}.</h1>
         </div>
       )}
-      {!conversation && !panel && (
+      {!conversation && !panel && !(mode === 'walk' && position.room) && (
         <button className="quest-slip" onClick={() => setPanel('journal')}>
-          <span>{mars ? 'ARES' : `MISIÓN ${next.number} / 05`}</span>
-          <strong>{mars ? 'Explora el paisaje' : objectiveNames[next.sector]}</strong>
+          <span>{offworld ? (moon ? 'LUNA' : 'ARES') : `MISIÓN ${next.number} / 05`}</span>
+          <strong>{offworld ? 'Explora el paisaje' : objectiveNames[next.sector]}</strong>
           <small>
-            {mars
+            {offworld
               ? 'El encargo lunar comienza en la Tierra'
               : `${destination.short} · ${Math.round(Math.hypot(position.x - destination.entry[0], position.z - destination.entry[1]))} m`}{' '}
             <b>↗</b>
@@ -281,11 +306,29 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
           <CampusMap position={position} visited={visited} />
         </aside>
       )}
-      {mode === 'walk' && nearby && !panel && !conversation && (
+      {mode === 'walk' && nearby && !position.vehicle && !panel && !conversation && (
         <button className="station-prompt" onClick={() => onInteract(nearby.id)}>
           <kbd>E</kbd> {nearby.id === 'research' ? 'Hablar con la Dra. Vega' : 'Usar estación'}{' '}
           <span>▶</span>
         </button>
+      )}
+      {mode === 'walk' && position.vehicle === 'driving' && !panel && !conversation && (
+        <VehicleDashboard
+          exitBlocked={position.exitBlocked}
+          onExit={() => input.current.actions.push('interact')}
+        />
+      )}
+      {mode === 'walk' && position.vehicle === 'near' && !panel && !conversation && (
+        <div className="vehicle-controls">
+          <button className="station-prompt" onClick={() => input.current.actions.push('interact')}>
+            <kbd>E</kbd> Conducir buggy <span>▶</span>
+          </button>
+        </div>
+      )}
+      {mode === 'walk' && position.room && !panel && !conversation && (
+        <div className="interior-caption">
+          {roomLabel(position.room)} <small>Primera persona · arrastra para mirar</small>
+        </div>
       )}
       {mode !== 'walk' && !panel && !conversation && (
         <div className="view-controls">
@@ -328,19 +371,32 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
           </div>
           <div className="touch-actions">
             <button
-              aria-label="Correr, mantener pulsado"
+              aria-label={
+                position.vehicle === 'driving'
+                  ? 'Frenar, mantener pulsado'
+                  : 'Correr, mantener pulsado'
+              }
               onPointerDown={(e) => {
                 e.preventDefault()
                 e.currentTarget.setPointerCapture(e.pointerId)
-                input.current.keys.add('ShiftLeft')
+                input.current.keys.add(position.vehicle === 'driving' ? 'Space' : 'ShiftLeft')
               }}
-              onPointerUp={() => input.current.keys.delete('ShiftLeft')}
-              onPointerCancel={() => input.current.keys.delete('ShiftLeft')}
-              onLostPointerCapture={() => input.current.keys.delete('ShiftLeft')}
+              onPointerUp={() => {
+                input.current.keys.delete('ShiftLeft')
+                input.current.keys.delete('Space')
+              }}
+              onPointerCancel={() => {
+                input.current.keys.delete('ShiftLeft')
+                input.current.keys.delete('Space')
+              }}
+              onLostPointerCapture={() => {
+                input.current.keys.delete('ShiftLeft')
+                input.current.keys.delete('Space')
+              }}
             >
-              Correr
+              {position.vehicle === 'driving' ? 'Frenar' : 'Correr'}
             </button>
-            {!mars && (
+            {!offworld && position.vehicle !== 'driving' && !position.room && (
               <button
                 onClick={() => {
                   if (!position.room) input.current.actions.push('jump')
@@ -399,8 +455,13 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
 }
 
 export default function Worlds() {
-  const [id, setId] = useState<WorldId>(() =>
-    new URLSearchParams(window.location.search).get('world') === 'mars' ? 'mars' : 'earth',
+  const [id, setId] = useState<WorldId>(
+    () =>
+      (['earth', 'mars', 'moon'].includes(
+        new URLSearchParams(window.location.search).get('world') ?? '',
+      )
+        ? new URLSearchParams(window.location.search).get('world')
+        : 'earth') as WorldId,
   )
   const change = (next: WorldId) => {
     setId(next)

@@ -17,3 +17,40 @@
 
 .clean-world .touch-actions{display:none}.control-list{display:grid;grid-template-columns:80px 1fr;gap:12px;margin:20px 0}.control-list dt{font:20px 'Patrick Hand',cursive;color:#a9585b}.control-list dd{margin:0;font-size:13px;line-height:1.6}.debrief-notes{padding-left:20px;font-size:13px;line-height:1.7}.debrief-notes li{margin:8px 0}
 @media(pointer:coarse){.clean-world .touch-actions{position:absolute;display:flex;flex-direction:column;gap:8px;bottom:48px;left:175px}.clean-world .touch-actions button{padding:8px 12px;background:#f6f7ed;border:1px solid #52656b;box-shadow:2px 2px 0 #52656b;font:18px 'Patrick Hand',cursive;touch-action:none}}
+
+/* Vehicle Dashboard (Buggy anime instrumentation) */
+.vehicle-dashboard{position:absolute;right:28px;bottom:28px;width:246px;background:#f7f8edf5;border:1.5px solid #405960;box-shadow:4px 5px 0 #52656b;border-radius:2px;padding:14px 16px;z-index:10;transform:rotate(-.5deg);font-family:'Trebuchet MS',sans-serif;color:#34464c;pointer-events:auto;user-select:none}
+.dash-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;padding-bottom:5px;border-bottom:1px solid #40596025}
+.dash-header .paper-kicker{font-size:9px;letter-spacing:1.2px;color:#547b7c;font-weight:700}
+.dash-status{display:flex;align-items:center;gap:5px;font:9px monospace;font-weight:bold;color:#457d80}
+.dash-status .live-dot{width:6px;height:6px;border-radius:50%;background:#7ca38b;display:inline-block}
+.dash-dial-wrap{display:flex;justify-content:center;margin:0 0 4px}
+.dash-dial{width:138px;height:138px;display:block}
+.dash-speed-num{font-family:'Patrick Hand',cursive;font-size:32px;fill:#34464c}
+.dash-speed-unit{font-size:8px;font-family:monospace;letter-spacing:1.5px;fill:#617575}
+.dash-rpm-title{font-size:7px;font-family:monospace;letter-spacing:1px;fill:#78908d}
+.dash-gears{display:flex;align-items:center;justify-content:center;gap:6px;margin:4px 0 6px}
+.dash-gear{padding:2px 7px;border:1px solid #40596040;background:#eaeedb;border-radius:2px;font:13px 'Patrick Hand',cursive;color:#405960}
+.dash-gear.active{background:#56878b;color:#fffef6;border-color:#405960;font-weight:bold}
+.dash-gear.gear-r.active{background:#ba6061}
+.dash-steer-bar{display:flex;align-items:center;gap:6px;margin:6px 0 4px}
+.steer-label{font:9px monospace;color:#6a8282;font-weight:bold}
+.steer-track{flex:1;height:6px;background:#e4e8d5;border:1px solid #40596050;border-radius:2px;position:relative}
+.steer-center-mark{position:absolute;left:50%;top:0;bottom:0;width:1px;background:#40596080;transform:translateX(-50%)}
+.steer-thumb{position:absolute;top:-2px;width:8px;height:8px;background:#56878b;border:1px solid #34464c;border-radius:50%;transform:translateX(-50%)}
+.dash-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0 8px;padding:6px 0;border-top:1px solid #40596020;border-bottom:1px solid #40596020}
+.dash-metric{display:flex;flex-direction:column;gap:2px}
+.metric-tag{font-size:8px;letter-spacing:1px;color:#6c8380;font-weight:bold}
+.metric-val{font:14px 'Patrick Hand',cursive;color:#34464c}
+.power-meter{height:6px;background:#e4e8d5;border:1px solid #40596050;border-radius:2px;overflow:hidden;margin-top:2px}
+.power-fill{height:100%;background:#56878b}
+.dash-footer{display:flex;flex-direction:column;gap:6px}
+.dash-exit-btn{width:100%;padding:8px 12px;background:#f8f9ed;border:1.5px solid #405960;box-shadow:2px 2px 0 #52656b;border-radius:2px;font:18px 'Patrick Hand',cursive;color:#3d585d;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer}
+.dash-exit-btn:hover{background:#eff2dc}
+.dash-exit-btn kbd{font:13px 'Trebuchet MS',sans-serif;border:1px solid #71888c;padding:1px 6px;border-radius:2px;background:#fff8}
+.dash-warning{padding:6px;background:#fae8e5;border:1px solid #ba6061;font-size:11px;color:#ba6061;text-align:center;border-radius:2px}
+.dash-keys{display:flex;justify-content:space-between;font-size:9px;color:#607575;margin-top:2px}
+.dash-keys kbd{font:8px monospace;border:1px solid #40596040;padding:1px 3px;border-radius:2px;background:#fff8;margin-right:2px}
+.clean-world.is-driving .paper-dock{bottom:440px}
+@media(max-width:700px){.vehicle-dashboard{right:12px;bottom:75px;width:215px;padding:10px 12px;transform:none}.dash-dial{width:115px;height:115px}.clean-world.is-driving .paper-dock{display:none}}
+

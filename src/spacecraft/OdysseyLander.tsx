@@ -1,3 +1,4 @@
+import { buggy, nearBuggy } from '../world/buggyControl'
 import { useEffect, useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { useGLTF } from '@react-three/drei'
@@ -22,7 +23,9 @@ type Props = {
 export default function OdysseyLander({ x, z, height, paused = false, training = false }: Props) {
   const pausedRef = useRef(paused)
   pausedRef.current = paused
-  const { scene, animations } = useGLTF(`${import.meta.env.BASE_URL}models/lander/lander_l01.glb`)
+  const { scene, animations } = useGLTF(
+    `${import.meta.env.BASE_URL}models/lander/lander_l01_v01.glb`,
+  )
   const root = useMemo(() => {
     const copy = clone(scene),
       meshes: T.Mesh[] = []
@@ -80,6 +83,7 @@ export default function OdysseyLander({ x, z, height, paused = false, training =
       }
     }
     const key = (e: KeyboardEvent) => {
+      if (occupant.earth && (buggy.driving || nearBuggy(occupant.x, occupant.z))) return
       if (
         pausedRef.current ||
         !occupant.active ||

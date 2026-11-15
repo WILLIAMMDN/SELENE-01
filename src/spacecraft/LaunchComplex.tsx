@@ -8,8 +8,7 @@ import { ODYSSEY_SCALE } from '../world/physicalScale'
 import OdysseyShip from './OdysseyShip'
 import { COMPLETE_ASSEMBLY, type ModuleId } from './assembly'
 import type { DesignConfig } from '../game/missionDesign'
-import { getLaunchFrame } from './launchTimeline'
-import type { LaunchClock } from './LaunchCinematicDirector'
+import { getLaunchFrame, type LaunchClock } from './launchTimeline'
 
 export const LAUNCH_SITE = { x: 61, z: -75, scale: ODYSSEY_SCALE, height: 54.244 * ODYSSEY_SCALE }
 export const LAUNCH_MECHANISMS = [
@@ -77,7 +76,7 @@ function Asset({
   flightClock?: LaunchClock
 }) {
   const { scene, animations } = useGLTF(
-    `${import.meta.env.BASE_URL}models/launch/${platform ? 'plataforma' : 'lanzador'}_odyssey.glb?v=juego-nasa-1`,
+    `${import.meta.env.BASE_URL}models/launch/${platform ? 'plataforma' : 'lanzador'}_odyssey_v01.glb`,
   )
   const root = useMemo(() => prepare(scene), [scene]),
     mixer = useMemo(() => new T.AnimationMixer(root), [root]),
@@ -158,6 +157,7 @@ function Asset({
     </>
   )
 }
+
 /** Lightweight stylized plumes that follow the rocket; no imported particle library. */
 function EngineExhaust({
   clock,

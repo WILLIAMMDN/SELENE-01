@@ -28,13 +28,20 @@ export function foundation(b: (typeof CAMPUS_BUILDINGS)[number], height: Height)
 export function buildingAt(x: number, z: number, earth = true) {
   if (earth && Math.abs(x - 24) < 11.2 && z > -25.7 && z < -5.9) return 'hangar'
   return (
-    CAMPUS_BUILDINGS.find((b) =>
-      b.floors.some(
-        (f) =>
-          (b.id !== 'habitat' || Math.hypot(x - b.x - f.x, z - b.z - f.z) < 4.9) &&
-          Math.abs(x - b.x - f.x) < f.hx &&
-          Math.abs(z - b.z - f.z) < f.hz,
-      ),
+    CAMPUS_BUILDINGS.find(
+      (b) =>
+        b.floors.some(
+          (f) =>
+            (b.id !== 'habitat' || Math.hypot(x - b.x - f.x, z - b.z - f.z) < 4.9) &&
+            Math.abs(x - b.x - f.x) < f.hx &&
+            Math.abs(z - b.z - f.z) < f.hz,
+        ) ||
+        // Include thresholds so adjoining habitat/airlock floors keep one camera mode.
+        (b.floors.length > 0 &&
+          b.doors.some(
+            (d) =>
+              d.hx > 0.3 && Math.abs(x - b.x - d.x) < d.hx - 0.05 && Math.abs(z - b.z - d.z) < 0.45,
+          )),
     )?.id ?? null
   )
 }

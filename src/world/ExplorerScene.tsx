@@ -1,3 +1,5 @@
+import LunarEnvironment from './lunar/LunarEnvironment'
+import CampusSky from './sky/CampusSky'
 import AdaptiveResolution from './performance/AdaptiveResolution'
 import { Canvas } from '@react-three/fiber'
 import { Component, memo, Suspense, useEffect, type ReactNode } from 'react'
@@ -12,7 +14,8 @@ class SceneBoundary extends Component<
   { children: ReactNode; onFailure: () => void },
   { failed: boolean }
 > {
-  componentDidCatch() {
+  componentDidCatch(error: Error) {
+    console.error('Error de escena 3D:', error)
     this.props.onFailure()
   }
   state = { failed: false }
@@ -21,13 +24,8 @@ class SceneBoundary extends Component<
   }
   render() {
     return this.state.failed ? (
-      <div className="world-fallback">
-        <h2>No pudimos iniciar el mundo 3D.</h2>
-        <p>
-          Activa la aceleración gráfica del navegador y recarga la página. El mapa y la información
-          de los sectores siguen disponibles.
-        </p>
-        <button onClick={() => window.location.reload()}>Reintentar</button>
+      <div className="world-recovery">
+        <button onClick={() => this.setState({ failed: false })}>Recuperar vista 3D</button>
       </div>
     ) : (
       this.props.children
@@ -42,7 +40,8 @@ export default memo(function ExplorerScene(
   props: SceneProps & { quality: 'standard' | 'light'; onReady: () => void },
 ) {
   const world = useWorld(),
-    mars = world.id === 'mars'
+    mars = world.id === 'mars',
+    moon = world.id === 'moon'
   return (
     <SceneBoundary onFailure={props.onReady}>
       <Canvas
@@ -56,22 +55,37 @@ export default memo(function ExplorerScene(
       >
         <color attach="background" args={[world.sky]} />
         <fog attach="fog" args={[world.sky, 300, 580]} />
-        <ambientLight intensity={1.25} color="#e1ebdf" />
-        <directionalLight
-          position={[-80, 150, 65]}
-          intensity={2.1}
-          color="#fff0d2"
-          castShadow={props.quality === 'standard'}
-          shadow-mapSize={[2048, 2048]}
-          shadow-camera-left={-95}
-          shadow-camera-right={95}
-          shadow-camera-top={95}
-          shadow-camera-bottom={-95}
-          shadow-camera-far={420}
-          shadow-normalBias={0.025}
-        />
+        {!mars && !moon ? (
+          <CampusSky
+            quality={props.quality}
+            reduced={props.reduced}
+            paused={props.paused || props.mode !== 'walk'}
+          />
+        ) : (
+          <>
+            <ambientLight intensity={1.25} color="#e1ebdf" />
+            <directionalLight
+              position={[-80, 150, 65]}
+              intensity={2.1}
+              color="#fff0d2"
+              castShadow={props.quality === 'standard'}
+              shadow-mapSize={[2048, 2048]}
+              shadow-camera-left={-95}
+              shadow-camera-right={95}
+              shadow-camera-top={95}
+              shadow-camera-bottom={-95}
+              shadow-camera-far={420}
+              shadow-normalBias={0.025}
+            />
+          </>
+        )}
         <Suspense fallback={null}>
-          {mars ? (
+          {moon ? (
+            <LunarEnvironment
+              paused={props.paused || props.mode !== 'walk'}
+              reduced={props.reduced}
+            />
+          ) : mars ? (
             <MarsEnvironment
               reduced={props.reduced}
               paused={props.paused || props.mode !== 'walk'}

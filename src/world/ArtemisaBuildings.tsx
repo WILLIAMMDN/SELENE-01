@@ -1,5 +1,5 @@
 import { useFrame } from '@react-three/fiber'
-import { buildingAt, occupant, foundation } from './buildingNavigation'
+import { occupant, foundation } from './buildingNavigation'
 import { Component, Suspense, useMemo, type ReactNode } from 'react'
 import { useGLTF } from '@react-three/drei'
 import * as T from 'three'
@@ -76,18 +76,13 @@ function Model({ building }: { building: Building }) {
     `${import.meta.env.BASE_URL}models/artemisa/${building.id}.glb?v=basepri-interiors-2`,
   )
   const actor = useMemo(() => template(scene).clone(true), [scene])
-  const cover = useMemo(() => actor.getObjectByName('Cover'), [actor])
   const doors = useMemo(
     () => building.doors.map((door) => ({ door, object: actor.getObjectByName(door.name) })),
     [actor, building],
   )
   useFrame((_, dt) => {
-    if (cover)
-      cover.visible = !(
-        occupant.active && buildingAt(occupant.x, occupant.z, occupant.earth) === building.id
-      )
     for (const { door, object } of doors) {
-      if (!object) continue
+      if (!object || door.hx < 0.3) continue
       if (building.id === 'airlock' && door.z < 0) {
         object.visible = false
         continue
@@ -191,7 +186,7 @@ export default function ArtemisaBuildings({
               })}
             <Sign
               text={b.label}
-              sub="ENTRADA · PUERTA AUTOMÁTICA"
+              sub={b.floors.length ? 'ENTRADA · PUERTA AUTOMÁTICA' : 'INSTALACIÓN EXTERIOR'}
               position={[b.width / 2 + 1, 1.25 + thickness, b.depth / 2 + 0.45]}
               scale={[2.4, 0.6, 1]}
             />

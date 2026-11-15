@@ -1,8 +1,9 @@
+import { LUNAR_SECTORS, lunarHeight, lunarCanWalk } from './lunar/lunarNavigation'
 import { buildingClear } from './buildingNavigation'
 import { ODYSSEY_SIZE } from './physicalScale'
 import { createContext, useContext } from 'react'
 import { SECTORS, START, COLLIDERS, canWalk, groundHeight, type Sector } from './worldData'
-export type WorldId = 'earth' | 'mars'
+export type WorldId = 'earth' | 'mars' | 'moon'
 export const MARS_SECTORS: Sector[] = [
   {
     id: 'research',
@@ -105,6 +106,23 @@ export function marsCanWalk(x: number, z: number) {
   )
 }
 export const WORLDS = {
+  moon: {
+    id: 'moon' as const,
+    name: 'Luna',
+    place: 'Base lunar ODYSSEY',
+    size: 300,
+    sectors: LUNAR_SECTORS,
+    start: [57, 66] as [number, number],
+    height: lunarHeight,
+    canWalk: lunarCanWalk,
+    sky: '#11151f',
+    mapColor: '#c5c5bb',
+    title: 'Un nuevo horizonte.',
+    subtitle: 'Base lunar ODYSSEY.',
+    intro: 'Explora los módulos, despliega los paneles y visita la cápsula L01.',
+    objective: 'Explora la base lunar',
+    hint: 'Usa el mapa para recorrer la base y el terreno lunar.',
+  },
   earth: {
     id: 'earth' as const,
     name: 'Tierra',

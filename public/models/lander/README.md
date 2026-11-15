@@ -7,3 +7,7 @@ Colocación: zona de descenso de Marte (61, -57) y plataforma de entrenamiento t
 Clips originales: LANDER_DESCENT y LANDER_ASCENT_SEPARATION. Pulsa el modelo, o E cuando estés cerca, para abrir su conversación y los controles de demostración. El mapa incluye acceso a la cápsula. Cada animación puede reproducirse y el modelo puede restablecerse. Las aristas acompañan las piezas animadas y los materiales mantienen el lenguaje mate e ilustrado del campus.
 
 No sustituye al orbitador del encargo lunar ni añade una simulación física de aterrizaje. Se presenta como vehículo ficticio del usuario, no como un módulo certificado ni un recurso oficial NASA. No se infiere una licencia pública de la entrega.
+
+## Versión fuente v01 — 15 de noviembre de 2026
+
+La ruta activa ahora es `lander_l01_v01.glb`, exportada de `ODYSSEY_LANDER_L01_v01.blend`. Conserva la raíz y sus dos acciones originales. Se usa en los puestos existentes de Tierra/Marte y en la explanada de la nueva Luna. El GLB anterior permanece conservado. Exportador común: `tools/export_odyssey_sources.py`.

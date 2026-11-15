@@ -30,6 +30,8 @@ export type CrewTarget = {
   id: CrewId
   body: RefObject<T.Group | null>
   motion?: RefObject<CharacterMotion>
+  isIndoors?: () => boolean
+  isDriving?: () => boolean
 }
 
 // Fallback used only while loading or if a replacement asset cannot be displayed.
@@ -201,6 +203,9 @@ function Follower({
   const ref = useRef<T.Group>(null),
     next = useRef(new T.Vector3()),
     lastPlayer = useRef(new T.Vector3()),
+    lastOutsidePlayer = useRef(new T.Vector3()),
+    wasDriving = useRef(false),
+    wasIndoors = useRef(false),
     initialized = useRef(false),
     motion = useRef<Motion>('idle'),
     request = useRef<TarsRequest>({ serial: 0, kind: 'jump' }),
@@ -223,6 +228,48 @@ function Follower({
     const delta = Math.min(rawDelta, 0.05),
       p = player.position,
       a = player.rotation.y
+    const clearance = 0.015
+
+    const isIndoors = target.isIndoors?.() ?? false
+    const isDriving = target.isDriving?.() ?? false
+
+    if (!isIndoors) {
+      lastOutsidePlayer.current.copy(p)
+    }
+
+    if (wasDriving.current && !isDriving) {
+      const dist = Math.hypot(p.x - body.position.x, p.z - body.position.z)
+      if (dist > 8) {
+        const angle = a + Math.PI
+        const rx = p.x + Math.sin(angle) * 2.5
+        const rz = p.z + Math.cos(angle) * 2.5
+        if (canWalk(rx, rz)) {
+          body.position.set(rx, height(rx, rz) + clearance, rz)
+          body.rotation.y = a
+          route.current.reset(p)
+        }
+      }
+    }
+    wasDriving.current = isDriving
+
+    if (wasIndoors.current && !isIndoors) {
+      lastPlayer.current.copy(p)
+      route.current.reset(p)
+    }
+    wasIndoors.current = isIndoors
+
+    if (isIndoors || isDriving) {
+      // TARS stays waiting outside in idle state, not entering rooms or vehicles
+      motion.current = 'idle'
+      body.position.y = height(body.position.x, body.position.z) + clearance
+      const lookTarget =
+        isIndoors && lastOutsidePlayer.current.lengthSq() > 0 ? lastOutsidePlayer.current : p
+      const angle = Math.atan2(lookTarget.x - body.position.x, lookTarget.z - body.position.z)
+      const diff = Math.atan2(Math.sin(angle - body.rotation.y), Math.cos(angle - body.rotation.y))
+      body.rotation.y += diff * Math.min(1, delta * 4)
+      return
+    }
+
     const travelled = initialized.current
       ? Math.hypot(p.x - lastPlayer.current.x, p.z - lastPlayer.current.z)
       : 0
@@ -241,7 +288,6 @@ function Follower({
       x = p.x
       z = p.z
     }
-    const clearance = 0.015
     next.current.set(x, height(x, z) + clearance, z)
     const beforeX = body.position.x,
       beforeZ = body.position.z

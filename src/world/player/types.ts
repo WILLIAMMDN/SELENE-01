@@ -7,6 +7,9 @@ export type PositionReport = {
   x: number
   z: number
   nearby: SectorId | null
+  vehicle?: false | null | 'near' | 'driving'
+  speed?: number
+  exitBlocked?: boolean
   fps: number
   room?: string | null
 }

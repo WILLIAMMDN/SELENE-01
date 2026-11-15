@@ -2,6 +2,7 @@ import type { DesignConfig } from '../../game/missionDesign'
 import { LAUNCHERS } from '../../game/missionDesign'
 import type { ModuleId } from '../../spacecraft/assembly'
 import { getLaunchFrame, LAUNCH_DURATION } from '../../spacecraft/launchTimeline'
+import { getCameraShot } from '../../spacecraft/LaunchCinematicDirector'
 
 export default function LaunchCinematicHud({
   seconds,
@@ -15,16 +16,23 @@ export default function LaunchCinematicHud({
   onSkip: () => void
 }) {
   const frame = getLaunchFrame(seconds, config.launcher)
+  const cameraShot = getCameraShot(seconds)
   const launcherName = LAUNCHERS.find((item) => item.id === config.launcher)?.name ?? 'Lanzador'
   const moduleName = parts.includes('habitat') ? 'ODYSSEY · CON HÁBITAT' : 'ODYSSEY · COMPACTA'
   return (
     <div className="launch-film" role="region" aria-label="Cinemática interactiva de lanzamiento">
+      <div className="launch-film-letterbox-top" aria-hidden="true" />
+      <div className="launch-film-letterbox-bottom" aria-hidden="true" />
       <div className="launch-film-top">
         <div className="launch-film-brand">
           <span className="launch-film-dot" aria-hidden="true" />
           <span>SELENE—01</span>
           <span className="launch-film-divider">/</span>
-          <span>SEC. LANZAMIENTO</span>
+          <span>SEC. CINEMÁTICA</span>
+        </div>
+        <div className="launch-film-camera-tag">
+          <span className="launch-film-rec-dot" aria-hidden="true" />
+          <span>{cameraShot.name}</span>
         </div>
         <button className="launch-film-skip" type="button" onClick={onSkip}>
           Omitir cinemática <kbd>ESC</kbd>

@@ -1,0 +1,106 @@
+import { useEffect, useMemo } from 'react'
+import { useFrame } from '@react-three/fiber'
+import { useGLTF } from '@react-three/drei'
+import { clone } from 'three/addons/utils/SkeletonUtils.js'
+import * as T from 'three'
+import { Sign, toon } from '../ArtKit'
+import OdysseyLander from '../../spacecraft/OdysseyLander'
+import { LUNAR_LANDER, LUNAR_SECTORS, lunarTerrainHeight, lunarCanWalk } from './lunarNavigation'
+import RoverLunar from './RoverLunar'
+import { roberRemote } from '../roberControl'
+
+export default function LunarEnvironment({
+  paused,
+  reduced,
+}: {
+  paused: boolean
+  reduced: boolean
+}) {
+  const { scene, animations } = useGLTF(`${import.meta.env.BASE_URL}models/lunar/lunar_base.glb`)
+  const asset = useMemo(() => {
+    const root = clone(scene),
+      materials = new Map<T.Material, T.Material>()
+    root.traverse((n) => {
+      if (!(n instanceof T.Mesh)) return
+      const convert = (source: T.Material) => {
+        if (materials.has(source)) return materials.get(source)!
+        const m = source as T.MeshStandardMaterial
+        const material = new T.MeshToonMaterial({
+          color: m.color,
+          map: m.map,
+          gradientMap: toon('#b7b9b3').gradientMap,
+          side: m.side,
+          transparent: m.transparent,
+          opacity: m.opacity,
+        })
+        materials.set(source, material)
+        return material
+      }
+      n.material = Array.isArray(n.material) ? n.material.map(convert) : convert(n.material)
+      n.receiveShadow = true
+      n.castShadow = !n.name.includes('TERRENO') && !n.name.includes('HORIZONTE')
+    })
+    return { root, mixer: new T.AnimationMixer(root), materials }
+  }, [scene])
+  useEffect(() => {
+    const command = (event: Event) => {
+      const open = (event as CustomEvent<boolean>).detail
+      const clip = animations.find((a) => a.name === 'PWR_L01_DESPLIEGUE')
+      if (!clip) return
+      asset.mixer.stopAllAction()
+      const action = asset.mixer.clipAction(clip).reset().setLoop(T.LoopOnce, 1)
+      action.clampWhenFinished = true
+      action.time = open ? 0 : clip.duration
+      action.timeScale = open ? 1 : -1
+      action.play()
+      if (reduced) {
+        action.time = open ? clip.duration : 0
+        asset.mixer.update(0)
+        action.paused = true
+      }
+    }
+    window.addEventListener('selene-lunar-power', command)
+    return () => {
+      window.removeEventListener('selene-lunar-power', command)
+      asset.mixer.stopAllAction()
+      asset.mixer.uncacheRoot(asset.root)
+    }
+  }, [asset, animations, reduced])
+  useEffect(
+    () => () => {
+      asset.materials.forEach((m) => m.dispose())
+    },
+    [asset],
+  )
+  useFrame((_, dt) => {
+    if (!paused && !reduced) asset.mixer.update(Math.min(dt, 0.05))
+  })
+  return (
+    <>
+      <primitive object={asset.root} dispose={null} />
+      <OdysseyLander
+        x={LUNAR_LANDER.x}
+        z={LUNAR_LANDER.z}
+        height={lunarTerrainHeight}
+        paused={paused}
+      />
+      <RoverLunar
+        position={[53, 0, 63]}
+        heightAt={lunarTerrainHeight}
+        canMove={(pos) => lunarCanWalk(pos.x, pos.z)}
+        paused={paused}
+        onControlChange={(vehicle) => {
+          roberRemote.current = vehicle
+        }}
+      />
+      {LUNAR_SECTORS.map((s) => (
+        <Sign
+          key={s.id}
+          text={`${s.number} / ${s.short.toUpperCase()}`}
+          position={[s.entry[0], lunarTerrainHeight(...s.entry) + 1.8, s.entry[1]]}
+          scale={[2.2, 0.55, 1]}
+        />
+      ))}
+    </>
+  )
+}

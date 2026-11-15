@@ -82,12 +82,7 @@ export default function LaunchPreview() {
           onCinematicComplete={finish}
         />
         {playing && (
-          <LaunchCinematicHud
-            seconds={elapsed}
-            parts={parts}
-            config={config}
-            onSkip={finish}
-          />
+          <LaunchCinematicHud seconds={elapsed} parts={parts} config={config} onSkip={finish} />
         )}
       </div>
 
@@ -143,8 +138,8 @@ export default function LaunchPreview() {
             ← Volver al juego
           </button>
           <p className="launch-preview-footnote">
-            AURORA-S y ATLAS-T comparten temporalmente el mismo modelo de lanzamiento.
-            Sus diferencias de ascenso son ilustrativas, no simulaciones físicas.
+            AURORA-S y ATLAS-T comparten temporalmente el mismo modelo de lanzamiento. Sus
+            diferencias de ascenso son ilustrativas, no simulaciones físicas.
           </p>
         </aside>
       )}
