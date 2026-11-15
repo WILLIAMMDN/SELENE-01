@@ -132,12 +132,16 @@ function Asset({
   useFrame((_, dt) => {
     try {
       if (flightClock) {
-        const frame = getLaunchFrame(flightClock.current, config?.launcher ?? 'aurora')
-        if (platform && frame.time >= 0.8 && !withdrawn.current) {
+        const frame = getLaunchFrame(
+          flightClock.current,
+          config?.launcher ?? 'aurora',
+          parts.includes('habitat'),
+        )
+        if (platform && frame.time >= 8 && !withdrawn.current) {
           const clip = animations.find((a) => a.name === 'SERVICIOS_RETIRADA')
           if (clip) {
             mixer.stopAllAction()
-            const action = mixer.clipAction(clip.clone()).reset().setLoop(T.LoopOnce, 1)
+            const action = mixer.clipAction(clip).reset().setLoop(T.LoopOnce, 1)
             action.clampWhenFinished = true
             action.play()
             withdrawn.current = true
@@ -148,13 +152,13 @@ function Asset({
           const clip = animations.find((a) => a.name === frame.mechanism)
           if (clip) {
             mixer.stopAllAction()
-            const action = mixer.clipAction(clip.clone()).reset().setLoop(T.LoopOnce, 1)
+            const action = mixer.clipAction(clip).reset().setLoop(T.LoopOnce, 1)
             action.clampWhenFinished = true
             action.play()
           }
         }
       }
-      mixer.update(Math.min(dt, 0.05))
+      mixer.update(Math.min(dt, flightClock ? 0.35 : 0.05))
     } catch (err) {
       console.warn('LaunchComplex animation update warning:', err)
     }
@@ -214,12 +218,12 @@ function LaunchPadDust({ clock }: { clock: LaunchClock }) {
   useFrame(() => {
     if (!puffs.current) return
     const t = clock.current
-    puffs.current.visible = t >= 5 && t < 15
+    puffs.current.visible = t >= 12 && t < 24
     puffs.current.children.forEach((child, i) => {
-      const angle = (i / 16) * Math.PI * 2
-      const radius = 6 + (t - 5) * 2.8 + (i % 3)
+      const angle = (i / 14) * Math.PI * 2
+      const radius = 5 + (t - 12) * 2.25 + (i % 3)
       child.position.set(Math.cos(angle) * radius, 0.8 + ((i + t) % 4), Math.sin(angle) * radius)
-      child.scale.setScalar(Math.max(0.1, 1.4 + (t - 5) * 0.25))
+      child.scale.setScalar(Math.max(0.1, 1.3 + (t - 12) * 0.2))
     })
   })
   return (
@@ -252,7 +256,11 @@ export default function LaunchComplex({
   const rocket = useRef<T.Group>(null)
   useFrame(() => {
     if (!rocket.current || !flightClock) return
-    const frame = getLaunchFrame(flightClock.current, config?.launcher ?? 'aurora')
+    const frame = getLaunchFrame(
+      flightClock.current,
+      config?.launcher ?? 'aurora',
+      parts.includes('habitat'),
+    )
     rocket.current.position.y = frame.altitudeMeters / LAUNCH_SITE.scale
   })
   return (

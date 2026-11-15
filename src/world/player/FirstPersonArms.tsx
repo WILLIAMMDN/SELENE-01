@@ -71,7 +71,7 @@ function ArmMesh({
     { x: 0.022 * sign, y: 0.002, rotX: 0.28, rotY: 0.05 * sign, scale: 0.95 }, // Index
     { x: 0.007 * sign, y: 0.003, rotX: 0.32, rotY: 0.01 * sign, scale: 1.0 }, // Middle
     { x: -0.008 * sign, y: 0.002, rotX: 0.35, rotY: -0.03 * sign, scale: 0.92 }, // Ring
-    { x: -0.023 * sign, y: 0.000, rotX: 0.40, rotY: -0.08 * sign, scale: 0.82 }, // Pinky
+    { x: -0.023 * sign, y: 0.0, rotX: 0.4, rotY: -0.08 * sign, scale: 0.82 }, // Pinky
   ]
 
   return (
@@ -83,7 +83,12 @@ function ArmMesh({
 
         {/* Cuff Ring */}
         <mesh position={[0, -0.11, 0]} geometry={geometries.cuff} material={cuffMat} />
-        <mesh position={[0, -0.11, 0]} geometry={geometries.cuff} material={inkMat} scale={[1.05, 1.02, 1.05]} />
+        <mesh
+          position={[0, -0.11, 0]}
+          geometry={geometries.cuff}
+          material={inkMat}
+          scale={[1.05, 1.02, 1.05]}
+        />
 
         {/* Wrist Communicator (only on left arm) */}
         {isLeft && (
@@ -105,10 +110,7 @@ function ArmMesh({
         <mesh geometry={geometries.palm} material={inkMat} scale={[1.04, 1.08, 1.04]} />
 
         {/* Thumb */}
-        <group
-          position={[0.036 * sign, 0.002, 0.016]}
-          rotation={[0.26, 0.55 * sign, -0.22 * sign]}
-        >
+        <group position={[0.036 * sign, 0.002, 0.016]} rotation={[0.26, 0.55 * sign, -0.22 * sign]}>
           <mesh geometry={geometries.thumbBase} material={handMat} />
           <mesh geometry={geometries.thumbBase} material={inkMat} scale={[1.06, 1.04, 1.06]} />
           <mesh
@@ -135,8 +137,17 @@ function ArmMesh({
             scale={f.scale}
           >
             {/* Proximal phalanx */}
-            <mesh position={[0, -0.008, -0.015]} geometry={geometries.fingerProximal} material={handMat} />
-            <mesh position={[0, -0.008, -0.015]} geometry={geometries.fingerProximal} material={inkMat} scale={[1.08, 1.04, 1.08]} />
+            <mesh
+              position={[0, -0.008, -0.015]}
+              geometry={geometries.fingerProximal}
+              material={handMat}
+            />
+            <mesh
+              position={[0, -0.008, -0.015]}
+              geometry={geometries.fingerProximal}
+              material={inkMat}
+              scale={[1.08, 1.04, 1.08]}
+            />
 
             {/* Distal phalanx curled inward */}
             <mesh
@@ -216,7 +227,7 @@ export default function FirstPersonArms({
 
     // Tight, controlled micro-sway when turning the camera (keeps hands firmly anchored)
     const targetSwayX = reduced ? 0 : Math.max(-0.015, Math.min(0.015, -deltaYaw * 0.08))
-    const targetSwayY = reduced ? 0 : Math.max(-0.010, Math.min(0.010, deltaPitch * 0.06))
+    const targetSwayY = reduced ? 0 : Math.max(-0.01, Math.min(0.01, deltaPitch * 0.06))
 
     swayX.current += (targetSwayX - swayX.current) * Math.min(1, dt * 20)
     swayY.current += (targetSwayY - swayY.current) * Math.min(1, dt * 20)
@@ -228,7 +239,7 @@ export default function FirstPersonArms({
     }
 
     const swingAmp = reduced ? 0.004 : running ? 0.022 : isMoving ? 0.012 : 0
-    const bobAmp = reduced ? 0.002 : running ? 0.010 : isMoving ? 0.005 : 0
+    const bobAmp = reduced ? 0.002 : running ? 0.01 : isMoving ? 0.005 : 0
 
     const leftSwing = Math.sin(stridePhase.current) * swingAmp
     const rightSwing = -Math.sin(stridePhase.current) * swingAmp
@@ -238,29 +249,21 @@ export default function FirstPersonArms({
     // Position Left Arm firmly in lower corner
     if (leftArmRef.current) {
       leftArmRef.current.position.set(
-        -0.20 + swayX.current,
+        -0.2 + swayX.current,
         -0.22 + swayY.current + verticalBob + seatOffset,
         -0.36 + leftSwing,
       )
-      leftArmRef.current.rotation.set(
-        0.20 + leftSwing * 0.7,
-        0.14,
-        -0.10,
-      )
+      leftArmRef.current.rotation.set(0.2 + leftSwing * 0.7, 0.14, -0.1)
     }
 
     // Position Right Arm firmly in lower corner
     if (rightArmRef.current) {
       rightArmRef.current.position.set(
-        0.20 + swayX.current,
+        0.2 + swayX.current,
         -0.22 + swayY.current + verticalBob + seatOffset,
         -0.36 + rightSwing,
       )
-      rightArmRef.current.rotation.set(
-        0.20 + rightSwing * 0.7,
-        -0.14,
-        0.10,
-      )
+      rightArmRef.current.rotation.set(0.2 + rightSwing * 0.7, -0.14, 0.1)
     }
   })
 

@@ -1,6 +1,8 @@
 import type { MutableRefObject } from 'react'
 import type { CharacterControls } from '../characterMotion'
 import type { SectorId, ViewMode } from '../worldData'
+import type { BoardingMotion, BoardingPhase } from '../../spacecraft/boardingRoute'
+import type { LaunchClock } from '../../spacecraft/launchTimeline'
 export type Travel = { id: SectorId | 'start'; serial: number; point?: [number, number] }
 export type InputState = CharacterControls & { yaw: number; pitch: number; zoom: number }
 export type PositionReport = {
@@ -12,6 +14,7 @@ export type PositionReport = {
   exitBlocked?: boolean
   fps: number
   room?: string | null
+  boardingSpot?: 'suit' | 'lift' | 'hatch' | null
 }
 export type SceneProps = {
   mode: ViewMode
@@ -23,4 +26,10 @@ export type SceneProps = {
   onPosition: (p: PositionReport) => void
   onInteract: (id: SectorId) => void
   cinematic?: boolean
+  launchPhase?: BoardingPhase
+  boardingMotion?: MutableRefObject<BoardingMotion>
+  flightClock?: MutableRefObject<LaunchClock>
+  onLaunchPhase?: (phase: BoardingPhase) => void
+  onCinematicProgress?: (seconds: number) => void
+  onCinematicComplete?: () => void
 }

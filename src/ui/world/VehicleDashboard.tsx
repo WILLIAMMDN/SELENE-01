@@ -129,7 +129,13 @@ export default function VehicleDashboard({ exitBlocked = false, onExit }: Props)
           {/* Background track */}
           <path d={bgArc} fill="none" stroke="#40596030" strokeWidth="6" strokeLinecap="round" />
           {/* Redline zone (5.5k - 7k RPM) */}
-          <path d={redlineArc} fill="none" stroke="#ba606180" strokeWidth="6" strokeLinecap="round" />
+          <path
+            d={redlineArc}
+            fill="none"
+            stroke="#ba606180"
+            strokeWidth="6"
+            strokeLinecap="round"
+          />
           {/* Active RPM progress */}
           <path
             d={activeArc}
@@ -214,10 +220,7 @@ export default function VehicleDashboard({ exitBlocked = false, onExit }: Props)
         <span className="steer-label">◄ L</span>
         <div className="steer-track">
           <div className="steer-center-mark" />
-          <div
-            className="steer-thumb"
-            style={{ left: `${Math.round(50 + steer * 42)}%` }}
-          />
+          <div className="steer-thumb" style={{ left: `${Math.round(50 + steer * 42)}%` }} />
         </div>
         <span className="steer-label">R ►</span>
       </div>
@@ -241,14 +244,26 @@ export default function VehicleDashboard({ exitBlocked = false, onExit }: Props)
         {exitBlocked ? (
           <div className="dash-warning">Acércate a una zona abierta para bajar.</div>
         ) : (
-          <button className="dash-exit-btn" onClick={onExit} aria-label="Detenerse y bajar del buggy">
+          <button
+            className="dash-exit-btn"
+            onClick={onExit}
+            aria-label="Detenerse y bajar del buggy"
+          >
             <kbd>E</kbd> Detenerse y bajar
           </button>
         )}
         <div className="dash-keys">
-          <span><kbd>W</kbd><kbd>S</kbd> Marcha</span>
-          <span><kbd>A</kbd><kbd>D</kbd> Giro</span>
-          <span><kbd>Esp</kbd> Freno</span>
+          <span>
+            <kbd>W</kbd>
+            <kbd>S</kbd> Marcha
+          </span>
+          <span>
+            <kbd>A</kbd>
+            <kbd>D</kbd> Giro
+          </span>
+          <span>
+            <kbd>Esp</kbd> Freno
+          </span>
         </div>
       </div>
     </aside>

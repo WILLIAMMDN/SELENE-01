@@ -1,13 +1,11 @@
 import type { DesignConfig } from '../../game/missionDesign'
-import { LAUNCHERS } from '../../game/missionDesign'
 import type { ModuleId } from '../../spacecraft/assembly'
-import { getLaunchFrame, LAUNCH_DURATION } from '../../spacecraft/launchTimeline'
-import { getCameraShot } from '../../spacecraft/LaunchCinematicDirector'
+import LaunchCinematicOverlay from '../../spacecraft/LaunchCinematicOverlay'
 
+/** Shared understated HUD across the campaign fallback and in-world film. */
 export default function LaunchCinematicHud({
   seconds,
   config,
-  parts,
   onSkip,
 }: {
   seconds: number
@@ -15,79 +13,5 @@ export default function LaunchCinematicHud({
   parts: ModuleId[]
   onSkip: () => void
 }) {
-  const frame = getLaunchFrame(seconds, config.launcher)
-  const cameraShot = getCameraShot(seconds)
-  const launcherName = LAUNCHERS.find((item) => item.id === config.launcher)?.name ?? 'Lanzador'
-  const moduleName = parts.includes('habitat') ? 'ODYSSEY · CON HÁBITAT' : 'ODYSSEY · COMPACTA'
-  return (
-    <div className="launch-film" role="region" aria-label="Cinemática interactiva de lanzamiento">
-      <div className="launch-film-letterbox-top" aria-hidden="true" />
-      <div className="launch-film-letterbox-bottom" aria-hidden="true" />
-      <div className="launch-film-top">
-        <div className="launch-film-brand">
-          <span className="launch-film-dot" aria-hidden="true" />
-          <span>SELENE—01</span>
-          <span className="launch-film-divider">/</span>
-          <span>SEC. CINEMÁTICA</span>
-        </div>
-        <div className="launch-film-camera-tag">
-          <span className="launch-film-rec-dot" aria-hidden="true" />
-          <span>{cameraShot.name}</span>
-        </div>
-        <button className="launch-film-skip" type="button" onClick={onSkip}>
-          Omitir cinemática <kbd>ESC</kbd>
-        </button>
-      </div>
-      <div className="launch-film-specs">
-        <span>LANZAMIENTO SIMULADO</span>
-        <strong>{launcherName}</strong>
-        <span>{moduleName}</span>
-        <small>Modelo escénico común · rendimiento hipotético</small>
-      </div>
-      {frame.countdown !== null && (
-        <div className="launch-film-countdown" aria-label={`Cuenta regresiva: ${frame.countdown}`}>
-          <span>DESPEGUE EN</span>
-          <strong>{String(frame.countdown).padStart(2, '0')}</strong>
-        </div>
-      )}
-      <div className="launch-film-footer">
-        <div className="launch-film-subtitles" aria-live="off">
-          <span className="launch-sub-kicker">TARS · DIRECTOR DE VUELO DE MISIÓN (NASA / ARTEMIS)</span>
-          <strong>{frame.title}</strong>
-          <p>{frame.narration}</p>
-        </div>
-        <div className="launch-film-telemetry-grid">
-          <div className="telemetry-pill">
-            <span className="telemetry-label">ALTITUD</span>
-            <strong>{Math.round(frame.altitudeMeters).toLocaleString('es-PE')} m</strong>
-          </div>
-          <div className="telemetry-pill">
-            <span className="telemetry-label">VELOCIDAD</span>
-            <strong>{frame.velocityKmh.toLocaleString('es-PE')} km/h</strong>
-          </div>
-          <div className="telemetry-pill">
-            <span className="telemetry-label">PRESIÓN MAX-Q</span>
-            <strong>{frame.maxQKpa} kPa</strong>
-          </div>
-          <div className="telemetry-pill">
-            <span className="telemetry-label">ACELERACIÓN</span>
-            <strong>{frame.gForce.toFixed(1)} g</strong>
-          </div>
-        </div>
-        <div
-          className="launch-film-progress"
-          role="progressbar"
-          aria-label="Progreso de la cinemática"
-          aria-valuenow={Math.round(frame.progress * 100)}
-          aria-valuemin={0}
-          aria-valuemax={100}
-        >
-          <div style={{ width: `${(seconds / LAUNCH_DURATION) * 100}%` }} />
-        </div>
-        <span className="launch-film-disclaimer">
-          Telemetría y perfiles de vuelo ilustrativos basados en especificaciones del Sistema de Lanzamiento Espacial (SLS) y Programa Artemis de NASA.
-        </span>
-      </div>
-    </div>
-  )
+  return <LaunchCinematicOverlay seconds={seconds} config={config} onSkip={onSkip} />
 }

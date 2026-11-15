@@ -2,8 +2,9 @@ import { useWardrobe } from '../world/wardrobe'
 import CampusSky from '../world/sky/CampusSky'
 import AdaptiveResolution from '../world/performance/AdaptiveResolution'
 import { bindCharacterKeyboard } from '../world/controls/keyboard'
-import LaunchComplex from '../spacecraft/LaunchComplex'
+import { LAUNCH_SITE } from '../spacecraft/LaunchComplex'
 import LaunchCinematicDirector from '../spacecraft/LaunchCinematicDirector'
+import LaunchBoarding from '../spacecraft/LaunchBoarding'
 import { walkingHeight, stationAt, occupant, buildingAt } from '../world/buildingNavigation'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { Edges, OrbitControls, Stars } from '@react-three/drei'
@@ -140,12 +141,18 @@ function ShipStage({
   const clock = useRef(0)
   const focus =
     mode === 'launch'
-      ? 42
+      ? LAUNCH_SITE.height / 2
       : (parts.includes('habitat') ? ODYSSEY_SIZE.habitatHeight : ODYSSEY_SIZE.compactHeight) / 2
+  const originX = mode === 'launch' ? LAUNCH_SITE.x : 0
+  const originZ = mode === 'launch' ? LAUNCH_SITE.z : 0
   useEffect(() => {
-    camera.position.set(mode === 'launch' ? 100 : 24, focus + 7, mode === 'launch' ? 120 : 30)
-    camera.lookAt(0, focus, 0)
-  }, [camera, mode, focus])
+    camera.position.set(
+      originX + (mode === 'launch' ? 96 : 24),
+      focus + 7,
+      originZ + (mode === 'launch' ? 115 : 30),
+    )
+    camera.lookAt(originX, focus, originZ)
+  }, [camera, mode, focus, originX, originZ])
   return (
     <>
       <color attach="background" args={[mode === 'orbit' ? '#202f3d' : '#b8c8bd']} />
@@ -169,7 +176,7 @@ function ShipStage({
             <meshToonMaterial color="#a5aca4" />
           </mesh>
         </>
-      ) : (
+      ) : mode === 'workshop' ? (
         <>
           <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
             <planeGeometry args={[100, 100]} />
@@ -182,13 +189,20 @@ function ShipStage({
           </mesh>
           <gridHelper args={[30, 30, '#6c8581', '#97a496']} position={[0, 0.015, 0]} />
         </>
-      )}
-      {mode === 'launch' ? (
-        <LaunchComplex parts={parts} config={config} flightClock={cinematic ? clock : undefined} />
       ) : (
-        <OdysseyShip parts={parts} config={config} exploded={mode === 'workshop' && exploded} />
+        <>
+          <Environment
+            paused={cinematic}
+            reduced
+            launchParts={parts}
+            launchConfig={config}
+            flightClock={cinematic ? clock : undefined}
+          />
+          {cinematic && parts.includes('habitat') && <LaunchBoarding clock={clock} />}
+        </>
       )}
-      {mode === 'launch' && cinematic && elapsed >= 22 && (
+      {mode === 'workshop' && <OdysseyShip parts={parts} config={config} exploded={exploded} />}
+      {mode === 'launch' && cinematic && elapsed >= 33 && (
         <Stars radius={2800} depth={100} count={700} factor={4} saturation={0} fade speed={0} />
       )}
       {mode === 'launch' && cinematic && onCinematicProgress && onCinematicComplete && (
@@ -196,18 +210,20 @@ function ShipStage({
           clock={clock}
           launcher={config.launcher}
           habitat={parts.includes('habitat')}
+          origin={[LAUNCH_SITE.x, 0, LAUNCH_SITE.z]}
           onElapsed={onCinematicProgress}
           onComplete={onCinematicComplete}
         />
       )}
-      <OrbitControls
-        enabled={!cinematic}
-        makeDefault
-        target={[0, focus, 0]}
-        minDistance={12}
-        maxDistance={mode === 'launch' ? 240 : 65}
-        maxPolarAngle={mode === 'orbit' ? Math.PI : Math.PI / 2.05}
-      />
+      {!cinematic && (
+        <OrbitControls
+          makeDefault
+          target={[originX, focus, originZ]}
+          minDistance={12}
+          maxDistance={mode === 'launch' ? 240 : 65}
+          maxPolarAngle={mode === 'orbit' ? Math.PI : Math.PI / 2.05}
+        />
+      )}
     </>
   )
 }

@@ -1,0 +1,121 @@
+.launch-preview {
+  position: relative;
+  min-height: 100dvh;
+  max-width: none;
+  background: #a8b6ab;
+  overflow: hidden;
+}
+.launch-preview-world {
+  position: fixed;
+  inset: 0;
+  min-height: 0;
+}
+.launch-preview-world .world-frame {
+  min-height: 0;
+  height: 100dvh;
+}
+.launch-preview-world .world-overlay,
+.launch-preview-world .world-help {
+  display: none;
+}
+.launch-preview-panel {
+  position: absolute;
+  z-index: 4;
+  top: clamp(16px, 4vw, 48px);
+  left: clamp(16px, 4vw, 56px);
+  width: min(390px, calc(100% - 32px));
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  color: #243d43;
+  background: #f6f2e6;
+  border: 1px solid #d6d7c6;
+  border-radius: 9px;
+  box-shadow: 0 14px 48px #28414433;
+  padding: clamp(18px, 3vw, 30px);
+}
+.launch-preview-heading h1 {
+  font: 700 clamp(24px, 2.5vw, 34px)/1.14 'Space Grotesk', sans-serif;
+  margin: 12px 0;
+  letter-spacing: -.035em;
+}
+.launch-preview-heading p,
+.launch-preview-footnote {
+  font-size: 12px;
+  line-height: 1.6;
+  color: #54696a;
+}
+.launch-preview-kicker {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  color: #477b79;
+}
+.launch-preview-panel fieldset {
+  margin: 23px 0 17px;
+  border: 0;
+  border-top: 1px solid #ccd5ca;
+  padding: 16px 0 0;
+}
+.launch-preview-panel legend {
+  padding: 0 7px 0 0;
+  color: #345b61;
+  font-size: 12px;
+  font-weight: 700;
+}
+.launch-preview-field {
+  display: grid;
+  gap: 8px;
+  margin: 13px 0;
+  color: #48676a;
+  font-size: 12px;
+  font-weight: 600;
+}
+.launch-preview-field select {
+  width: 100%;
+  padding: 10px 12px;
+  color: #28494d;
+  background: #fffef7;
+  border: 1px solid #b8cbc2;
+  border-radius: 5px;
+}
+.launch-preview-summary {
+  color: #4e7871;
+  font-size: 11px;
+  margin-top: 14px;
+}
+.launch-preview-start,
+.launch-preview-return {
+  width: 100%;
+  padding: 13px 14px;
+  border-radius: 5px;
+  font-weight: 700;
+  font-size: 13px;
+  border: 1px solid #31595c;
+}
+.launch-preview-start {
+  background: #31595c;
+  color: #fffbed;
+}
+.launch-preview-start:hover { background: #214447; }
+.launch-preview-return {
+  color: #365e62;
+  background: transparent;
+  margin-top: 9px;
+}
+.launch-preview-return:hover { background: #e6eee6; }
+.launch-preview-footnote {
+  margin: 18px 0 0;
+  border-top: 1px solid #ccd5ca;
+  padding-top: 14px;
+  font-size: 10px;
+}
+@media (max-width: 700px) {
+  .launch-preview-world .world-frame { height: 100dvh; }
+  .launch-preview-panel {
+    top: auto;
+    left: 12px;
+    bottom: 12px;
+    width: min(420px, calc(100% - 24px));
+    max-height: min(64dvh, 480px);
+  }
+}
