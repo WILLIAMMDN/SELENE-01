@@ -3,23 +3,29 @@ import { useFrame } from '@react-three/fiber'
 import { useGLTF } from '@react-three/drei'
 import { clone } from 'three/addons/utils/SkeletonUtils.js'
 import * as T from 'three'
-import { Sign, toon } from '../ArtKit'
+import { toon } from '../ArtKit'
 import OdysseyLander from '../../spacecraft/OdysseyLander'
-import { LUNAR_LANDER, LUNAR_SECTORS, lunarTerrainHeight, lunarCanWalk } from './lunarNavigation'
-import RoverLunar from './RoverLunar'
-import { roberRemote } from '../roberControl'
+import { LUNAR_LANDER, lunarTerrainHeight } from './lunarNavigation'
+import LunarBase from './LunarBase'
+import { LUNAR_BASE_LAYOUT } from './lunarBaseNavigation'
 
 export default function LunarEnvironment({
   paused,
   reduced,
+  landing = false,
 }: {
   paused: boolean
   reduced: boolean
+  landing?: boolean
 }) {
   const { scene, animations } = useGLTF(`${import.meta.env.BASE_URL}models/lunar/lunar_base.glb`)
   const asset = useMemo(() => {
     const root = clone(scene),
       materials = new Map<T.Material, T.Material>()
+    for (const name of LUNAR_BASE_LAYOUT.replacedInstances) {
+      const old = root.getObjectByName(name)
+      if (old) old.visible = false
+    }
     root.traverse((n) => {
       if (!(n instanceof T.Mesh)) return
       const convert = (source: T.Material) => {
@@ -81,29 +87,16 @@ export default function LunarEnvironment({
   return (
     <>
       <primitive object={asset.root} dispose={null} />
-      <OdysseyLander
-        x={LUNAR_LANDER.x}
-        z={LUNAR_LANDER.z}
-        height={lunarTerrainHeight}
-        paused={paused}
-      />
-      <RoverLunar
-        position={[53, 0, 63]}
-        heightAt={lunarTerrainHeight}
-        canMove={(pos) => lunarCanWalk(pos.x, pos.z)}
-        paused={paused}
-        onControlChange={(vehicle) => {
-          roberRemote.current = vehicle
-        }}
-      />
-      {LUNAR_SECTORS.map((s) => (
-        <Sign
-          key={s.id}
-          text={`${s.number} / ${s.short.toUpperCase()}`}
-          position={[s.entry[0], lunarTerrainHeight(...s.entry) + 1.8, s.entry[1]]}
-          scale={[2.2, 0.55, 1]}
+      <LunarBase paused={paused} />
+      {!landing && (
+        <OdysseyLander
+          x={LUNAR_LANDER.x}
+          z={LUNAR_LANDER.z}
+          height={lunarTerrainHeight}
+          paused={paused}
+          showLabel={false}
         />
-      ))}
+      )}
     </>
   )
 }

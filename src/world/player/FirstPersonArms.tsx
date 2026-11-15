@@ -4,6 +4,7 @@ import * as T from 'three'
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js'
 import { toon } from '../ArtKit'
 import type { Outfit } from '../wardrobe'
+import { characterInfo, type CharacterId } from '../characters'
 import type { CharacterMotion } from '../characterMotion'
 import type { InputState } from './types'
 
@@ -13,15 +14,18 @@ type Props = {
   input: MutableRefObject<InputState>
   reduced?: boolean
   outfit?: Outfit
+  character?: CharacterId
 }
 
 function ArmMesh({
   side,
   outfit = 'classic',
+  character = 'explorer',
   geometries,
 }: {
   side: 'left' | 'right'
   outfit?: Outfit
+  character?: CharacterId
   geometries: {
     sleeve: T.BufferGeometry
     cuff: T.BufferGeometry
@@ -40,7 +44,7 @@ function ArmMesh({
   // Dynamic colors matching project palette
   const sleeveColor = isEva ? '#eae8dc' : isFormal ? '#324349' : '#f0ecdd'
   const cuffColor = isEva ? '#c67a5f' : '#56878b'
-  const handColor = isEva ? '#38464c' : '#f4cdb2'
+  const handColor = isEva ? '#e6e6d9' : characterInfo(character).skin
   const inkColor = '#303d43'
 
   const sleeveMat = useMemo(() => toon(sleeveColor), [sleeveColor])
@@ -176,6 +180,7 @@ export default function FirstPersonArms({
   input,
   reduced = false,
   outfit = 'classic',
+  character = 'explorer',
 }: Props) {
   const { camera } = useThree()
   const rootRef = useRef<T.Group>(null)
@@ -272,10 +277,10 @@ export default function FirstPersonArms({
   return (
     <group ref={rootRef}>
       <group ref={leftArmRef} position={[-0.21, -0.22, -0.38]}>
-        <ArmMesh side="left" outfit={outfit} geometries={geometries} />
+        <ArmMesh side="left" outfit={outfit} character={character} geometries={geometries} />
       </group>
       <group ref={rightArmRef} position={[0.21, -0.22, -0.38]}>
-        <ArmMesh side="right" outfit={outfit} geometries={geometries} />
+        <ArmMesh side="right" outfit={outfit} character={character} geometries={geometries} />
       </group>
     </group>
   )

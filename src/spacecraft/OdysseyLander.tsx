@@ -18,9 +18,17 @@ type Props = {
   height: (x: number, z: number) => number
   paused?: boolean
   training?: boolean
+  showLabel?: boolean
 }
 /** User-authored L01, in its declared metre units. The source ground socket stays at local y=0. */
-export default function OdysseyLander({ x, z, height, paused = false, training = false }: Props) {
+export default function OdysseyLander({
+  x,
+  z,
+  height,
+  paused = false,
+  training = false,
+  showLabel = true,
+}: Props) {
   const pausedRef = useRef(paused)
   pausedRef.current = paused
   const { scene, animations } = useGLTF(
@@ -166,16 +174,18 @@ export default function OdysseyLander({ x, z, height, paused = false, training =
       >
         <primitive object={root} dispose={null} />
       </group>
-      <Sign
-        text="L01 / CÁPSULA DE DESCENSO"
-        sub={
-          training
-            ? 'MÓDULO DE ENTRENAMIENTO · PULSA PARA EXPLORAR'
-            : 'ZONA DE LLEGADA · E PARA EXPLORAR'
-        }
-        position={[x + 4.5, top + 1.2, z + 5]}
-        scale={[2.8, 0.7, 1]}
-      />
+      {showLabel && (
+        <Sign
+          text="L01 / CÁPSULA DE DESCENSO"
+          sub={
+            training
+              ? 'MÓDULO DE ENTRENAMIENTO · PULSA PARA EXPLORAR'
+              : 'ZONA DE LLEGADA · E PARA EXPLORAR'
+          }
+          position={[x + 4.5, top + 1.2, z + 5]}
+          scale={[2.8, 0.7, 1]}
+        />
+      )}
     </>
   )
 }

@@ -1,4 +1,5 @@
 import EarthTools from './tools/EarthTools'
+import AirlockWardrobe from './AirlockWardrobe'
 import OdysseyLander from '../spacecraft/OdysseyLander'
 import EnvironmentProps from './EnvironmentProps'
 import CampusWildlife from './CampusWildlife'
@@ -285,6 +286,7 @@ export default memo(function Environment({
       <CampusAtmosphere reduced={reduced} />
       <Landscape reduced={reduced} />
       <ArtemisaBuildings height={groundHeight} />
+      <AirlockWardrobe height={groundHeight} />
       {INTERIOR_STATIONS.map((st) => (
         <Sign
           key={st.room}

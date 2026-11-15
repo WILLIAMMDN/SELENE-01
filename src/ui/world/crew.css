@@ -1,0 +1,381 @@
+.crew-selection {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  box-sizing: border-box;
+  background: #e5e9dc;
+  color: #34464c;
+  font-family: 'Trebuchet MS', sans-serif;
+}
+.crew-selection-header {
+  width: min(1260px, 100%);
+  margin: 0 auto;
+  padding: 22px 36px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  box-sizing: border-box;
+}
+.crew-brand {
+  font: 31px 'Patrick Hand', cursive;
+  letter-spacing: 0;
+  color: #2f5054;
+}
+.crew-brand > span {
+  color: #a56852;
+}
+.crew-selection-header > span:last-child,
+.crew-eyebrow,
+.crew-stage-kicker,
+.crew-stage-caption > span,
+.crew-selection-footer {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+}
+.crew-selection-header > span:last-child {
+  color: #6c817d;
+}
+.crew-selection-content {
+  width: min(1120px, calc(100% - 64px));
+  margin: 8px auto 20px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(28px, 4vw, 56px);
+  align-items: center;
+}
+.crew-stage {
+  height: clamp(440px, calc(100dvh - 160px), 600px);
+  min-height: 0;
+  min-width: 0;
+  border-radius: 2px;
+  background: #edf0df;
+  border: 2px solid #52656b;
+  box-shadow: 5px 6px 0 #899d93;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  align-items: center;
+}
+.crew-stage-kicker {
+  color: #59756b;
+  margin: 28px 28px 0;
+  text-align: center;
+  font-size: 8px;
+}
+.crew-preview {
+  width: 100%;
+  height: 410px;
+  min-height: 0;
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+}
+.crew-preview canvas {
+  display: block;
+}
+.crew-stage > .crew-preview {
+  height: 100%;
+}
+.crew-preview-portrait {
+  height: 100%;
+  width: 100%;
+  object-fit: contain;
+  border-radius: 4px;
+}
+.crew-preview-loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  pointer-events: none;
+  font:
+    13px 'Trebuchet MS',
+    sans-serif;
+  white-space: nowrap;
+  background: #f6f3e5e8;
+  border: 1px solid #91aaa0;
+  padding: 9px 14px;
+  border-radius: 2px;
+  color: #395b58;
+}
+.crew-stage-caption {
+  text-align: center;
+  padding: 8px 24px 24px;
+}
+.crew-stage-caption > span {
+  font-size: 8px;
+  color: #668078;
+}
+.crew-stage-caption h2 {
+  font: 36px 'Patrick Hand', cursive;
+  margin: 7px 0;
+  color: #2e4b4b;
+}
+.crew-stage-caption p {
+  font-size: 12px;
+  line-height: 1.5;
+  color: #54716a;
+  margin: 0;
+}
+.crew-eyebrow {
+  color: #a36a53;
+}
+.crew-selection-options {
+  min-width: 0;
+  padding-block: 12px;
+}
+.crew-selection-options h1 {
+  font: clamp(34px, 3.5vw, 50px) 'Patrick Hand', cursive;
+  line-height: 1.12;
+  letter-spacing: -0.045em;
+  margin: 16px 0 18px;
+  font-weight: 700;
+}
+.crew-selection-options > p {
+  font-size: 14px;
+  line-height: 1.65;
+  color: #657974;
+  max-width: 440px;
+  margin: 0 0 26px;
+}
+.crew-cards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 18px 0 24px;
+}
+.crew-card {
+  min-width: 0;
+  padding: 0;
+  background: #f7f7ed;
+  border: 2px solid #718a86;
+  border-radius: 2px;
+  overflow: hidden;
+  cursor: pointer;
+  text-align: left;
+  color: #2e454a;
+  transition:
+    border-color 0.18s,
+    transform 0.18s,
+    box-shadow 0.18s;
+}
+.crew-card img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4/5;
+  object-fit: cover;
+}
+.crew-card:hover {
+  transform: translateY(-3px);
+  border-color: #7e9b8f;
+}
+.crew-card[aria-pressed='true'] {
+  border-color: var(--crew-accent, #457d80);
+  box-shadow:
+    0 0 0 3px #f7f7ed,
+    0 0 0 4px var(--crew-accent, #457d80);
+}
+.crew-card-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 7px;
+  background: #f7f7ed;
+  gap: 3px;
+}
+.crew-card-label strong {
+  font: 19px 'Patrick Hand', cursive;
+}
+.crew-card-label > span {
+  color: var(--crew-accent);
+  font-size: 12px;
+}
+.crew-start {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  border: 1px solid #365e60;
+  background: #457d80;
+  color: #fff8e8;
+  border-radius: 2px;
+  padding: 17px 20px;
+  font: 21px 'Patrick Hand', cursive;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #345e62;
+}
+.crew-start:hover {
+  background: #386d70;
+}
+.crew-start > span {
+  font-size: 24px;
+}
+.crew-selection-options > small {
+  display: block;
+  color: #788780;
+  font-size: 10px;
+  line-height: 1.6;
+  margin: 16px 0 0;
+}
+.crew-selection-footer {
+  padding: 14px 24px 22px;
+  text-align: center;
+  color: #87948c;
+  background: transparent;
+  font-size: 8px;
+}
+.crew-selection button:focus-visible {
+  outline: 3px solid #b87554;
+  outline-offset: 4px;
+}
+.wardrobe-mini-preview {
+  float: right;
+  width: 42%;
+  margin: 0 0 18px 24px;
+  text-align: center;
+  background: #f7f7ed;
+  border: 1.5px solid #52656b;
+  border-radius: 2px;
+  padding: 4px 10px 15px;
+}
+.wardrobe-mini-preview .crew-preview {
+  height: 290px;
+}
+.wardrobe-mini-preview strong,
+.wardrobe-mini-preview small {
+  display: block;
+}
+.wardrobe-mini-preview strong {
+  font:
+    24px 'Patrick Hand',
+    'Trebuchet MS',
+    sans-serif;
+}
+.wardrobe-mini-preview small {
+  font-size: 11px;
+  color: #557069;
+}
+.wardrobe-return {
+  clear: both;
+}
+.wardrobe-choices {
+  overflow: hidden;
+}
+.wardrobe-choices .menu-grid {
+  grid-template-columns: 1fr;
+}
+.wardrobe-choices .menu-grid button strong,
+.wardrobe-choices .menu-grid button small {
+  display: block;
+}
+.wardrobe-choices .menu-grid button small {
+  font:
+    11px 'Trebuchet MS',
+    sans-serif;
+  line-height: 1.5;
+  margin-top: 5px;
+}
+@media (min-width: 1500px) {
+  .crew-stage {
+    height: min(680px, calc(100dvh - 170px));
+  }
+}
+@media (max-width: 1000px) {
+  .crew-selection-content {
+    gap: 30px;
+    width: calc(100% - 40px);
+  }
+  .crew-stage {
+    height: clamp(420px, calc(100dvh - 165px), 560px);
+  }
+  .crew-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-width: 370px;
+  }
+  .crew-card {
+    display: flex;
+    align-items: stretch;
+  }
+  .crew-card img {
+    width: 56px;
+    height: 78px;
+    aspect-ratio: auto;
+    object-fit: cover;
+  }
+  .crew-card-label {
+    flex: 1;
+    padding: 8px;
+  }
+  .crew-card-label strong {
+    font-size: 12px;
+  }
+}
+@media (max-width: 650px) {
+  .crew-selection-header {
+    padding: 18px 20px;
+  }
+  .crew-selection-header > span:last-child {
+    font-size: 8px;
+  }
+  .crew-brand {
+    font-size: 19px;
+  }
+  .crew-selection-content {
+    grid-template-columns: 1fr;
+    gap: 25px;
+    margin-top: 0;
+  }
+  .crew-stage {
+    height: 360px;
+    border-radius: 2px;
+  }
+  .crew-stage-kicker {
+    margin: 22px 24px 0;
+  }
+  .crew-stage-caption {
+    padding-bottom: 16px;
+  }
+  .crew-stage-caption h2 {
+    font-size: 25px;
+  }
+  .crew-selection-options h1 {
+    margin: 9px 0 12px;
+    font-size: 32px;
+  }
+  .crew-selection-options h1 br {
+    display: none;
+  }
+  .crew-selection-options > p {
+    font-size: 13px;
+    margin-bottom: 15px;
+  }
+  .crew-cards {
+    max-width: none;
+    margin-top: 0;
+  }
+  .wardrobe-mini-preview {
+    float: none;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0 0 15px;
+  }
+  .wardrobe-mini-preview .crew-preview {
+    height: 220px;
+  }
+  .crew-selection-footer {
+    font-size: 7px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .crew-card {
+    transition: none;
+  }
+  .crew-card:hover {
+    transform: none;
+  }
+}

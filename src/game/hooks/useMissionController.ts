@@ -1,4 +1,7 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useState } from 'react'
+import { createLaunchJourney, type LaunchDestination } from '../launchJourney'
+import { launchDestinationStore, useLaunchDestination } from '../state/launchDestinationStore'
+import { equipForLaunch, wardrobeStore } from '../../world/wardrobe'
 import { missionGuidance } from '../missionGuidance'
 import { objectiveDebrief } from '../objectiveDebrief'
 import { operationPreview } from '../operationFeedback'
@@ -40,6 +43,7 @@ export type CampaignProps = {
   campus?: boolean
   launchAccess?: boolean
   onReturnToCampus?: () => void
+  onLaunchComplete?: (destination: LaunchDestination) => void
 }
 
 /** Owns campaign transitions and actions; presentation never writes browser storage. */
@@ -48,9 +52,11 @@ export function useMissionController({
   campus = false,
   launchAccess = false,
   onReturnToCampus,
+  onLaunchComplete,
 }: CampaignProps) {
   const mission = useCampusMission()
   const { config, parts: assembly } = useBlueprint()
+  const destination = useLaunchDestination()
   const [resume] = useState(() =>
     campus && launchAccess && initialStage === 'launch' && missionVerified(config, assembly)
       ? loadOperationSession(blueprintKey(config, assembly))
@@ -63,7 +69,7 @@ export function useMissionController({
   const [launched, setLaunched] = useState(!!resume)
   const [launching, setLaunching] = useState(false)
   const [launchElapsed, setLaunchElapsed] = useState(0)
-  const completedLaunch = useRef(false)
+  const [journey] = useState(createLaunchJourney)
   const [exploded, setExploded] = useState(false)
   const [notification, setNotification] = useState('')
   const evaluation = evaluateDesign(config)
@@ -90,7 +96,7 @@ export function useMissionController({
     (!campus || (launchAccess && missionVerified(config, assembly)))
   function resetFlight() {
     clearOperationSession()
-    completedLaunch.current = false
+    journey.cancel()
     setLaunching(false)
     setLaunchElapsed(0)
     setLaunched(false)
@@ -168,17 +174,19 @@ export function useMissionController({
       go('design')
       return
     }
-    completedLaunch.current = false
+    if (!journey.begin(destination, blueprintKey(config, assembly), operateReady)) return
     setLaunchElapsed(0)
     setLaunching(true)
     setNotification('')
   }
   /** Skipping completes the same authorized simulated launch: no alternative save path. */
   const finishLaunch = () => {
-    if (!launching || !operateReady || completedLaunch.current) return
-    completedLaunch.current = true
+    if (!launching) return
+    const arrival = journey.finish(blueprintKey(config, assembly), operateReady)
+    if (!arrival) return
     const next = startOperations()
-    if (campus) saveOperationSession(blueprintKey(config, assembly), next)
+    // Persist operations for campus and standalone journeys; avoid a second launch.
+    if (campus || onLaunchComplete) saveOperationSession(arrival.blueprintKey, next)
     setOps(next)
     setLaunched(true)
     setLaunching(false)
@@ -186,6 +194,10 @@ export function useMissionController({
     setNotification(
       'ODYSSEY ha completado la secuencia de lanzamiento simulado. Inicia operaciones.',
     )
+    if (onLaunchComplete) {
+      wardrobeStore.set(equipForLaunch(wardrobeStore.getSnapshot(), arrival.destination))
+      onLaunchComplete(arrival.destination)
+    }
   }
   const operate = (choice: OperationChoice) => {
     if (!launched || !operateReady) return
@@ -217,6 +229,9 @@ export function useMissionController({
   return {
     stage,
     config,
+    destination,
+    setDestination: launchDestinationStore.set,
+    launchDestination: journey.destination ?? destination,
     assembly,
     exploded,
     setExploded,

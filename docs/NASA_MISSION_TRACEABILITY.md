@@ -15,7 +15,7 @@ SELENE-01 es una interpretación educativa del desafío **Space Mission Design G
 
 Los instrumentos de ODYSSEY, AURORA-S, ATLAS-T, sus masas, potencia, presupuestos, GB, puntuación y duraciones son **ficticios**. Los tres eventos condensan una campaña; no propagan una órbita ni predicen batería, radiación, ventanas reales de comunicación o vida útil. El informe registra GB agregados, sin atribución por instrumento, por lo que no declara resuelta una pregunta científica real.
 
-El personaje y el paisaje lunar son una reconstrucción de entrenamiento. El encargo científico es un orbitador no tripulado; la secuencia de embarque es una dramatización del juego.
+El personaje, el paisaje lunar y el mapa de Ares son reconstrucciones de entrenamiento. El encargo científico es un orbitador lunar no tripulado; seleccionar Marte como mapa de exploración no cambia el objetivo ni simula una misión marciana. La secuencia de embarque y aterrizaje es una dramatización del juego.
 
 ## Pendiente para mayor fidelidad
 

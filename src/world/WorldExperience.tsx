@@ -1,5 +1,11 @@
 import { roomLabel } from './buildingEntrances'
 import VehicleDashboard from '../ui/world/VehicleDashboard'
+import LunarRoverHud from '../ui/world/LunarRoverHud'
+import MissionDirection from '../ui/world/MissionDirection'
+import type { MissionGuideReport } from './navigation/missionDestination'
+import { canUseWardrobe } from './wardrobeStation'
+import AuthorsPanel from '../ui/world/AuthorsPanel'
+import { worldLocation } from './worldLocation'
 import WorldNotebook from '../ui/world/WorldNotebook'
 import { OBJECTIVE_NAMES, type Panel } from '../ui/world/worldUiTypes'
 import {
@@ -10,7 +16,8 @@ import {
   getMission,
 } from '../game/campusMission'
 import { loadOperationSession, saveOperationSession } from '../game/state/operationStore'
-import { wardrobeStore } from './wardrobe'
+import { equipForLaunch, wardrobeStore } from './wardrobe'
+import { useLaunchDestination } from '../game/state/launchDestinationStore'
 import {
   makeMissionArrival,
   savePendingMissionArrival,
@@ -32,11 +39,19 @@ import StoryDialogue from '../ui/world/StoryDialogue'
 import { ARRIVAL, stationConversation, type Conversation } from '../game/narrative/conversations'
 import { MOTION_SCALE } from './physicalScale'
 import { WorldContext, WORLDS, useWorld, type WorldId } from './worldConfig'
-import '../spacecraft/launchCinematic.css'
 
 const Campaign = lazy(() => import('../App'))
-function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
+function WorldExperience({
+  onWorld,
+  landing,
+  onLandingComplete,
+}: {
+  onWorld: (id: WorldId, withLanding?: boolean) => void
+  landing: boolean
+  onLandingComplete: () => void
+}) {
   const blueprint = useBlueprint()
+  const launchDestination = useLaunchDestination()
   useCampusMission()
   const world = useWorld(),
     mars = world.id === 'mars',
@@ -57,6 +72,24 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
   const [arrival, setArrival] = useState(() =>
     offworld ? loadPendingMissionArrival(world.id as 'moon' | 'mars') : null,
   )
+  const [guidance, setGuidance] = useState<MissionGuideReport | null>(null)
+  const [guideEnabled, setGuideEnabled] = useState(() => {
+    try {
+      return localStorage.getItem('selene-mission-guide-v1') !== 'off'
+    } catch {
+      return true
+    }
+  })
+  const onGuide = useCallback((report: MissionGuideReport) => setGuidance(report), [])
+  useEffect(() => {
+    try {
+      localStorage.setItem('selene-mission-guide-v1', guideEnabled ? 'on' : 'off')
+    } catch {
+      /* Keep the local preference in memory. */
+    }
+  }, [guideEnabled])
+  const activeGuide = guidance?.sector === next.sector ? guidance : null
+  const openWardrobe = useCallback(() => setPanel('wardrobe'), [])
   const [launchPhase, setLaunchPhase] = useState<BoardingPhase>('idle')
   const boardingMotion = useRef<BoardingMotion>({ lift: 0 })
   const flightClock = useRef({ current: 0 })
@@ -85,16 +118,17 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
         const key = blueprintKey(draft.config, draft.parts)
         if (!loadOperationSession(key)) saveOperationSession(key, startOperations())
         const objective = getMission().objective
-        const arrival = makeMissionArrival(key, objective)
+        const arrival = makeMissionArrival(key, objective, launchDestination)
         savePendingMissionArrival(arrival)
-        // The same Earth scene is used for lift-off; then transition into
-        // the destination scene already built by the other world team.
-        onWorld(arrival.world)
+        wardrobeStore.set(equipForLaunch(wardrobeStore.getSnapshot(), arrival.world))
+        // The world team owns both destinations; the lunar team adds its own
+        // in-engine arrival film before the playable base is revealed.
+        onWorld(arrival.world, arrival.world === 'moon')
       }
     }
     setLaunchPhase('idle')
     setFlightFinished(false)
-  }, [flightFinished, onWorld])
+  }, [flightFinished, onWorld, launchDestination])
   const [position, setPosition] = useState<PositionReport>({ x: 0, z: 37, nearby: null, fps: 0 }),
     [travel, setTravel] = useState<Travel>({ id: 'start', serial: 0 })
   const [quality, setQuality] = useState<'standard' | 'light'>('standard'),
@@ -134,13 +168,6 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
     [mars, moon],
   )
   useEffect(() => {
-    if (!ready) return
-    const params = new URLSearchParams(window.location.search)
-    if (params.get('launch') === 'true' || params.get('cinematic') === 'true') {
-      onLaunchPhase('flight')
-    }
-  }, [ready, onLaunchPhase])
-  useEffect(() => {
     if (!ready || offworld) return
     try {
       if (localStorage.getItem('selene-arrival-story-v1')) return
@@ -170,9 +197,16 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
   useEffect(() => {
     input.current.keys.clear()
     input.current.actions.length = 0
-  }, [panel, conversation])
+  }, [panel, conversation, landing])
   useEffect(() => {
     const key = (e: KeyboardEvent) => {
+      if (landing) {
+        if (e.code === 'Escape') {
+          e.preventDefault()
+          onLandingComplete()
+        }
+        return
+      }
       if (campaign) return
       if (launchPhase === 'flight') {
         if (e.code === 'Escape') {
@@ -202,7 +236,7 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
     }
     window.addEventListener('keydown', key)
     return () => window.removeEventListener('keydown', key)
-  }, [conversation, campaign, launchPhase, finishLaunch])
+  }, [conversation, campaign, launchPhase, finishLaunch, landing, onLandingComplete])
   // The latest campus menu uses a shared event for cinematic previews.
   // Keep that shortcut functional without bypassing mission authorization.
   useEffect(() => {
@@ -279,15 +313,6 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
     setPanel(null)
     setConversation(null)
   }
-  useEffect(() => {
-    const launchReplay = () => {
-      setPanel(null)
-      setConversation(null)
-      onLaunchPhase('flight')
-    }
-    window.addEventListener('selene-launch-cinematic', launchReplay)
-    return () => window.removeEventListener('selene-launch-cinematic', launchReplay)
-  }, [onLaunchPhase])
   const openCampaign = (id: SectorId) => {
     if (offworld || position.nearby !== id) return
     const draft = loadBlueprint()
@@ -332,6 +357,15 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
               campus
               launchAccess={campaignStage === 'launch'}
               onReturnToCampus={returnToCampus}
+              onLaunchComplete={(target) => {
+                const draft = loadBlueprint()
+                const key = blueprintKey(draft.config, draft.parts)
+                const arrival = makeMissionArrival(key, getMission().objective, target)
+                savePendingMissionArrival(arrival)
+                wardrobeStore.set(equipForLaunch(wardrobeStore.getSnapshot(), target))
+                setCampaign(false)
+                onWorld(target, target === 'moon')
+              }}
             />
           </Suspense>
         </div>
@@ -339,7 +373,7 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
     )
   return (
     <main
-      className={`selene-world clean-world ${offworld ? 'mars-world' : 'earth-world'} ${position.vehicle === 'driving' ? 'is-driving' : ''}`}
+      className={`selene-world clean-world ${offworld ? 'mars-world' : 'earth-world'} ${moon ? 'moon-world' : ''} ${position.vehicle === 'driving' ? 'is-driving' : ''} ${landing ? 'is-landing' : ''}`}
     >
       <div className="world-viewport">
         <ExplorerScene
@@ -347,7 +381,12 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
           tourIndex={tourIndex}
           travel={travel}
           input={input}
-          paused={!!panel || !!conversation || launchPhase === 'flight'}
+          paused={!!panel || !!conversation || landing || launchPhase === 'flight'}
+          landing={landing}
+          onLandingComplete={onLandingComplete}
+          onWardrobe={openWardrobe}
+          guideSector={!offworld && guideEnabled ? next.sector : undefined}
+          onGuide={onGuide}
           reduced={reduced}
           launchPhase={launchPhase}
           boardingMotion={boardingMotion}
@@ -355,19 +394,16 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
           onLaunchPhase={onLaunchPhase}
           onCinematicProgress={setFlightElapsed}
           onCinematicComplete={finishLaunch}
-          targetSector={!offworld ? next.sector : undefined}
           onPosition={onPosition}
           onInteract={onInteract}
           quality={quality}
           onReady={onReady}
         />
       </div>
-      {launchPhase === 'flight' && (
-        <LaunchCinematicOverlay
-          seconds={flightElapsed}
-          config={blueprint.config}
-          onSkip={finishLaunch}
-        />
+      {landing && (
+        <button className="lunar-landing-skip" type="button" onClick={onLandingComplete}>
+          Omitir llegada <kbd>Esc</kbd>
+        </button>
       )}
       {!ready && (
         <div className="world-loading">
@@ -375,12 +411,15 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
           <h1>Bienvenida a {world.place}.</h1>
         </div>
       )}
-      {arrival && (
-        <div
-          className="mission-arrival"
-          role="region"
-          aria-label="Reconstrucción del destino lunar"
-        >
+      {launchPhase === 'flight' && (
+        <LaunchCinematicOverlay
+          seconds={flightElapsed}
+          config={blueprint.config}
+          onSkip={finishLaunch}
+        />
+      )}
+      {arrival && !landing && (
+        <div className="mission-arrival" role="region" aria-label="Escenario de entrenamiento">
           <span className="mission-arrival-label">TARS · RECONSTRUCCIÓN DE ENTRENAMIENTO</span>
           <strong>{arrival.title}</strong>
           <p>{arrival.narrative.replace(/^TARS:\s*/, '')}</p>
@@ -411,7 +450,10 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
       {launchPhase === 'cockpit' && (
         <div className="boarding-cockpit-prompt">
           <strong>ODYSSEY · Recreación de cabina</strong>
-          <span>TARS: El diseño está revisado. Inicia la secuencia cinematográfica.</span>
+          <span>
+            TARS: Diseño revisado. Escenario de exploración:{' '}
+            {launchDestination === 'moon' ? 'Luna' : 'Marte'}.
+          </span>
           <button type="button" onClick={() => onLaunchPhase('flight')}>
             Iniciar despegue
           </button>
@@ -465,18 +507,35 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
           Ascendiendo a la pasarela…
         </div>
       )}
-      {!conversation && !panel && launchPhase === 'idle' && !(mode === 'walk' && position.room) && (
-        <button className="quest-slip" onClick={() => setPanel('journal')}>
-          <span>{offworld ? (moon ? 'LUNA' : 'ARES') : `MISIÓN ${next.number} / 05`}</span>
-          <strong>{offworld ? 'Explora el paisaje' : objectiveNames[next.sector]}</strong>
-          <small>
-            {offworld
-              ? 'El encargo lunar comienza en la Tierra'
-              : `${destination.short} · ${Math.round(Math.hypot(position.x - destination.entry[0], position.z - destination.entry[1]))} m`}{' '}
-            <b>↗</b>
-          </small>
-        </button>
-      )}
+      {!conversation &&
+        !panel &&
+        !landing &&
+        launchPhase === 'idle' &&
+        (!(mode === 'walk' && position.room) || (guideEnabled && !offworld)) && (
+          <button
+            className={`quest-slip${position.room ? ' is-interior-guide' : ''}`}
+            onClick={() => setPanel('journal')}
+          >
+            <span>{offworld ? (moon ? 'LUNA' : 'ARES') : `MISIÓN ${next.number} / 05`}</span>
+            <strong>{offworld ? 'Explora el paisaje' : objectiveNames[next.sector]}</strong>
+            <small>
+              <span>
+                {offworld
+                  ? 'Explora la base y los sistemas de campo'
+                  : guideEnabled && mode === 'walk' && activeGuide
+                    ? activeGuide.arrived
+                      ? activeGuide.hint
+                      : `${activeGuide.hint} · ${Math.round(activeGuide.distance)} m`
+                    : `${destination.short} · ${Math.round(Math.hypot(position.x - destination.entry[0], position.z - destination.entry[1]))} m`}
+              </span>
+              {!offworld && guideEnabled && mode === 'walk' ? (
+                <MissionDirection report={activeGuide} />
+              ) : (
+                <b>↗</b>
+              )}
+            </small>
+          </button>
+        )}
       {launchPhase !== 'flight' && launchPhase !== 'ascending' && launchPhase !== 'cockpit' && (
         <button
           className="paper-icon menu-toggle"
@@ -521,17 +580,45 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
           </button>
         </nav>
       )}
-      {miniMap && launchPhase === 'idle' && !panel && !conversation && (
+      {miniMap && launchPhase === 'idle' && !panel && !conversation && !landing && (
         <aside className="small-map">
-          <CampusMap position={position} visited={visited} />
+          <CampusMap
+            position={position}
+            visited={visited}
+            active={!offworld && guideEnabled ? next.sector : undefined}
+          />
         </aside>
       )}
+      {launchPhase === 'idle' &&
+        mode === 'walk' &&
+        !position.vehicle &&
+        !panel &&
+        !conversation &&
+        !landing &&
+        Math.hypot(position.x + 14, position.z - 36) < 4.8 && (
+          <button className="station-prompt" onClick={() => setPanel('authors')}>
+            <kbd>E</kbd> Equipo creador y créditos
+          </button>
+        )}
+      {launchPhase === 'idle' &&
+        mode === 'walk' &&
+        !position.vehicle &&
+        !panel &&
+        !conversation &&
+        !landing &&
+        canUseWardrobe(position.x, position.z, world.id) && (
+          <button className="station-prompt" onClick={() => setPanel('wardrobe')}>
+            <kbd>E</kbd> Cambiar de ropa
+          </button>
+        )}
       {launchPhase === 'idle' &&
         mode === 'walk' &&
         nearby &&
         !position.vehicle &&
         !panel &&
-        !conversation && (
+        !conversation &&
+        !landing &&
+        !canUseWardrobe(position.x, position.z, world.id) && (
           <button className="station-prompt" onClick={() => onInteract(nearby.id)}>
             <kbd>E</kbd> {nearby.id === 'research' ? 'Hablar con la Dra. Vega' : 'Usar estación'}{' '}
             <span>▶</span>
@@ -541,17 +628,32 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
         mode === 'walk' &&
         position.vehicle === 'driving' &&
         !panel &&
-        !conversation && (
+        !conversation &&
+        (moon ? (
+          <LunarRoverHud
+            speed={position.speed ?? 0}
+            exitBlocked={position.exitBlocked}
+            onExit={() => input.current.actions.push('interact')}
+          />
+        ) : (
           <VehicleDashboard
             exitBlocked={position.exitBlocked}
             onExit={() => input.current.actions.push('interact')}
           />
-        )}
+        ))}
       {launchPhase === 'idle' &&
         mode === 'walk' &&
         position.vehicle === 'near' &&
         !panel &&
-        !conversation && (
+        !conversation &&
+        (moon ? (
+          <button
+            className="lunar-rover-prompt"
+            onClick={() => input.current.actions.push('interact')}
+          >
+            <kbd>E</kbd> Subir al rover
+          </button>
+        ) : (
           <div className="vehicle-controls">
             <button
               className="station-prompt"
@@ -560,18 +662,7 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
               <kbd>E</kbd> Conducir buggy <span>▶</span>
             </button>
           </div>
-        )}
-      {launchPhase === 'idle' &&
-        mode === 'walk' &&
-        !nearby &&
-        !position.vehicle &&
-        !panel &&
-        !conversation &&
-        Math.hypot(position.x - -14, position.z - 36) < 4.8 && (
-          <button className="station-prompt" onClick={() => setPanel('authors')}>
-            <kbd>E</kbd> Ver Equipo Creador & Créditos <span>👥</span>
-          </button>
-        )}
+        ))}
       {launchPhase === 'idle' && mode === 'walk' && position.room && !panel && !conversation && (
         <div className="interior-caption">
           {roomLabel(position.room)} <small>Primera persona · arrastra para mirar</small>
@@ -676,7 +767,8 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
           }}
         />
       )}
-      {panel && (
+      {panel === 'authors' && <AuthorsPanel onClose={() => setPanel(null)} />}
+      {panel && panel !== 'authors' && (
         <WorldNotebook
           panel={panel}
           position={position}
@@ -688,10 +780,16 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
           setReduced={setReduced}
           miniMap={miniMap}
           setMiniMap={setMiniMap}
+          guideEnabled={guideEnabled}
+          setGuideEnabled={setGuideEnabled}
           onClose={() => setPanel(null)}
           onPanel={setPanel}
           onMode={chooseMode}
           onWorld={onWorld}
+          onLanding={() => {
+            chooseMode('walk')
+            onWorld('moon', true)
+          }}
           onVisit={visit}
           onCampaign={openCampaign}
           onConversation={setConversation}
@@ -706,7 +804,7 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
   )
 }
 
-export default function Worlds() {
+export default function Worlds({ arrivalOnMount = false }: { arrivalOnMount?: boolean } = {}) {
   const [id, setId] = useState<WorldId>(
     () =>
       (['earth', 'mars', 'moon'].includes(
@@ -715,15 +813,21 @@ export default function Worlds() {
         ? new URLSearchParams(window.location.search).get('world')
         : 'earth') as WorldId,
   )
-  const change = (next: WorldId) => {
+  const [landing, setLanding] = useState(arrivalOnMount && id === 'moon')
+  const finishLanding = useCallback(() => setLanding(false), [])
+  const change = (next: WorldId, withLanding = false) => {
+    setLanding(next === 'moon' && withLanding)
     setId(next)
-    const url = new URL(window.location.href)
-    url.searchParams.set('world', next)
-    window.history.replaceState(null, '', url)
+    window.history.replaceState(null, '', worldLocation(window.location.href, next))
   }
   return (
     <WorldContext.Provider value={WORLDS[id]}>
-      <WorldExperience key={id} onWorld={change} />
+      <WorldExperience
+        key={id}
+        onWorld={change}
+        landing={landing}
+        onLandingComplete={finishLanding}
+      />
     </WorldContext.Provider>
   )
 }

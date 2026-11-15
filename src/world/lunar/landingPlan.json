@@ -1,0 +1,2129 @@
+{
+  "version": 1,
+  "format": "odyssey/landing-cinematic",
+  "fps": 24,
+  "durationSeconds": 14,
+  "sceneFramesInclusive": [
+    1,
+    336
+  ],
+  "timeConvention": {
+    "frameToSeconds": "(frame - 1) / 24",
+    "shotIntervals": "[start,end)",
+    "terminalPreviewFrame": 337,
+    "sampling": "Sample each clip at clamp(t - startSeconds, 0, durationSeconds). Hold endpoints when outside the clip. Camera moves each start at local 0."
+  },
+  "coordinates": {
+    "unit": "meter",
+    "handedness": "right",
+    "up": "+Y",
+    "blenderToThree": "(x,y,z) -> (x,z,-y)",
+    "quaternionOrder": [
+      "x",
+      "y",
+      "z",
+      "w"
+    ],
+    "matrixRule": "M_three = C * M_blender * inverse(C). Cameras look along their local -Z.",
+    "originNode": "LUNA_PUNTO_ATERRIZAJE",
+    "originBlender": [
+      -84.0,
+      -78.0,
+      -0.7999992370605469
+    ],
+    "originThree": [
+      -84.0,
+      -0.7999992370605469,
+      78.0
+    ]
+  },
+  "assets": {
+    "cameras": "cinematica_aterrizaje_camaras.glb",
+    "effects": "cinematica_aterrizaje_fx.glb",
+    "lander": "../ODYSSEY_LANDER_FINAL/lander_l01.glb",
+    "terrain": "../ODYSSEY_LUNA_FINAL/luna_sector_01_jugable.glb",
+    "horizon": "../ODYSSEY_LUNA_FINAL/luna_sector_01_horizonte.glb"
+  },
+  "cameraRoot": "CINEMATICA_ATERRIZAJE_ORIGEN",
+  "shots": [
+    {
+      "camera": "CAM_LANDER_APPROACH",
+      "rig": "RIG_LANDER_APPROACH",
+      "action": "CAM_MOVE_LANDER_APPROACH",
+      "start": 0.0,
+      "end": 3.0,
+      "startFrame": 1,
+      "endFrameExclusive": 73,
+      "lensMm": 34
+    },
+    {
+      "camera": "CAM_LANDER_DESCENT",
+      "rig": "RIG_LANDER_DESCENT",
+      "action": "CAM_MOVE_LANDER_DESCENT",
+      "start": 3.0,
+      "end": 8.0,
+      "startFrame": 73,
+      "endFrameExclusive": 193,
+      "lensMm": 38
+    },
+    {
+      "camera": "CAM_LANDER_TOUCHDOWN",
+      "rig": "RIG_LANDER_TOUCHDOWN",
+      "action": "CAM_MOVE_LANDER_TOUCHDOWN",
+      "start": 8.0,
+      "end": 10.0,
+      "startFrame": 193,
+      "endFrameExclusive": 241,
+      "lensMm": 42
+    },
+    {
+      "camera": "CAM_LANDER_REVEAL",
+      "rig": "RIG_LANDER_REVEAL",
+      "action": "CAM_MOVE_LANDER_REVEAL",
+      "start": 10.0,
+      "end": 14.0,
+      "startFrame": 241,
+      "endFrameExclusive": 337,
+      "lensMm": 34
+    }
+  ],
+  "lander": {
+    "root": "LANDER_L01_ROOT",
+    "placeRootAt": "coordinates.originThree",
+    "clip": "LANDER_DESCENT",
+    "startSeconds": 3,
+    "endSeconds": 8,
+    "startFrame": 73,
+    "endFrame": 193,
+    "playCount": 1,
+    "contactSeconds": 7.375,
+    "contactFrame": 178,
+    "before": "hold clip sample at 0",
+    "after": "hold clip sample at 5",
+    "excludedClip": "LANDER_ASCENT_SEPARATION"
+  },
+  "fx": {
+    "root": "FX_ATERRIZAJE_ORIGEN",
+    "rootSpace": "World translation already in GLB. Do not add origin again.",
+    "followsLander": {
+      "node": "FX_TOBERA_ANCLA",
+      "parent": "LANDER_DESCENSO_ROOT",
+      "preserveLocalTransform": true,
+      "hook": "lander.getObjectByName(parent).add(fx.getObjectByName(node)); do not use attach()",
+      "offsetThree": [
+        0.0,
+        0.6360000371932983,
+        -0.0
+      ],
+      "firstVisibleFrame": 1,
+      "firstOffFrame": 178,
+      "visibleFromSeconds": 0,
+      "offFromSeconds": 7.375,
+      "nodes": [
+        "FX_PLUMA_CORONA",
+        "FX_PLUMA_HALO",
+        "FX_PLUMA_NUCLEO"
+      ]
+    },
+    "fixedToTerrain": {
+      "dustRoot": "FX_POLVO_ORIGEN",
+      "stars": "FX_CIELO_ESTRELLAS",
+      "skyRadiusMeters": 725,
+      "dustFirstVisibleFrame": 144,
+      "dustFirstOffFrameAll": 219,
+      "dustVisibleFromSeconds": 5.958333333333333,
+      "dustOffFromSeconds": 9.083333333333334,
+      "puffs": [
+        {
+          "node": "FX_POLVO_01",
+          "keyedFrameRange": [
+            151,
+            214
+          ]
+        },
+        {
+          "node": "FX_POLVO_02",
+          "keyedFrameRange": [
+            160,
+            209
+          ]
+        },
+        {
+          "node": "FX_POLVO_03",
+          "keyedFrameRange": [
+            147,
+            208
+          ]
+        },
+        {
+          "node": "FX_POLVO_04",
+          "keyedFrameRange": [
+            156,
+            217
+          ]
+        },
+        {
+          "node": "FX_POLVO_05",
+          "keyedFrameRange": [
+            143,
+            198
+          ]
+        },
+        {
+          "node": "FX_POLVO_06",
+          "keyedFrameRange": [
+            152,
+            209
+          ]
+        },
+        {
+          "node": "FX_POLVO_07",
+          "keyedFrameRange": [
+            161,
+            209
+          ]
+        },
+        {
+          "node": "FX_POLVO_08",
+          "keyedFrameRange": [
+            148,
+            206
+          ]
+        },
+        {
+          "node": "FX_POLVO_09",
+          "keyedFrameRange": [
+            157,
+            219
+          ]
+        },
+        {
+          "node": "FX_POLVO_10",
+          "keyedFrameRange": [
+            144,
+            206
+          ]
+        },
+        {
+          "node": "FX_POLVO_11",
+          "keyedFrameRange": [
+            153,
+            217
+          ]
+        },
+        {
+          "node": "FX_POLVO_12",
+          "keyedFrameRange": [
+            162,
+            213
+          ]
+        },
+        {
+          "node": "FX_POLVO_13",
+          "keyedFrameRange": [
+            149,
+            207
+          ]
+        },
+        {
+          "node": "FX_POLVO_14",
+          "keyedFrameRange": [
+            158,
+            218
+          ]
+        },
+        {
+          "node": "FX_POLVO_15",
+          "keyedFrameRange": [
+            145,
+            204
+          ]
+        },
+        {
+          "node": "FX_POLVO_16",
+          "keyedFrameRange": [
+            154,
+            219
+          ]
+        },
+        {
+          "node": "FX_POLVO_17",
+          "keyedFrameRange": [
+            163,
+            213
+          ]
+        },
+        {
+          "node": "FX_POLVO_18",
+          "keyedFrameRange": [
+            150,
+            213
+          ]
+        }
+      ]
+    },
+    "tracks": [
+      {
+        "node": "FX_PLUMA_CORONA",
+        "action": "FX_PLUMA_CORONA_ESCALA",
+        "firstFrame": 1,
+        "lastFrame": 178,
+        "startSeconds": 0.0,
+        "durationSeconds": 7.375
+      },
+      {
+        "node": "FX_PLUMA_HALO",
+        "action": "FX_PLUMA_HALO_ESCALA",
+        "firstFrame": 1,
+        "lastFrame": 178,
+        "startSeconds": 0.0,
+        "durationSeconds": 7.375
+      },
+      {
+        "node": "FX_PLUMA_NUCLEO",
+        "action": "FX_PLUMA_NUCLEO_ESCALA",
+        "firstFrame": 1,
+        "lastFrame": 178,
+        "startSeconds": 0.0,
+        "durationSeconds": 7.375
+      },
+      {
+        "node": "FX_POLVO_01",
+        "action": "FX_POLVO_01_DERIVA",
+        "firstFrame": 1,
+        "lastFrame": 337,
+        "startSeconds": 0.0,
+        "durationSeconds": 14.0
+      },
+      {
+        "node": "FX_POLVO_02",
+        "action": "FX_POLVO_02_DERIVA",
+        "firstFrame": 1,
+        "lastFrame": 337,
+        "startSeconds": 0.0,
+        "durationSeconds": 14.0
+      },
+      {
+        "node": "FX_POLVO_03",
+        "action": "FX_POLVO_03_DERIVA",
+        "firstFrame": 1,
+        "lastFrame": 337,
+        "startSeconds": 0.0,
+        "durationSeconds": 14.0
+      },
+      {
+        "node": "FX_POLVO_04",
+        "action": "FX_POLVO_04_DERIVA",
+        "firstFrame": 1,
+        "lastFrame": 337,
+        "startSeconds": 0.0,
+        "durationSeconds": 14.0
+      },
+      {
+        "node": "FX_POLVO_05",
+        "action": "FX_POLVO_05_DERIVA",
+        "firstFrame": 1,
+        "lastFrame": 337,
+        "startSeconds": 0.0,
+        "durationSeconds": 14.0
+      },
+      {
+        "node": "FX_POLVO_06",
+        "action": "FX_POLVO_06_DERIVA",
+        "firstFrame": 1,
+        "lastFrame": 337,
+        "startSeconds": 0.0,
+        "durationSeconds": 14.0
+      },
+      {
+        "node": "FX_POLVO_07",
+        "action": "FX_POLVO_07_DERIVA",
+        "firstFrame": 1,
+        "lastFrame": 337,
+        "startSeconds": 0.0,
+        "durationSeconds": 14.0
+      },
+      {
+        "node": "FX_POLVO_08",
+        "action": "FX_POLVO_08_DERIVA",
+        "firstFrame": 1,
+        "lastFrame": 337,
+        "startSeconds": 0.0,
+        "durationSeconds": 14.0
+      },
+      {
+        "node": "FX_POLVO_09",
+        "action": "FX_POLVO_09_DERIVA",
+        "firstFrame": 1,
+        "lastFrame": 337,
+        "startSeconds": 0.0,
+        "durationSeconds": 14.0
+      },
+      {
+        "node": "FX_POLVO_10",
+        "action": "FX_POLVO_10_DERIVA",
+        "firstFrame": 1,
+        "lastFrame": 337,
+        "startSeconds": 0.0,
+        "durationSeconds": 14.0
+      },
+      {
+        "node": "FX_POLVO_11",
+        "action": "FX_POLVO_11_DERIVA",
+        "firstFrame": 1,
+        "lastFrame": 337,
+        "startSeconds": 0.0,
+        "durationSeconds": 14.0
+      },
+      {
+        "node": "FX_POLVO_12",
+        "action": "FX_POLVO_12_DERIVA",
+        "firstFrame": 1,
+        "lastFrame": 337,
+        "startSeconds": 0.0,
+        "durationSeconds": 14.0
+      },
+      {
+        "node": "FX_POLVO_13",
+        "action": "FX_POLVO_13_DERIVA",
+        "firstFrame": 1,
+        "lastFrame": 337,
+        "startSeconds": 0.0,
+        "durationSeconds": 14.0
+      },
+      {
+        "node": "FX_POLVO_14",
+        "action": "FX_POLVO_14_DERIVA",
+        "firstFrame": 1,
+        "lastFrame": 337,
+        "startSeconds": 0.0,
+        "durationSeconds": 14.0
+      },
+      {
+        "node": "FX_POLVO_15",
+        "action": "FX_POLVO_15_DERIVA",
+        "firstFrame": 1,
+        "lastFrame": 337,
+        "startSeconds": 0.0,
+        "durationSeconds": 14.0
+      },
+      {
+        "node": "FX_POLVO_16",
+        "action": "FX_POLVO_16_DERIVA",
+        "firstFrame": 1,
+        "lastFrame": 337,
+        "startSeconds": 0.0,
+        "durationSeconds": 14.0
+      },
+      {
+        "node": "FX_POLVO_17",
+        "action": "FX_POLVO_17_DERIVA",
+        "firstFrame": 1,
+        "lastFrame": 337,
+        "startSeconds": 0.0,
+        "durationSeconds": 14.0
+      },
+      {
+        "node": "FX_POLVO_18",
+        "action": "FX_POLVO_18_DERIVA",
+        "firstFrame": 1,
+        "lastFrame": 337,
+        "startSeconds": 0.0,
+        "durationSeconds": 14.0
+      }
+    ]
+  },
+  "runtime": {
+    "backgroundHex": "#000000",
+    "cameraFarMinimumM": 800,
+    "lights": [
+      {
+        "name": "FX_LUZ_SOL_LUNAR",
+        "type": "DirectionalLight",
+        "colorLinear": [
+          1.0,
+          0.9470000267028809,
+          0.8550000190734863
+        ],
+        "castShadow": true,
+        "blenderPreviewEnergy": 3.049999952316284,
+        "note": "Calibrar intensidad y sombras en el renderer. Es un valor de referencia de Blender.",
+        "rayDirection": [
+          0.5556689500808716,
+          -0.7476273775100708,
+          -0.36371058225631714
+        ],
+        "angularDiameterRadiansPreview": 0.009599311277270317
+      },
+      {
+        "name": "FX_LUZ_REBOTE_SUAVE",
+        "type": "DirectionalLight",
+        "colorLinear": [
+          0.6899999976158142,
+          0.800000011920929,
+          1.0
+        ],
+        "castShadow": true,
+        "blenderPreviewEnergy": 0.7900000214576721,
+        "note": "Calibrar intensidad y sombras en el renderer. Es un valor de referencia de Blender.",
+        "rayDirection": [
+          -0.63224858045578,
+          -0.6222126483917236,
+          -0.4616416096687317
+        ],
+        "angularDiameterRadiansPreview": 0.12217304855585098
+      },
+      {
+        "name": "FX_LUZ_CALIDA_TOBERA",
+        "type": "PointLight",
+        "colorLinear": [
+          1.0,
+          0.4300000071525574,
+          0.18000000715255737
+        ],
+        "castShadow": true,
+        "blenderPreviewEnergy": 19.575000762939453,
+        "note": "Calibrar intensidad y sombras en el renderer. Es un valor de referencia de Blender.",
+        "attachmentNode": "FX_TOBERA_ANCLA",
+        "offset": [
+          0.0,
+          -0.20999999344348907,
+          -0.0
+        ],
+        "softRadiusMPreview": 0.4099999964237213,
+        "firstOffFrame": 178,
+        "powerCurve": "runtime.intensitySamples[].pointPowerWPreview"
+      }
+    ],
+    "intensitySampleOrder": [
+      "FX_PLUMA_CORONA",
+      "FX_PLUMA_HALO",
+      "FX_PLUMA_NUCLEO"
+    ],
+    "intensitySamples": [
+      {
+        "frame": 1,
+        "emissiveStrength": [
+          2.397469997406006,
+          1.2038359642028809,
+          4.386859893798828
+        ],
+        "pointPowerWPreview": 19.575000762939453
+      },
+      {
+        "frame": 2,
+        "emissiveStrength": [
+          2.3979759216308594,
+          1.2040901184082031,
+          4.387785911560059
+        ],
+        "pointPowerWPreview": 19.580368041992188
+      },
+      {
+        "frame": 3,
+        "emissiveStrength": [
+          2.398482084274292,
+          1.2043441534042358,
+          4.388711929321289
+        ],
+        "pointPowerWPreview": 19.585735321044922
+      },
+      {
+        "frame": 4,
+        "emissiveStrength": [
+          2.3989882469177246,
+          1.2045981884002686,
+          4.389637470245361
+        ],
+        "pointPowerWPreview": 19.60143280029297
+      },
+      {
+        "frame": 5,
+        "emissiveStrength": [
+          2.399494171142578,
+          1.2048523426055908,
+          4.390563488006592
+        ],
+        "pointPowerWPreview": 19.617130279541016
+      },
+      {
+        "frame": 6,
+        "emissiveStrength": [
+          2.4009344577789307,
+          1.2055754661560059,
+          4.3931989669799805
+        ],
+        "pointPowerWPreview": 19.642549514770508
+      },
+      {
+        "frame": 7,
+        "emissiveStrength": [
+          2.402374744415283,
+          1.2062987089157104,
+          4.395833969116211
+        ],
+        "pointPowerWPreview": 19.66796875
+      },
+      {
+        "frame": 8,
+        "emissiveStrength": [
+          2.4038147926330566,
+          1.207021951675415,
+          4.3984694480896
+        ],
+        "pointPowerWPreview": 19.702503204345703
+      },
+      {
+        "frame": 9,
+        "emissiveStrength": [
+          2.405255079269409,
+          1.20774507522583,
+          4.401104927062988
+        ],
+        "pointPowerWPreview": 19.737037658691406
+      },
+      {
+        "frame": 10,
+        "emissiveStrength": [
+          2.407512664794922,
+          1.208878755569458,
+          4.405235767364502
+        ],
+        "pointPowerWPreview": 19.780078887939453
+      },
+      {
+        "frame": 11,
+        "emissiveStrength": [
+          2.4097704887390137,
+          1.2100123167037964,
+          4.409366607666016
+        ],
+        "pointPowerWPreview": 19.8231201171875
+      },
+      {
+        "frame": 12,
+        "emissiveStrength": [
+          2.4120280742645264,
+          1.2111458778381348,
+          4.4134979248046875
+        ],
+        "pointPowerWPreview": 19.874059677124023
+      },
+      {
+        "frame": 13,
+        "emissiveStrength": [
+          2.414285659790039,
+          1.2122795581817627,
+          4.417628765106201
+        ],
+        "pointPowerWPreview": 19.924999237060547
+      },
+      {
+        "frame": 14,
+        "emissiveStrength": [
+          2.4172439575195312,
+          1.213765025138855,
+          4.423041820526123
+        ],
+        "pointPowerWPreview": 19.983230590820312
+      },
+      {
+        "frame": 15,
+        "emissiveStrength": [
+          2.4202022552490234,
+          1.2152504920959473,
+          4.428454875946045
+        ],
+        "pointPowerWPreview": 20.04146385192871
+      },
+      {
+        "frame": 16,
+        "emissiveStrength": [
+          2.4231603145599365,
+          1.21673583984375,
+          4.433867931365967
+        ],
+        "pointPowerWPreview": 20.106380462646484
+      },
+      {
+        "frame": 17,
+        "emissiveStrength": [
+          2.4261186122894287,
+          1.2182213068008423,
+          4.439280986785889
+        ],
+        "pointPowerWPreview": 20.171297073364258
+      },
+      {
+        "frame": 18,
+        "emissiveStrength": [
+          2.4296607971191406,
+          1.21999990940094,
+          4.445762634277344
+        ],
+        "pointPowerWPreview": 20.242290496826172
+      },
+      {
+        "frame": 19,
+        "emissiveStrength": [
+          2.4332029819488525,
+          1.2217786312103271,
+          4.452243804931641
+        ],
+        "pointPowerWPreview": 20.313282012939453
+      },
+      {
+        "frame": 20,
+        "emissiveStrength": [
+          2.4367451667785645,
+          1.2235572338104248,
+          4.4587249755859375
+        ],
+        "pointPowerWPreview": 20.38974380493164
+      },
+      {
+        "frame": 21,
+        "emissiveStrength": [
+          2.4402873516082764,
+          1.2253358364105225,
+          4.465206623077393
+        ],
+        "pointPowerWPreview": 20.466203689575195
+      },
+      {
+        "frame": 22,
+        "emissiveStrength": [
+          2.4442965984344482,
+          1.227349042892456,
+          4.472542762756348
+        ],
+        "pointPowerWPreview": 20.547527313232422
+      },
+      {
+        "frame": 23,
+        "emissiveStrength": [
+          2.44830584526062,
+          1.2293621301651,
+          4.479878902435303
+        ],
+        "pointPowerWPreview": 20.628849029541016
+      },
+      {
+        "frame": 24,
+        "emissiveStrength": [
+          2.452315092086792,
+          1.2313752174377441,
+          4.487215042114258
+        ],
+        "pointPowerWPreview": 20.71442413330078
+      },
+      {
+        "frame": 25,
+        "emissiveStrength": [
+          2.456324338912964,
+          1.2333884239196777,
+          4.494551181793213
+        ],
+        "pointPowerWPreview": 20.799999237060547
+      },
+      {
+        "frame": 26,
+        "emissiveStrength": [
+          2.460683822631836,
+          1.2355774641036987,
+          4.502528190612793
+        ],
+        "pointPowerWPreview": 20.88922119140625
+      },
+      {
+        "frame": 27,
+        "emissiveStrength": [
+          2.465043544769287,
+          1.2377665042877197,
+          4.510505676269531
+        ],
+        "pointPowerWPreview": 20.978443145751953
+      },
+      {
+        "frame": 28,
+        "emissiveStrength": [
+          2.4694032669067383,
+          1.2399556636810303,
+          4.518482685089111
+        ],
+        "pointPowerWPreview": 21.070703506469727
+      },
+      {
+        "frame": 29,
+        "emissiveStrength": [
+          2.4737627506256104,
+          1.2421447038650513,
+          4.526459693908691
+        ],
+        "pointPowerWPreview": 21.1629638671875
+      },
+      {
+        "frame": 30,
+        "emissiveStrength": [
+          2.478355884552002,
+          1.2444510459899902,
+          4.53486442565918
+        ],
+        "pointPowerWPreview": 21.257654190063477
+      },
+      {
+        "frame": 31,
+        "emissiveStrength": [
+          2.4829490184783936,
+          1.2467573881149292,
+          4.54326868057251
+        ],
+        "pointPowerWPreview": 21.352344512939453
+      },
+      {
+        "frame": 32,
+        "emissiveStrength": [
+          2.487542152404785,
+          1.2490637302398682,
+          4.55167293548584
+        ],
+        "pointPowerWPreview": 21.448856353759766
+      },
+      {
+        "frame": 33,
+        "emissiveStrength": [
+          2.4921352863311768,
+          1.2513700723648071,
+          4.560077667236328
+        ],
+        "pointPowerWPreview": 21.54537010192871
+      },
+      {
+        "frame": 34,
+        "emissiveStrength": [
+          2.496845245361328,
+          1.253735065460205,
+          4.568696022033691
+        ],
+        "pointPowerWPreview": 21.643098831176758
+      },
+      {
+        "frame": 35,
+        "emissiveStrength": [
+          2.5015549659729004,
+          1.256100058555603,
+          4.5773138999938965
+        ],
+        "pointPowerWPreview": 21.740827560424805
+      },
+      {
+        "frame": 36,
+        "emissiveStrength": [
+          2.5062649250030518,
+          1.258465051651001,
+          4.585931777954102
+        ],
+        "pointPowerWPreview": 21.83916473388672
+      },
+      {
+        "frame": 37,
+        "emissiveStrength": [
+          2.510974884033203,
+          1.260830044746399,
+          4.594550132751465
+        ],
+        "pointPowerWPreview": 21.9375
+      },
+      {
+        "frame": 38,
+        "emissiveStrength": [
+          2.5156848430633545,
+          1.2631950378417969,
+          4.603168487548828
+        ],
+        "pointPowerWPreview": 22.03583526611328
+      },
+      {
+        "frame": 39,
+        "emissiveStrength": [
+          2.520394802093506,
+          1.2655599117279053,
+          4.611786365509033
+        ],
+        "pointPowerWPreview": 22.134172439575195
+      },
+      {
+        "frame": 40,
+        "emissiveStrength": [
+          2.5251047611236572,
+          1.2679249048233032,
+          4.620404243469238
+        ],
+        "pointPowerWPreview": 22.231901168823242
+      },
+      {
+        "frame": 41,
+        "emissiveStrength": [
+          2.5298147201538086,
+          1.2702898979187012,
+          4.629022598266602
+        ],
+        "pointPowerWPreview": 22.32962989807129
+      },
+      {
+        "frame": 42,
+        "emissiveStrength": [
+          2.5344078540802,
+          1.2725962400436401,
+          4.63742733001709
+        ],
+        "pointPowerWPreview": 22.426143646240234
+      },
+      {
+        "frame": 43,
+        "emissiveStrength": [
+          2.539000988006592,
+          1.274902582168579,
+          4.64583158493042
+        ],
+        "pointPowerWPreview": 22.522655487060547
+      },
+      {
+        "frame": 44,
+        "emissiveStrength": [
+          2.5435941219329834,
+          1.277208924293518,
+          4.65423583984375
+        ],
+        "pointPowerWPreview": 22.617345809936523
+      },
+      {
+        "frame": 45,
+        "emissiveStrength": [
+          2.548187255859375,
+          1.279515266418457,
+          4.662640571594238
+        ],
+        "pointPowerWPreview": 22.7120361328125
+      },
+      {
+        "frame": 46,
+        "emissiveStrength": [
+          2.552546977996826,
+          1.281704306602478,
+          4.670617580413818
+        ],
+        "pointPowerWPreview": 22.804296493530273
+      },
+      {
+        "frame": 47,
+        "emissiveStrength": [
+          2.5569064617156982,
+          1.283893346786499,
+          4.678594589233398
+        ],
+        "pointPowerWPreview": 22.896556854248047
+      },
+      {
+        "frame": 48,
+        "emissiveStrength": [
+          2.5612659454345703,
+          1.2860825061798096,
+          4.686572074890137
+        ],
+        "pointPowerWPreview": 22.98577880859375
+      },
+      {
+        "frame": 49,
+        "emissiveStrength": [
+          2.5656256675720215,
+          1.2882715463638306,
+          4.694549083709717
+        ],
+        "pointPowerWPreview": 23.075000762939453
+      },
+      {
+        "frame": 50,
+        "emissiveStrength": [
+          2.5696349143981934,
+          1.2902847528457642,
+          4.701885223388672
+        ],
+        "pointPowerWPreview": 23.16057586669922
+      },
+      {
+        "frame": 51,
+        "emissiveStrength": [
+          2.5736441612243652,
+          1.2922978401184082,
+          4.709220886230469
+        ],
+        "pointPowerWPreview": 23.246150970458984
+      },
+      {
+        "frame": 52,
+        "emissiveStrength": [
+          2.577653408050537,
+          1.2943110466003418,
+          4.716557025909424
+        ],
+        "pointPowerWPreview": 23.327472686767578
+      },
+      {
+        "frame": 53,
+        "emissiveStrength": [
+          2.581662654876709,
+          1.2963242530822754,
+          4.723893165588379
+        ],
+        "pointPowerWPreview": 23.408796310424805
+      },
+      {
+        "frame": 54,
+        "emissiveStrength": [
+          2.585204839706421,
+          1.298102855682373,
+          4.730374336242676
+        ],
+        "pointPowerWPreview": 23.48525619506836
+      },
+      {
+        "frame": 55,
+        "emissiveStrength": [
+          2.588747024536133,
+          1.2998814582824707,
+          4.736855983734131
+        ],
+        "pointPowerWPreview": 23.561717987060547
+      },
+      {
+        "frame": 56,
+        "emissiveStrength": [
+          2.5922892093658447,
+          1.3016600608825684,
+          4.743337631225586
+        ],
+        "pointPowerWPreview": 23.632709503173828
+      },
+      {
+        "frame": 57,
+        "emissiveStrength": [
+          2.5958313941955566,
+          1.303438663482666,
+          4.749818801879883
+        ],
+        "pointPowerWPreview": 23.703702926635742
+      },
+      {
+        "frame": 58,
+        "emissiveStrength": [
+          2.598789691925049,
+          1.3049241304397583,
+          4.755231857299805
+        ],
+        "pointPowerWPreview": 23.768619537353516
+      },
+      {
+        "frame": 59,
+        "emissiveStrength": [
+          2.601747989654541,
+          1.3064095973968506,
+          4.760644912719727
+        ],
+        "pointPowerWPreview": 23.83353614807129
+      },
+      {
+        "frame": 60,
+        "emissiveStrength": [
+          2.604706048965454,
+          1.3078949451446533,
+          4.766057968139648
+        ],
+        "pointPowerWPreview": 23.891769409179688
+      },
+      {
+        "frame": 61,
+        "emissiveStrength": [
+          2.6076643466949463,
+          1.3093804121017456,
+          4.77147102355957
+        ],
+        "pointPowerWPreview": 23.950000762939453
+      },
+      {
+        "frame": 62,
+        "emissiveStrength": [
+          2.609921932220459,
+          1.310513973236084,
+          4.775602340698242
+        ],
+        "pointPowerWPreview": 24.000940322875977
+      },
+      {
+        "frame": 63,
+        "emissiveStrength": [
+          2.612179756164551,
+          1.311647653579712,
+          4.779733180999756
+        ],
+        "pointPowerWPreview": 24.0518798828125
+      },
+      {
+        "frame": 64,
+        "emissiveStrength": [
+          2.6144373416900635,
+          1.3127813339233398,
+          4.7838640213012695
+        ],
+        "pointPowerWPreview": 24.094921112060547
+      },
+      {
+        "frame": 65,
+        "emissiveStrength": [
+          2.616694927215576,
+          1.3139148950576782,
+          4.787995338439941
+        ],
+        "pointPowerWPreview": 24.137962341308594
+      },
+      {
+        "frame": 66,
+        "emissiveStrength": [
+          2.6181352138519287,
+          1.3146381378173828,
+          4.790630340576172
+        ],
+        "pointPowerWPreview": 24.172496795654297
+      },
+      {
+        "frame": 67,
+        "emissiveStrength": [
+          2.6195755004882812,
+          1.3153612613677979,
+          4.7932658195495605
+        ],
+        "pointPowerWPreview": 24.20703125
+      },
+      {
+        "frame": 68,
+        "emissiveStrength": [
+          2.6210155487060547,
+          1.316084384918213,
+          4.795901298522949
+        ],
+        "pointPowerWPreview": 24.232450485229492
+      },
+      {
+        "frame": 69,
+        "emissiveStrength": [
+          2.6224558353424072,
+          1.3168076276779175,
+          4.79853630065918
+        ],
+        "pointPowerWPreview": 24.257869720458984
+      },
+      {
+        "frame": 70,
+        "emissiveStrength": [
+          2.6797144412994385,
+          1.345558762550354,
+          4.90330696105957
+        ],
+        "pointPowerWPreview": 24.27356719970703
+      },
+      {
+        "frame": 71,
+        "emissiveStrength": [
+          2.7369728088378906,
+          1.374309778213501,
+          5.008078098297119
+        ],
+        "pointPowerWPreview": 24.289264678955078
+      },
+      {
+        "frame": 72,
+        "emissiveStrength": [
+          2.794231414794922,
+          1.4030609130859375,
+          5.112849235534668
+        ],
+        "pointPowerWPreview": 26.65713119506836
+      },
+      {
+        "frame": 73,
+        "emissiveStrength": [
+          2.851490020751953,
+          1.431812047958374,
+          5.217619895935059
+        ],
+        "pointPowerWPreview": 29.024999618530273
+      },
+      {
+        "frame": 74,
+        "emissiveStrength": [
+          2.8817105293273926,
+          1.4469866752624512,
+          5.2729172706604
+        ],
+        "pointPowerWPreview": 29.810726165771484
+      },
+      {
+        "frame": 75,
+        "emissiveStrength": [
+          2.911931276321411,
+          1.4621613025665283,
+          5.328214645385742
+        ],
+        "pointPowerWPreview": 30.596450805664062
+      },
+      {
+        "frame": 76,
+        "emissiveStrength": [
+          2.9421520233154297,
+          1.477335810661316,
+          5.383512020111084
+        ],
+        "pointPowerWPreview": 31.06875228881836
+      },
+      {
+        "frame": 77,
+        "emissiveStrength": [
+          2.972372531890869,
+          1.492510437965393,
+          5.438809394836426
+        ],
+        "pointPowerWPreview": 31.54105567932129
+      },
+      {
+        "frame": 78,
+        "emissiveStrength": [
+          2.9656245708465576,
+          1.4891221523284912,
+          5.426462173461914
+        ],
+        "pointPowerWPreview": 31.56512451171875
+      },
+      {
+        "frame": 79,
+        "emissiveStrength": [
+          2.958876609802246,
+          1.4857337474822998,
+          5.414114475250244
+        ],
+        "pointPowerWPreview": 31.58919334411621
+      },
+      {
+        "frame": 80,
+        "emissiveStrength": [
+          2.9521284103393555,
+          1.4823453426361084,
+          5.401766777038574
+        ],
+        "pointPowerWPreview": 31.284217834472656
+      },
+      {
+        "frame": 81,
+        "emissiveStrength": [
+          2.945380449295044,
+          1.4789570569992065,
+          5.3894195556640625
+        ],
+        "pointPowerWPreview": 30.9792423248291
+      },
+      {
+        "frame": 82,
+        "emissiveStrength": [
+          2.9361562728881836,
+          1.4743252992630005,
+          5.372541427612305
+        ],
+        "pointPowerWPreview": 30.647045135498047
+      },
+      {
+        "frame": 83,
+        "emissiveStrength": [
+          2.9269320964813232,
+          1.469693660736084,
+          5.355663299560547
+        ],
+        "pointPowerWPreview": 30.314849853515625
+      },
+      {
+        "frame": 84,
+        "emissiveStrength": [
+          2.917707920074463,
+          1.465061902999878,
+          5.338784694671631
+        ],
+        "pointPowerWPreview": 30.2630615234375
+      },
+      {
+        "frame": 85,
+        "emissiveStrength": [
+          2.9084837436676025,
+          1.4604301452636719,
+          5.321906566619873
+        ],
+        "pointPowerWPreview": 30.211273193359375
+      },
+      {
+        "frame": 86,
+        "emissiveStrength": [
+          2.9329423904418945,
+          1.472711443901062,
+          5.366660118103027
+        ],
+        "pointPowerWPreview": 30.573333740234375
+      },
+      {
+        "frame": 87,
+        "emissiveStrength": [
+          2.9574007987976074,
+          1.4849927425384521,
+          5.41141414642334
+        ],
+        "pointPowerWPreview": 30.935396194458008
+      },
+      {
+        "frame": 88,
+        "emissiveStrength": [
+          2.9818592071533203,
+          1.4972740411758423,
+          5.456168174743652
+        ],
+        "pointPowerWPreview": 31.591495513916016
+      },
+      {
+        "frame": 89,
+        "emissiveStrength": [
+          3.0063178539276123,
+          1.5095553398132324,
+          5.500921726226807
+        ],
+        "pointPowerWPreview": 32.24759292602539
+      },
+      {
+        "frame": 90,
+        "emissiveStrength": [
+          3.029430389404297,
+          1.5211608409881592,
+          5.543212890625
+        ],
+        "pointPowerWPreview": 32.89228820800781
+      },
+      {
+        "frame": 91,
+        "emissiveStrength": [
+          3.0525429248809814,
+          1.5327662229537964,
+          5.585504055023193
+        ],
+        "pointPowerWPreview": 33.53697967529297
+      },
+      {
+        "frame": 92,
+        "emissiveStrength": [
+          3.075655460357666,
+          1.5443716049194336,
+          5.627795219421387
+        ],
+        "pointPowerWPreview": 33.85441970825195
+      },
+      {
+        "frame": 93,
+        "emissiveStrength": [
+          3.0987679958343506,
+          1.5559771060943604,
+          5.67008638381958
+        ],
+        "pointPowerWPreview": 34.17185974121094
+      },
+      {
+        "frame": 94,
+        "emissiveStrength": [
+          3.082637071609497,
+          1.547877311706543,
+          5.640570163726807
+        ],
+        "pointPowerWPreview": 34.01736831665039
+      },
+      {
+        "frame": 95,
+        "emissiveStrength": [
+          3.0665061473846436,
+          1.5397775173187256,
+          5.611053943634033
+        ],
+        "pointPowerWPreview": 33.862876892089844
+      },
+      {
+        "frame": 96,
+        "emissiveStrength": [
+          3.05037522315979,
+          1.5316778421401978,
+          5.58153772354126
+        ],
+        "pointPowerWPreview": 33.34587097167969
+      },
+      {
+        "frame": 97,
+        "emissiveStrength": [
+          3.0342442989349365,
+          1.5235780477523804,
+          5.552021503448486
+        ],
+        "pointPowerWPreview": 32.828861236572266
+      },
+      {
+        "frame": 98,
+        "emissiveStrength": [
+          3.0125045776367188,
+          1.5126619338989258,
+          5.512242317199707
+        ],
+        "pointPowerWPreview": 32.24921417236328
+      },
+      {
+        "frame": 99,
+        "emissiveStrength": [
+          2.99076509475708,
+          1.5017458200454712,
+          5.472463607788086
+        ],
+        "pointPowerWPreview": 31.669570922851562
+      },
+      {
+        "frame": 100,
+        "emissiveStrength": [
+          2.9690253734588623,
+          1.4908297061920166,
+          5.432684898376465
+        ],
+        "pointPowerWPreview": 31.344234466552734
+      },
+      {
+        "frame": 101,
+        "emissiveStrength": [
+          2.9472856521606445,
+          1.479913592338562,
+          5.3929057121276855
+        ],
+        "pointPowerWPreview": 31.018896102905273
+      },
+      {
+        "frame": 102,
+        "emissiveStrength": [
+          2.9584343433380127,
+          1.4855116605758667,
+          5.413305282592773
+        ],
+        "pointPowerWPreview": 31.09895896911621
+      },
+      {
+        "frame": 103,
+        "emissiveStrength": [
+          2.969583034515381,
+          1.491109848022461,
+          5.4337053298950195
+        ],
+        "pointPowerWPreview": 31.17902183532715
+      },
+      {
+        "frame": 104,
+        "emissiveStrength": [
+          2.980731725692749,
+          1.4967079162597656,
+          5.454105377197266
+        ],
+        "pointPowerWPreview": 31.563058853149414
+      },
+      {
+        "frame": 105,
+        "emissiveStrength": [
+          2.991880416870117,
+          1.5023059844970703,
+          5.4745049476623535
+        ],
+        "pointPowerWPreview": 31.94709587097168
+      },
+      {
+        "frame": 106,
+        "emissiveStrength": [
+          3.003446102142334,
+          1.5081133842468262,
+          5.495667457580566
+        ],
+        "pointPowerWPreview": 32.340816497802734
+      },
+      {
+        "frame": 107,
+        "emissiveStrength": [
+          3.0150115489959717,
+          1.513920783996582,
+          5.516829967498779
+        ],
+        "pointPowerWPreview": 32.734535217285156
+      },
+      {
+        "frame": 108,
+        "emissiveStrength": [
+          3.0265769958496094,
+          1.5197280645370483,
+          5.537992477416992
+        ],
+        "pointPowerWPreview": 32.822265625
+      },
+      {
+        "frame": 109,
+        "emissiveStrength": [
+          3.038142681121826,
+          1.5255354642868042,
+          5.559154987335205
+        ],
+        "pointPowerWPreview": 32.90999984741211
+      },
+      {
+        "frame": 110,
+        "emissiveStrength": [
+          3.011692523956299,
+          1.5122541189193726,
+          5.510756492614746
+        ],
+        "pointPowerWPreview": 32.538841247558594
+      },
+      {
+        "frame": 111,
+        "emissiveStrength": [
+          2.9852423667907715,
+          1.498972773551941,
+          5.462358474731445
+        ],
+        "pointPowerWPreview": 32.16767883300781
+      },
+      {
+        "frame": 112,
+        "emissiveStrength": [
+          2.958792209625244,
+          1.4856914281845093,
+          5.4139604568481445
+        ],
+        "pointPowerWPreview": 31.437768936157227
+      },
+      {
+        "frame": 113,
+        "emissiveStrength": [
+          2.932342052459717,
+          1.4724100828170776,
+          5.3655619621276855
+        ],
+        "pointPowerWPreview": 30.70785903930664
+      },
+      {
+        "frame": 114,
+        "emissiveStrength": [
+          2.9006614685058594,
+          1.4565023183822632,
+          5.307592868804932
+        ],
+        "pointPowerWPreview": 29.916610717773438
+      },
+      {
+        "frame": 115,
+        "emissiveStrength": [
+          2.868980646133423,
+          1.4405945539474487,
+          5.249624252319336
+        ],
+        "pointPowerWPreview": 29.125362396240234
+      },
+      {
+        "frame": 116,
+        "emissiveStrength": [
+          2.8372998237609863,
+          1.4246867895126343,
+          5.191655158996582
+        ],
+        "pointPowerWPreview": 28.597801208496094
+      },
+      {
+        "frame": 117,
+        "emissiveStrength": [
+          2.805619239807129,
+          1.4087790250778198,
+          5.133686065673828
+        ],
+        "pointPowerWPreview": 28.070241928100586
+      },
+      {
+        "frame": 118,
+        "emissiveStrength": [
+          2.8092856407165527,
+          1.4106199741363525,
+          5.140394687652588
+        ],
+        "pointPowerWPreview": 27.973529815673828
+      },
+      {
+        "frame": 119,
+        "emissiveStrength": [
+          2.8129518032073975,
+          1.4124609231948853,
+          5.147103309631348
+        ],
+        "pointPowerWPreview": 27.876815795898438
+      },
+      {
+        "frame": 120,
+        "emissiveStrength": [
+          2.816617965698242,
+          1.414301872253418,
+          5.153811454772949
+        ],
+        "pointPowerWPreview": 28.126150131225586
+      },
+      {
+        "frame": 121,
+        "emissiveStrength": [
+          2.820284366607666,
+          1.4161428213119507,
+          5.160520076751709
+        ],
+        "pointPowerWPreview": 28.375484466552734
+      },
+      {
+        "frame": 122,
+        "emissiveStrength": [
+          2.8290135860443115,
+          1.4205260276794434,
+          5.176492691040039
+        ],
+        "pointPowerWPreview": 28.685726165771484
+      },
+      {
+        "frame": 123,
+        "emissiveStrength": [
+          2.837742805480957,
+          1.4249091148376465,
+          5.192465782165527
+        ],
+        "pointPowerWPreview": 28.995967864990234
+      },
+      {
+        "frame": 124,
+        "emissiveStrength": [
+          2.8464720249176025,
+          1.4292923212051392,
+          5.208438396453857
+        ],
+        "pointPowerWPreview": 29.04910659790039
+      },
+      {
+        "frame": 125,
+        "emissiveStrength": [
+          2.855201244354248,
+          1.4336755275726318,
+          5.2244110107421875
+        ],
+        "pointPowerWPreview": 29.10224723815918
+      },
+      {
+        "frame": 126,
+        "emissiveStrength": [
+          2.8294553756713867,
+          1.4207477569580078,
+          5.177301406860352
+        ],
+        "pointPowerWPreview": 28.73382568359375
+      },
+      {
+        "frame": 127,
+        "emissiveStrength": [
+          2.8037095069885254,
+          1.4078201055526733,
+          5.130191802978516
+        ],
+        "pointPowerWPreview": 28.365406036376953
+      },
+      {
+        "frame": 128,
+        "emissiveStrength": [
+          2.777963638305664,
+          1.3948924541473389,
+          5.083082675933838
+        ],
+        "pointPowerWPreview": 27.66207504272461
+      },
+      {
+        "frame": 129,
+        "emissiveStrength": [
+          2.7522177696228027,
+          1.3819646835327148,
+          5.035973072052002
+        ],
+        "pointPowerWPreview": 26.958742141723633
+      },
+      {
+        "frame": 130,
+        "emissiveStrength": [
+          2.723064422607422,
+          1.367326021194458,
+          4.98262882232666
+        ],
+        "pointPowerWPreview": 26.210493087768555
+      },
+      {
+        "frame": 131,
+        "emissiveStrength": [
+          2.69391131401062,
+          1.3526873588562012,
+          4.929284572601318
+        ],
+        "pointPowerWPreview": 25.462244033813477
+      },
+      {
+        "frame": 132,
+        "emissiveStrength": [
+          2.6647582054138184,
+          1.3380488157272339,
+          4.875940322875977
+        ],
+        "pointPowerWPreview": 24.996898651123047
+      },
+      {
+        "frame": 133,
+        "emissiveStrength": [
+          2.6356048583984375,
+          1.323410153388977,
+          4.822596073150635
+        ],
+        "pointPowerWPreview": 24.531553268432617
+      },
+      {
+        "frame": 134,
+        "emissiveStrength": [
+          2.644713878631592,
+          1.327984094619751,
+          4.839263916015625
+        ],
+        "pointPowerWPreview": 24.527164459228516
+      },
+      {
+        "frame": 135,
+        "emissiveStrength": [
+          2.653823137283325,
+          1.3325579166412354,
+          4.855931282043457
+        ],
+        "pointPowerWPreview": 24.522777557373047
+      },
+      {
+        "frame": 136,
+        "emissiveStrength": [
+          2.6629323959350586,
+          1.3371318578720093,
+          4.872599124908447
+        ],
+        "pointPowerWPreview": 24.940185546875
+      },
+      {
+        "frame": 137,
+        "emissiveStrength": [
+          2.672041416168213,
+          1.3417057991027832,
+          4.8892669677734375
+        ],
+        "pointPowerWPreview": 25.357593536376953
+      },
+      {
+        "frame": 138,
+        "emissiveStrength": [
+          2.6904218196868896,
+          1.3509352207183838,
+          4.92289924621582
+        ],
+        "pointPowerWPreview": 25.99068260192871
+      },
+      {
+        "frame": 139,
+        "emissiveStrength": [
+          2.7088022232055664,
+          1.3601645231246948,
+          4.956531524658203
+        ],
+        "pointPowerWPreview": 26.62377166748047
+      },
+      {
+        "frame": 140,
+        "emissiveStrength": [
+          2.7271828651428223,
+          1.3693938255310059,
+          4.990164279937744
+        ],
+        "pointPowerWPreview": 27.137107849121094
+      },
+      {
+        "frame": 141,
+        "emissiveStrength": [
+          2.745563268661499,
+          1.3786232471466064,
+          5.023796558380127
+        ],
+        "pointPowerWPreview": 27.65044593811035
+      },
+      {
+        "frame": 142,
+        "emissiveStrength": [
+          2.7317259311676025,
+          1.3716751337051392,
+          4.998477458953857
+        ],
+        "pointPowerWPreview": 27.828929901123047
+      },
+      {
+        "frame": 143,
+        "emissiveStrength": [
+          2.717888832092285,
+          1.3647270202636719,
+          4.97315788269043
+        ],
+        "pointPowerWPreview": 28.00741195678711
+      },
+      {
+        "frame": 144,
+        "emissiveStrength": [
+          2.7040514945983887,
+          1.3577790260314941,
+          4.94783878326416
+        ],
+        "pointPowerWPreview": 27.877765655517578
+      },
+      {
+        "frame": 145,
+        "emissiveStrength": [
+          2.690214157104492,
+          1.3508309125900269,
+          4.922519683837891
+        ],
+        "pointPowerWPreview": 27.748119354248047
+      },
+      {
+        "frame": 146,
+        "emissiveStrength": [
+          2.672631025314331,
+          1.3420019149780273,
+          4.890346527099609
+        ],
+        "pointPowerWPreview": 27.570493698120117
+      },
+      {
+        "frame": 147,
+        "emissiveStrength": [
+          2.65504789352417,
+          1.3331730365753174,
+          4.858173370361328
+        ],
+        "pointPowerWPreview": 27.392868041992188
+      },
+      {
+        "frame": 148,
+        "emissiveStrength": [
+          2.637465000152588,
+          1.3243441581726074,
+          4.825999736785889
+        ],
+        "pointPowerWPreview": 27.516117095947266
+      },
+      {
+        "frame": 149,
+        "emissiveStrength": [
+          2.6198818683624268,
+          1.315515160560608,
+          4.793826580047607
+        ],
+        "pointPowerWPreview": 27.63936424255371
+      },
+      {
+        "frame": 150,
+        "emissiveStrength": [
+          2.6405763626098633,
+          1.3259063959121704,
+          4.831693172454834
+        ],
+        "pointPowerWPreview": 28.29123878479004
+      },
+      {
+        "frame": 151,
+        "emissiveStrength": [
+          2.6612706184387207,
+          1.3362977504730225,
+          4.869559288024902
+        ],
+        "pointPowerWPreview": 28.943113327026367
+      },
+      {
+        "frame": 152,
+        "emissiveStrength": [
+          2.6819651126861572,
+          1.346688985824585,
+          4.907425880432129
+        ],
+        "pointPowerWPreview": 30.07623291015625
+      },
+      {
+        "frame": 153,
+        "emissiveStrength": [
+          2.7026596069335938,
+          1.3570802211761475,
+          4.9452924728393555
+        ],
+        "pointPowerWPreview": 31.209354400634766
+      },
+      {
+        "frame": 154,
+        "emissiveStrength": [
+          2.733534812927246,
+          1.3725835084915161,
+          5.0017876625061035
+        ],
+        "pointPowerWPreview": 32.50215148925781
+      },
+      {
+        "frame": 155,
+        "emissiveStrength": [
+          2.7644100189208984,
+          1.3880867958068848,
+          5.058282852172852
+        ],
+        "pointPowerWPreview": 33.794952392578125
+      },
+      {
+        "frame": 156,
+        "emissiveStrength": [
+          2.79528546333313,
+          1.403590202331543,
+          5.114777565002441
+        ],
+        "pointPowerWPreview": 34.821876525878906
+      },
+      {
+        "frame": 157,
+        "emissiveStrength": [
+          2.8261606693267822,
+          1.4190934896469116,
+          5.1712727546691895
+        ],
+        "pointPowerWPreview": 35.84880447387695
+      },
+      {
+        "frame": 158,
+        "emissiveStrength": [
+          2.813140392303467,
+          1.4125556945800781,
+          5.147448539733887
+        ],
+        "pointPowerWPreview": 36.32664489746094
+      },
+      {
+        "frame": 159,
+        "emissiveStrength": [
+          2.8001203536987305,
+          1.4060178995132446,
+          5.123624801635742
+        ],
+        "pointPowerWPreview": 36.80448532104492
+      },
+      {
+        "frame": 160,
+        "emissiveStrength": [
+          2.787100315093994,
+          1.3994801044464111,
+          5.0998005867004395
+        ],
+        "pointPowerWPreview": 36.19625473022461
+      },
+      {
+        "frame": 161,
+        "emissiveStrength": [
+          2.7740800380706787,
+          1.3929423093795776,
+          5.075976371765137
+        ],
+        "pointPowerWPreview": 35.5880241394043
+      },
+      {
+        "frame": 162,
+        "emissiveStrength": [
+          2.6966609954833984,
+          1.3540680408477783,
+          4.9343156814575195
+        ],
+        "pointPowerWPreview": 33.853946685791016
+      },
+      {
+        "frame": 163,
+        "emissiveStrength": [
+          2.619241714477539,
+          1.315193772315979,
+          4.792654991149902
+        ],
+        "pointPowerWPreview": 32.119869232177734
+      },
+      {
+        "frame": 164,
+        "emissiveStrength": [
+          2.541822671890259,
+          1.2763195037841797,
+          4.650994777679443
+        ],
+        "pointPowerWPreview": 29.921314239501953
+      },
+      {
+        "frame": 165,
+        "emissiveStrength": [
+          2.4644036293029785,
+          1.2374452352523804,
+          4.509334087371826
+        ],
+        "pointPowerWPreview": 27.722761154174805
+      },
+      {
+        "frame": 166,
+        "emissiveStrength": [
+          2.3759403228759766,
+          1.1930253505706787,
+          4.3474650382995605
+        ],
+        "pointPowerWPreview": 25.394237518310547
+      },
+      {
+        "frame": 167,
+        "emissiveStrength": [
+          2.2874770164489746,
+          1.148605465888977,
+          4.185595989227295
+        ],
+        "pointPowerWPreview": 23.065715789794922
+      },
+      {
+        "frame": 168,
+        "emissiveStrength": [
+          2.1990137100219727,
+          1.1041855812072754,
+          4.023726940155029
+        ],
+        "pointPowerWPreview": 20.592348098754883
+      },
+      {
+        "frame": 169,
+        "emissiveStrength": [
+          2.1105504035949707,
+          1.0597656965255737,
+          3.8618581295013428
+        ],
+        "pointPowerWPreview": 18.118980407714844
+      },
+      {
+        "frame": 170,
+        "emissiveStrength": [
+          2.0136709213256836,
+          1.0111198425292969,
+          3.684589147567749
+        ],
+        "pointPowerWPreview": 15.44052791595459
+      },
+      {
+        "frame": 171,
+        "emissiveStrength": [
+          1.9167912006378174,
+          0.9624738693237305,
+          3.5073201656341553
+        ],
+        "pointPowerWPreview": 12.762075424194336
+      },
+      {
+        "frame": 172,
+        "emissiveStrength": [
+          1.8199117183685303,
+          0.9138280153274536,
+          3.3300511837005615
+        ],
+        "pointPowerWPreview": 10.072509765625
+      },
+      {
+        "frame": 173,
+        "emissiveStrength": [
+          1.7230321168899536,
+          0.865182101726532,
+          3.1527822017669678
+        ],
+        "pointPowerWPreview": 7.382944583892822
+      },
+      {
+        "frame": 174,
+        "emissiveStrength": [
+          1.659613847732544,
+          0.8333380222320557,
+          3.036740303039551
+        ],
+        "pointPowerWPreview": 5.146097660064697
+      },
+      {
+        "frame": 175,
+        "emissiveStrength": [
+          1.5961954593658447,
+          0.8014938831329346,
+          2.9206981658935547
+        ],
+        "pointPowerWPreview": 2.9092509746551514
+      },
+      {
+        "frame": 176,
+        "emissiveStrength": [
+          1.5327770709991455,
+          0.7696498036384583,
+          2.8046560287475586
+        ],
+        "pointPowerWPreview": 1.6261169910430908
+      },
+      {
+        "frame": 177,
+        "emissiveStrength": [
+          1.4693588018417358,
+          0.7378057241439819,
+          2.6886141300201416
+        ],
+        "pointPowerWPreview": 0.34298306703567505
+      },
+      {
+        "frame": 178,
+        "emissiveStrength": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "pointPowerWPreview": 0.0
+      }
+    ],
+    "intensityBeforeFirstOff": "Interpolate by frame, apply emissiveIntensity per node and use the warm preview power curve to drive the scaled PointLight intensity.",
+    "afterFirstOffFrame": {
+      "plumeVisible": false,
+      "warmLightIntensity": 0
+    },
+    "dustOpacity": "Static embedded RGBA. Use keyed scale and optionally cull collapsed cards.",
+    "sky": "Use exposed star meshes with depth testing against the terrain; scene.background is supplied by the app.",
+    "cameraAspectRatio": 1.7777777777777777,
+    "mixers": {
+      "cameras": "AnimationMixer on the camera GLB scene. Use selected shot local time.",
+      "lander": "AnimationMixer on the LANDER GLB scene; play only LANDER_DESCENT.",
+      "effects": "After reparenting FX_TOBERA_ANCLA, bind the FX clips with an AnimationMixer on a common ancestor of the FX and LANDER scenes. Start all FX clips once and sample at scene time.",
+      "evaluationOrder": [
+        "attach plume with Object3D.add",
+        "bind mixers",
+        "sample LANDER and FX to the scene time",
+        "update world matrices",
+        "select camera from shots"
+      ],
+      "visibility": "Disable the plume at frame >= 178. Dust can be culled per card when scale is zero."
+    }
+  }
+}

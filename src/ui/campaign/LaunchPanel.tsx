@@ -1,17 +1,22 @@
 import type { MissionController } from '../../game/hooks/useMissionController'
 import { assemblyReady } from '../../spacecraft/assembly'
+import { LAUNCH_DESTINATIONS } from '../../game/launchJourney'
+import DestinationPicker from './DestinationPicker'
 export default function LaunchPanel({ controller }: { controller: MissionController }) {
   const {
     operateReady,
     launchProblems,
     assembly,
     evaluation,
+    destination,
+    setDestination,
     guidance,
     fly,
     campus,
     onReturnToCampus,
     go,
   } = controller
+  const target = LAUNCH_DESTINATIONS.find((item) => item.id === destination)!
   return (
     <>
       <span className="eyebrow">CUADERNO DE MISIÓN / 03 · REVISIÓN</span>
@@ -52,8 +57,12 @@ export default function LaunchPanel({ controller }: { controller: MissionControl
           ))}
         </ul>
       )}
+      <DestinationPicker value={destination} onChange={setDestination} />
       <div className="flight-brief">
-        <h2>Plan de vuelo de ODYSSEY</h2>
+        <h2>Diseño de ODYSSEY y mapa posterior</h2>
+        <p>
+          <b>Mapa de exploración tras el lanzamiento:</b> {target.name} · {target.place}
+        </p>
         <p>
           <b>Ensamblaje:</b>{' '}
           {assemblyReady(assembly) ? 'Módulos obligatorios instalados' : 'Incompleto'} ·{' '}
@@ -74,9 +83,7 @@ export default function LaunchPanel({ controller }: { controller: MissionControl
       </div>
       <button className="action-primary" onClick={fly} disabled={!operateReady}>
         {operateReady
-          ? assembly.includes('habitat')
-            ? 'Iniciar recreación de embarque y lanzamiento →'
-            : 'Autorizar lanzamiento autónomo →'
+          ? `Iniciar lanzamiento simulado y explorar ${target.name} →`
           : 'Corrige los problemas para lanzar'}
       </button>
       {campus && (

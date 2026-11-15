@@ -1,0 +1,88 @@
+.lunar-rover-hud,
+.lunar-rover-prompt {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  max-width: calc(100vw - 32px);
+  background: #f6f6eceb;
+  color: #34464c;
+  border: 1px solid #52656b80;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font:
+    13px 'Trebuchet MS',
+    sans-serif;
+}
+
+.clean-world.is-landing > :not(.world-viewport):not(.world-loading):not(.lunar-landing-skip) {
+  display: none;
+}
+.clean-world.is-launching > :not(.world-viewport):not(.world-loading):not(.launch-film) {
+  display: none;
+}
+.lunar-landing-skip {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 4;
+  background: #f6f6ecdd;
+  border: 1px solid #52656b80;
+  border-radius: 5px;
+  padding: 8px 12px;
+  font:
+    12px 'Trebuchet MS',
+    sans-serif;
+}
+.lunar-landing-skip kbd {
+  font: 10px monospace;
+  margin-left: 8px;
+}
+.lunar-rover-hud {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  width: max-content;
+}
+.lunar-rover-hud strong {
+  font-size: 20px;
+  font-variant-numeric: tabular-nums;
+}
+.lunar-rover-hud button {
+  padding: 4px;
+  white-space: nowrap;
+}
+.lunar-rover-hud kbd,
+.lunar-rover-prompt kbd {
+  font: 11px monospace;
+  border: 1px solid #52656b70;
+  border-radius: 3px;
+  padding: 2px 5px;
+  margin-right: 5px;
+}
+.lunar-rover-hud small {
+  flex-basis: 100%;
+  font-size: 11px;
+  text-align: center;
+}
+.moon-world .interior-caption {
+  font:
+    12px 'Trebuchet MS',
+    sans-serif;
+  padding: 6px 10px;
+}
+.moon-world .interior-caption small {
+  font-size: 10px;
+}
+.clean-world.is-driving:has(.lunar-rover-hud) .paper-dock {
+  bottom: 92px;
+}
+@media (pointer: coarse) {
+  .lunar-rover-hud,
+  .lunar-rover-prompt {
+    bottom: 180px;
+  }
+}

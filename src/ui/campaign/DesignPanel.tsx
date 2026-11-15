@@ -1,5 +1,6 @@
 import type { MissionController } from '../../game/hooks/useMissionController'
 import { MODULES, COMPLETE_ASSEMBLY } from '../../spacecraft/assembly'
+import DestinationPicker from './DestinationPicker'
 import {
   INSTRUMENTS,
   ORBITS,
@@ -14,6 +15,8 @@ export default function DesignPanel({ controller }: { controller: MissionControl
     exploded,
     setExploded,
     config,
+    destination,
+    setDestination,
     toggleInstrument,
     assemble,
     updateConfig,
@@ -44,6 +47,7 @@ export default function DesignPanel({ controller }: { controller: MissionControl
           </a>
         </div>
       )}
+      <DestinationPicker value={destination} onChange={setDestination} />
       <div className="odyssey-assembly">
         <div className="assembly-heading">
           <h2>Ensamblaje de la nave</h2>

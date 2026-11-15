@@ -2,6 +2,7 @@ import layout from './lunarLayout.json'
 import { createCollisionGrid } from '../navigation/collision'
 import { landingPadHeight } from '../environmentLayout'
 import type { Sector } from '../worldData'
+import { LUNAR_BASE_LAYOUT, lunarBaseClear, lunarBaseFloor } from './lunarBaseNavigation'
 
 const grid = layout.terrain
 export const LUNAR_LANDER = { x: -84, z: 78 }
@@ -16,6 +17,8 @@ export function lunarTerrainHeight(x: number, z: number) {
   return (h(0, 0) * (1 - tx) + h(1, 0) * tx) * (1 - tz) + (h(0, 1) * (1 - tx) + h(1, 1) * tx) * tz
 }
 export function lunarHeight(x: number, z: number) {
+  const deck = lunarBaseFloor(x, z)
+  if (deck !== null) return deck
   const distance = Math.hypot(x - LUNAR_LANDER.x, z - LUNAR_LANDER.z)
   const ground = lunarTerrainHeight(x, z)
   if (distance >= 8.5) return ground
@@ -23,11 +26,13 @@ export function lunarHeight(x: number, z: number) {
   return distance <= 6 ? pad : ground + ((pad - ground) * (8.5 - distance)) / 2.5
 }
 const clear = createCollisionGrid([
-  ...layout.colliders,
+  ...layout.colliders.filter(
+    (_, index) => !LUNAR_BASE_LAYOUT.replacedColliderIndices.includes(index),
+  ),
   { x: LUNAR_LANDER.x, z: LUNAR_LANDER.z, hx: 2.6, hz: 2.6 },
 ])
 export function lunarCanWalk(x: number, z: number) {
-  return Math.abs(x) < 148 && Math.abs(z) < 148 && clear(x, z)
+  return Math.abs(x) < 148 && Math.abs(z) < 148 && clear(x, z) && lunarBaseClear(x, z)
 }
 export const LUNAR_SECTORS: Sector[] = [
   {
@@ -37,12 +42,12 @@ export const LUNAR_SECTORS: Sector[] = [
     short: 'Laboratorio',
     x: 52.73,
     z: 83.44,
-    entry: [53, 89],
+    entry: [56.3, 85.49],
     color: '#7d9298',
     title: 'Preguntas desde la superficie.',
     description: 'El módulo LAB-L01 forma parte de la base ODYSSEY.',
     detail:
-      'Recorre su exterior y los corredores que lo conectan al hábitat. La misión orbital se prepara en la Tierra.',
+      'Entra por la rampa o por los pasillos del hábitat. Puedes recorrer el laboratorio y su equipo de análisis.',
     chapter: 'LABORATORIO',
   },
   {
@@ -52,12 +57,12 @@ export const LUNAR_SECTORS: Sector[] = [
     short: 'Base lunar',
     x: 63,
     z: 78,
-    entry: [63, 71],
+    entry: [63.52, 81.08],
     color: '#b5987c',
     title: 'Un lugar al que volver.',
     description: 'Hábitat HAB-L01, almacén STO-L01 y corredores de la base.',
     detail:
-      'Módulos originales colocados según el archivo del proyecto. Exploración exterior; no hay campaña de construcción ni interiores recorribles.',
+      'Puertas automáticas, hábitat, almacén y laboratorio conectados por pasillos transitables. Acércate al acceso para abrir la puerta.',
     chapter: 'BASE ODYSSEY',
   },
   {

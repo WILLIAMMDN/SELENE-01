@@ -22,7 +22,6 @@ export default function LaunchPreview() {
   const [launcher, setLauncher] = useState<LauncherId>(blueprint.config.launcher)
   const [playing, setPlaying] = useState(false)
   const [elapsed, setElapsed] = useState(0)
-  const [run, setRun] = useState(0)
 
   const parts = useMemo(
     () =>
@@ -49,7 +48,6 @@ export default function LaunchPreview() {
   const finish = useCallback(() => setPlaying(false), [])
   const start = () => {
     setElapsed(0)
-    setRun((current) => current + 1)
     setPlaying(true)
   }
 
@@ -74,7 +72,6 @@ export default function LaunchPreview() {
     <div className={`launch-preview app-shell ${playing ? 'cinematic-active' : ''}`}>
       <div className="world-column launch-preview-world">
         <GameWorld
-          key={run}
           mode="launch"
           onInteract={() => undefined}
           parts={parts}

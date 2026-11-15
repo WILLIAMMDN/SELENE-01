@@ -1,4 +1,6 @@
 import LunarEnvironment from './lunar/LunarEnvironment'
+import LunarLanding from './lunar/LunarLanding'
+import MissionGuide from './MissionGuide'
 import CampusSky from './sky/CampusSky'
 import AdaptiveResolution from './performance/AdaptiveResolution'
 import { Canvas } from '@react-three/fiber'
@@ -9,7 +11,7 @@ import { useWorld } from './worldConfig'
 import PlayerRig from './player/PlayerRig'
 import LaunchCinematicDirector from '../spacecraft/LaunchCinematicDirector'
 import LaunchCloudLayers from '../spacecraft/LaunchCloudLayers'
-import MissionNavigationGuide from './navigation/MissionNavigationGuide'
+
 import { LAUNCH_SITE } from '../spacecraft/LaunchComplex'
 import { useBlueprint } from '../game/state/blueprintStore'
 import type { SceneProps } from './player/types'
@@ -91,6 +93,7 @@ export default memo(function ExplorerScene(
             <LunarEnvironment
               paused={props.paused || props.mode !== 'walk'}
               reduced={props.reduced}
+              landing={props.landing}
             />
           ) : mars ? (
             <MarsEnvironment
@@ -106,17 +109,17 @@ export default memo(function ExplorerScene(
             />
           )}
           <PlayerRig {...props} />
-          {!mars &&
-            !moon &&
-            props.mode === 'walk' &&
-            props.launchPhase === 'idle' &&
-            props.targetSector && (
-              <MissionNavigationGuide
-                targetSector={props.targetSector}
-                reduced={props.reduced}
-                indoor={false}
-              />
-            )}
+          {moon && props.landing && props.onLandingComplete && (
+            <LunarLanding onComplete={props.onLandingComplete} />
+          )}
+          {!mars && !moon && props.guideSector && (
+            <MissionGuide
+              sector={props.guideSector}
+              enabled={!props.paused && props.launchPhase === 'idle' && props.mode === 'walk'}
+              reduced={props.reduced}
+              onUpdate={props.onGuide}
+            />
+          )}
           {!mars && !moon && props.launchPhase === 'flight' && props.flightClock && (
             <LaunchCloudLayers
               clock={props.flightClock.current}

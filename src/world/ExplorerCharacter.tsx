@@ -7,6 +7,9 @@ import * as T from 'three'
 import { toon } from './ArtKit'
 import { HUMAN_SCALE } from './physicalScale'
 import { wardrobeVisible, type Outfit } from './wardrobe'
+import { characterInfo, type CharacterId } from './characters'
+import { createCharacterPlayback } from './characterPlayback'
+import { alignSeatedPose } from './player/seatPose'
 import type { CharacterMotion } from './characterMotion'
 
 export default function ExplorerCharacter({
@@ -16,16 +19,22 @@ export default function ExplorerCharacter({
   outfit = 'classic',
   character = 'explorer',
   helmet = true,
+  previewTarget = 'player',
+  onReady,
+  seatAtOrigin = false,
 }: {
   motion: RefObject<CharacterMotion>
   paused?: boolean
   reduced?: boolean
   outfit?: Outfit
-  character?: 'explorer' | 'pilot'
+  character?: CharacterId
   helmet?: boolean
+  previewTarget?: 'player' | 'wardrobe'
+  onReady?: () => void
+  seatAtOrigin?: boolean
 }) {
   const { scene, animations } = useGLTF(
-    `${import.meta.env.BASE_URL}models/characters/${character === 'pilot' ? 'pilot/pilot.glb' : outfit === 'classic' ? 'quaternius/explorer.glb' : 'wardrobe/explorer_wardrobe.glb?v=wardrobe-2'}`,
+    `${import.meta.env.BASE_URL}${character === 'explorer' && outfit === 'classic' ? 'models/characters/quaternius/explorer.glb' : characterInfo(character).model}`,
   )
   const asset = useMemo(() => {
     const actor = clone(scene),
@@ -41,6 +50,7 @@ export default function ExplorerCharacter({
       geometry.dispose()
       const convert = (source: T.Material) => {
         const old = source as T.MeshStandardMaterial
+        const visor = /visor transparente/i.test(source.name)
         const color =
           character === 'explorer' && outfit === 'classic' && source.name === 'Shirt'
             ? '#e6e5d0'
@@ -56,9 +66,9 @@ export default function ExplorerCharacter({
           map: old.map,
           gradientMap: toon('#e6e5d0').gradientMap,
           side: old.side,
-          transparent: old.transparent,
-          opacity: old.opacity,
-          depthWrite: !old.transparent,
+          transparent: visor || old.transparent,
+          opacity: visor ? 0.12 : old.opacity,
+          depthWrite: !(visor || old.transparent),
           alphaTest: old.alphaTest,
         })
       }
@@ -115,35 +125,35 @@ export default function ExplorerCharacter({
     root.add(actor)
     root.scale.setScalar(scale)
     root.position.set(-center.x * scale, -bounds.min.y * scale, -center.z * scale)
-    const mixer = new T.AnimationMixer(actor),
-      actions: Record<string, T.AnimationAction> = {}
-    for (const source of animations) {
-      const clip = source.clone()
-      const action = mixer.clipAction(clip)
-      if (!['Idle', 'Walk', 'Run'].includes(clip.name)) {
-        action.setLoop(T.LoopOnce, 1)
-        action.clampWhenFinished = true
-      }
-      actions[clip.name] = action
+    return {
+      root,
+      actor,
+      origin: root.position.clone(),
+      hips: actor.getObjectByName('Hips'),
+      seatOffset: new T.Vector3(),
+      ...createCharacterPlayback(actor, animations),
     }
-    return { root, actor, mixer, actions }
-  }, [scene, animations])
+  }, [scene, animations, character, outfit === 'classic'])
   useEffect(() => {
     asset.actor.traverse((n) => {
       if (n.userData.wardrobe)
         n.visible = wardrobeVisible(
           n.userData.wardrobe,
-          character === 'pilot' && outfit === 'classic' ? 'original' : outfit,
+          character !== 'explorer' && outfit === 'classic' ? 'formal' : outfit,
           helmet,
         )
     })
-  }, [asset, outfit, helmet, character])
+    onReady?.()
+  }, [asset, outfit, helmet, character, onReady])
   const active = useRef<T.AnimationAction | null>(null),
     phase = useRef(''),
     preview = useRef<string | null>(null)
   useEffect(() => {
     const perform = (event: Event) => {
-      const name = (event as CustomEvent<string>).detail
+      const detail = (event as CustomEvent<string | { name: string; target: string }>).detail
+      const name = typeof detail === 'string' ? detail : detail.name
+      const target = typeof detail === 'string' ? 'player' : detail.target
+      if (target !== previewTarget) return
       if (
         ['PickUp', 'Punch', 'RecieveHit', 'ReceiveHit', 'Saludar', 'MirarAlrededor'].includes(
           name,
@@ -158,9 +168,9 @@ export default function ExplorerCharacter({
     return () => {
       window.removeEventListener('selene-avatar-preview', perform)
       try {
-        asset.mixer.stopAllAction()
+        asset.stop()
       } catch {
-        /* no-op */
+        /* Already released during a StrictMode effect replay. */
       }
       const geometries = new Set<T.BufferGeometry>(),
         materials = new Set<T.Material>()
@@ -175,7 +185,7 @@ export default function ExplorerCharacter({
       active.current = null
       phase.current = ''
     }
-  }, [asset])
+  }, [asset, previewTarget])
   useFrame((_, rawDelta) => {
     if (paused) return
     const dt = Math.min(rawDelta, 0.05),
@@ -225,8 +235,15 @@ export default function ExplorerCharacter({
     try {
       asset.mixer.update(dt)
     } catch {
-      /* ignore */
+      /* Ignore a mixer already released during a scene transition. */
     }
+    alignSeatedPose(
+      asset.root,
+      asset.hips,
+      asset.origin,
+      seatAtOrigin && state.clip === 'Sit_Idle',
+      asset.seatOffset,
+    )
     if (preview.current && action.time >= action.getClip().duration) {
       preview.current = null
       phase.current = ''
