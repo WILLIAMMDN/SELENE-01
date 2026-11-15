@@ -76,14 +76,17 @@ function Model({ building }: { building: Building }) {
     `${import.meta.env.BASE_URL}models/artemisa/${building.id}.glb?v=basepri-interiors-2`,
   )
   const actor = useMemo(() => template(scene).clone(true), [scene])
+  const cover = useMemo(() => actor.getObjectByName('Cover'), [actor])
+  const doors = useMemo(
+    () => building.doors.map((door) => ({ door, object: actor.getObjectByName(door.name) })),
+    [actor, building],
+  )
   useFrame((_, dt) => {
-    const cover = actor.getObjectByName('Cover')
     if (cover)
       cover.visible = !(
         occupant.active && buildingAt(occupant.x, occupant.z, occupant.earth) === building.id
       )
-    for (const door of building.doors) {
-      const object = actor.getObjectByName(door.name)
+    for (const { door, object } of doors) {
       if (!object) continue
       if (building.id === 'airlock' && door.z < 0) {
         object.visible = false

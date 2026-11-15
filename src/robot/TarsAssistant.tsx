@@ -1,3 +1,4 @@
+import { requestTarsAction } from './tarsAnimations'
 import { missionGuidance } from '../game/missionGuidance'
 import MissionChecklist from '../ui/campaign/MissionChecklist'
 import { useBlueprint } from '../game/state/blueprintStore'
@@ -115,6 +116,13 @@ export default function TarsAssistant({
           </button>
         </div>
       )}
+      <details>
+        <summary>Movimientos de tu compañero</summary>
+        <div className="tars-topics">
+          <button onClick={() => requestTarsAction('jump')}>Saltar</button>
+          <button onClick={() => requestTarsAction('action')}>Movimiento adicional</button>
+        </div>
+      </details>
       <form onSubmit={submit}>
         <label htmlFor="tars-question">¿Qué quieres saber?</label>
         <div className="tars-input">

@@ -1,3 +1,4 @@
+import { FollowerRoute, lineClear } from './followerRoute'
 import {
   Component,
   Suspense,
@@ -12,14 +13,27 @@ import { useFrame } from '@react-three/fiber'
 import * as T from 'three'
 import { clone } from 'three/addons/utils/SkeletonUtils.js'
 import { Solid, toon } from '../world/ArtKit'
+import type { CharacterMotion } from '../world/characterMotion'
+import { moveWithCollisions } from '../world/navigation/collision'
+import {
+  TARS_ACTION_EVENT,
+  tarsClipName,
+  type TarsLocomotion,
+  type TarsMotion,
+  type TarsRequest,
+} from './tarsAnimations'
 import { HUMAN_SCALE, MOTION_SCALE } from '../world/physicalScale'
 
 export const TARS_MODEL_URL = `${import.meta.env.BASE_URL}models/companions/tars_selene01.glb?v=tars01-2`
 export type CrewId = 'crew-1' | 'crew-2' | 'crew-3' | 'crew-4'
-export type CrewTarget = { id: CrewId; body: RefObject<T.Group | null> }
+export type CrewTarget = {
+  id: CrewId
+  body: RefObject<T.Group | null>
+  motion?: RefObject<CharacterMotion>
+}
 
 // Fallback used only while loading or if a replacement asset cannot be displayed.
-type Motion = 'idle' | 'walk' | 'run'
+type Motion = TarsLocomotion
 function Proxy() {
   return (
     <group position={[0, 0.55, 0]} scale={0.7}>
@@ -40,7 +54,15 @@ function Proxy() {
     </group>
   )
 }
-function Model({ motion, reduced }: { motion: RefObject<Motion>; reduced: boolean }) {
+function Model({
+  motion,
+  request,
+  reduced,
+}: {
+  motion: RefObject<Motion>
+  request: RefObject<TarsRequest>
+  reduced: boolean
+}) {
   const { scene, animations } = useGLTF(TARS_MODEL_URL)
   const model = useMemo(() => {
     const object = clone(scene)
@@ -86,12 +108,12 @@ function Model({ motion, reduced }: { motion: RefObject<Motion>; reduced: boolea
   const playback = useMemo(() => {
     if (!model) return null
     const mixer = new T.AnimationMixer(model)
-    const actions: Partial<Record<Motion, T.AnimationAction>> = {}
-    for (const [motionName, clipName] of Object.entries({
-      idle: 'TARS_Idle',
-      walk: 'TARS_Walk',
-      run: 'TARS_Run_Wheel',
-    })) {
+    const actions: Partial<Record<TarsMotion, T.AnimationAction>> = {}
+    for (const motionName of ['idle', 'walk', 'run', 'jump', 'action'] as const) {
+      const clipName = tarsClipName(
+        animations.map((clip) => clip.name),
+        motionName,
+      )
       const original = animations.find((clip) => clip.name === clipName)
       if (!original) continue
       const clip = original.clone()
@@ -106,25 +128,42 @@ function Model({ motion, reduced }: { motion: RefObject<Motion>; reduced: boolea
           }
         }
       }
-      actions[motionName as Motion] = mixer.clipAction(clip)
+      const action = mixer.clipAction(clip)
+      if (motionName === 'jump' || motionName === 'action') {
+        action.setLoop(T.LoopOnce, 1)
+        action.clampWhenFinished = true
+      }
+      actions[motionName] = action
     }
     return { mixer, actions }
   }, [model, animations])
-  const active = useRef<T.AnimationAction | null>(null)
+  const active = useRef<T.AnimationAction | null>(null),
+    consumed = useRef(0),
+    oneShot = useRef<T.AnimationAction | null>(null)
   useEffect(
     () => () => {
       if (playback && model) {
         playback.mixer.stopAllAction()
       }
       active.current = null
+      oneShot.current = null
     },
     [playback, model],
   )
   useFrame((_, delta) => {
     if (!playback) return
-    const next = playback.actions[motion.current] ?? playback.actions.idle
-    if (next && active.current !== next) {
-      if (reduced && motion.current === 'idle') {
+    let restart = false
+    if (request.current.serial !== consumed.current) {
+      consumed.current = request.current.serial
+      oneShot.current = playback.actions[request.current.kind] ?? null
+      restart = !!oneShot.current
+    } else if (oneShot.current && !oneShot.current.isRunning()) {
+      oneShot.current = null
+    }
+    const next = oneShot.current ?? playback.actions[motion.current] ?? playback.actions.idle
+    const freeze = reduced && motion.current === 'idle' && !oneShot.current
+    if (next && (active.current !== next || restart)) {
+      if (freeze) {
         active.current?.stop()
         next.reset().stopFading().setEffectiveWeight(1).play()
         playback.mixer.update(0)
@@ -134,7 +173,7 @@ function Model({ motion, reduced }: { motion: RefObject<Motion>; reduced: boolea
       }
       active.current = next
     }
-    if (!(reduced && motion.current === 'idle')) playback.mixer.update(Math.min(delta, 0.05))
+    if (!freeze) playback.mixer.update(Math.min(delta, 0.05))
   })
   return model ? <primitive object={model} dispose={null} /> : <Proxy />
 }
@@ -163,7 +202,20 @@ function Follower({
     next = useRef(new T.Vector3()),
     lastPlayer = useRef(new T.Vector3()),
     initialized = useRef(false),
-    motion = useRef<Motion>('idle')
+    motion = useRef<Motion>('idle'),
+    request = useRef<TarsRequest>({ serial: 0, kind: 'jump' }),
+    jumping = useRef(false),
+    route = useRef(new FollowerRoute())
+  useEffect(() => {
+    const command = (event: Event) => {
+      const detail = (event as CustomEvent).detail
+      if (detail?.crewId === target.id && (detail.kind === 'jump' || detail.kind === 'action')) {
+        request.current = { serial: request.current.serial + 1, kind: detail.kind }
+      }
+    }
+    window.addEventListener(TARS_ACTION_EVENT, command)
+    return () => window.removeEventListener(TARS_ACTION_EVENT, command)
+  }, [target.id])
   useFrame((_, rawDelta) => {
     const player = target.body.current,
       body = ref.current
@@ -174,27 +226,47 @@ function Follower({
     const travelled = initialized.current
       ? Math.hypot(p.x - lastPlayer.current.x, p.z - lastPlayer.current.z)
       : 0
-    const speed = travelled / Math.max(delta, 0.001)
-    motion.current =
-      travelled > 3
-        ? 'idle'
-        : speed > (MOTION_SCALE.walk + MOTION_SCALE.run) / 2
-          ? 'run'
-          : speed > 0.12
-            ? 'walk'
-            : 'idle'
+    const inJump =
+      target.motion?.current.phase === 'takeoff' || target.motion?.current.phase === 'air'
+    if (inJump && !jumping.current)
+      request.current = { serial: request.current.serial + 1, kind: 'jump' }
+    jumping.current = inJump
     lastPlayer.current.copy(p)
-    initialized.current = true
     let x = p.x + Math.cos(a) * 1.8 - Math.sin(a) * 0.6,
       z = p.z - Math.sin(a) * 1.8 - Math.cos(a) * 0.6
-    if (!canWalk(x, z)) {
+    if (
+      !canWalk(x, z) ||
+      ((!initialized.current || travelled > 3) && !lineClear(p, { x, z }, canWalk))
+    ) {
       x = p.x
       z = p.z
     }
     const clearance = 0.015
     next.current.set(x, height(x, z) + clearance, z)
-    if (body.position.distanceToSquared(next.current) > 400) body.position.copy(next.current)
-    else body.position.lerp(next.current, 1 - Math.exp(-delta * 5))
+    const beforeX = body.position.x,
+      beforeZ = body.position.z
+    // Only fast-travel may relocate the companion. Normal following sweeps walls and furniture.
+    const relocated = !initialized.current || travelled > 3
+    if (relocated && canWalk(x, z)) {
+      body.position.copy(next.current)
+      route.current.reset(p)
+    } else {
+      const goal = route.current.target(body.position, p, next.current, canWalk)
+      const distance = Math.hypot(goal.x - body.position.x, goal.z - body.position.z)
+      const blend = Math.min(1 - Math.exp(-delta * 5), (9 * delta) / Math.max(distance, 0.001))
+      moveWithCollisions(
+        body.position,
+        (goal.x - body.position.x) * blend,
+        (goal.z - body.position.z) * blend,
+        canWalk,
+      )
+    }
+    initialized.current = true
+    const speed = relocated
+      ? 0
+      : Math.hypot(body.position.x - beforeX, body.position.z - beforeZ) / Math.max(delta, 0.001)
+    motion.current =
+      speed > (MOTION_SCALE.walk + MOTION_SCALE.run) / 2 ? 'run' : speed > 0.12 ? 'walk' : 'idle'
     body.position.y = height(body.position.x, body.position.z) + clearance
     const diff = Math.atan2(Math.sin(a - body.rotation.y), Math.cos(a - body.rotation.y))
     body.rotation.y += diff * Math.min(1, delta * 7)
@@ -203,7 +275,7 @@ function Follower({
     <group ref={ref} name={`tars-${target.id}`} userData={{ crewId: target.id }}>
       <ModelBoundary>
         <Suspense fallback={<Proxy />}>
-          <Model motion={motion} reduced={reduced} />
+          <Model motion={motion} request={request} reduced={reduced} />
         </Suspense>
       </ModelBoundary>
     </group>

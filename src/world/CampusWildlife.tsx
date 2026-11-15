@@ -85,13 +85,23 @@ function Animal({
   useEffect(
     () => () => {
       asset.mixer.stopAllAction()
-      asset.mixer.uncacheRoot(asset.root)
+      last.current = ''
+      active.current = null
     },
     [asset],
   )
-  useFrame((_, raw) => {
+  const accumulated = useRef(0)
+  useFrame((frame, raw) => {
     if (paused || reduced) return
-    const dt = Math.min(raw, 0.05)
+    const distance = Math.hypot(
+      frame.camera.position.x - animal.x,
+      frame.camera.position.z - animal.z,
+    )
+    if (distance > 130) return
+    accumulated.current += Math.min(raw, 0.05)
+    if (distance > 40 && accumulated.current < 1 / 15) return
+    const dt = accumulated.current
+    accumulated.current = 0
     time.current += dt
     const t = time.current,
       near = Math.hypot(occupant.x - animal.x, occupant.z - animal.z) < 3.5

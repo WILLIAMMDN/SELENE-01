@@ -1,3 +1,4 @@
+import { moveWithCollisions } from '../navigation/collision'
 import { useEffect, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
@@ -14,7 +15,8 @@ import { CHARACTER_KEYS, createCharacterMotion, stepCharacter } from '../charact
 import type { ViewMode } from '../worldData'
 import type { SceneProps } from './types'
 
-const lookTarget = new T.Vector3(),
+const upAxis = new T.Vector3(0, 1, 0),
+  lookTarget = new T.Vector3(),
   camTarget = new T.Vector3(),
   mapTarget = new T.Vector3(0, 22, -8)
 export default function PlayerRig({
@@ -193,8 +195,7 @@ export default function PlayerRig({
         const yaw = input.current.yaw,
           wx = dx * Math.cos(yaw) + dz * Math.sin(yaw),
           wz = -dx * Math.sin(yaw) + dz * Math.cos(yaw)
-        if (canWalk(p.x + wx * distance, p.z)) p.x += wx * distance
-        if (canWalk(p.x, p.z + wz * distance)) p.z += wz * distance
+        moveWithCollisions(p, wx * distance, wz * distance, canWalk)
         p.y = groundHeight(p.x, p.z)
         phase.current += delta * (k.has('ShiftLeft') || k.has('ShiftRight') ? 9 : 5.5)
         if (player.current) {
@@ -214,10 +215,7 @@ export default function PlayerRig({
     if (player.current) player.current.position.copy(p)
     if (mode === 'walk' && roberRemote.current) {
       const rover = roberRemote.current
-      camTarget
-        .set(0, 4.5, -8)
-        .applyAxisAngle(new T.Vector3(0, 1, 0), rover.rotation.y)
-        .add(rover.position)
+      camTarget.set(0, 4.5, -8).applyAxisAngle(upAxis, rover.rotation.y).add(rover.position)
       camera.position.lerp(camTarget, 1 - Math.exp(-delta * 5))
       camera.lookAt(rover.position.x, rover.position.y + 1, rover.position.z)
     } else if (mode === 'walk') {
@@ -278,7 +276,7 @@ export default function PlayerRig({
         )}
       </group>
       <TarsCompanions
-        targets={[{ id: 'crew-1', body: player }]}
+        targets={[{ id: 'crew-1', body: player, motion }]}
         height={groundHeight}
         canWalk={canWalk}
         reduced={reduced}

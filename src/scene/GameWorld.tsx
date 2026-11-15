@@ -1,3 +1,4 @@
+import AdaptiveResolution from '../world/performance/AdaptiveResolution'
 import { bindCharacterKeyboard } from '../world/controls/keyboard'
 import LaunchComplex from '../spacecraft/LaunchComplex'
 import { walkingHeight, stationAt, occupant, buildingAt } from '../world/buildingNavigation'
@@ -113,7 +114,7 @@ function Campus({
         <ExplorerCharacter motion={motion} />
       </group>
       <TarsCompanions
-        targets={[{ id: 'crew-1', body: player }]}
+        targets={[{ id: 'crew-1', body: player, motion }]}
         height={groundHeight}
         canWalk={canWalk}
       />
@@ -223,6 +224,7 @@ export default function GameWorld({
         ) : (
           <ShipStage key={mode} mode={mode} parts={parts} config={config} exploded={exploded} />
         )}
+        <AdaptiveResolution maximum={1.6} />
       </Canvas>
       {mode === 'campus' && <CharacterActions controls={controls} />}
       <div className="world-overlay">

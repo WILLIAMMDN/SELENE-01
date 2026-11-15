@@ -1,3 +1,4 @@
+import AdaptiveResolution from './performance/AdaptiveResolution'
 import { Canvas } from '@react-three/fiber'
 import { Component, memo, Suspense, useEffect, type ReactNode } from 'react'
 import Environment from './Environment'
@@ -80,6 +81,7 @@ export default memo(function ExplorerScene(
           )}
           <PlayerRig {...props} />
           <SceneReady onReady={props.onReady} />
+          <AdaptiveResolution enabled={props.quality === 'standard'} />
         </Suspense>
       </Canvas>
     </SceneBoundary>
