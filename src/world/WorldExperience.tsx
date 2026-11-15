@@ -160,7 +160,7 @@ function WorldExperience({
           ? {
               speaker: 'TARS · ARES',
               lines: [
-                'Ares es nuestro terreno de exploración. La primera misión de diseño comienza en Artemisa, en la Tierra.',
+                'Ares es un paisaje de entrenamiento. Abre la bitácora para formular una pregunta marciana desde la Tierra y elegir una observación orbital inspirada en Mars Reconnaissance Orbiter.',
               ],
               action: 'Ver estación',
               sector: id,
@@ -574,9 +574,9 @@ function WorldExperience({
             </span>
             <strong>
               {moon
-                ? 'Prospección de recursos'
+                ? 'Ejercicio de superficie'
                 : offworld
-                  ? 'Explora el paisaje'
+                  ? 'Reconocimiento marciano'
                   : objectiveNames[next.sector]}
             </strong>
             <small>
@@ -588,9 +588,9 @@ function WorldExperience({
                       ? 'Transmite el resultado desde la bitácora'
                       : lunarSamples.includes('hielo')
                         ? 'Lleva la muestra a LAB-L01'
-                        : 'Recoge hielo en la estación 01'
+                        : 'Recoge la muestra simulada en la estación 01'
                   : offworld
-                    ? 'Explora el paisaje'
+                    ? 'Abre la bitácora para comenzar'
                     : guideEnabled && mode === 'walk' && activeGuide
                       ? activeGuide.arrived
                         ? activeGuide.hint

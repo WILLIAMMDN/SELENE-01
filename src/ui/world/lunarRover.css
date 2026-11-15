@@ -46,7 +46,16 @@
   gap: 14px;
   flex-wrap: wrap;
   width: max-content;
+  box-shadow: 3px 4px 0 #52656b;
+  border: 1.5px solid #52656b;
+  border-radius: 2px;
 }
+.lunar-rover-hud .rover-speed { border-right: 1px solid #aab9ae; padding-right: 12px; white-space: nowrap; }
+.lunar-rover-hud .rover-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; font-size: 11px; }
+.lunar-rover-hud .rover-controls kbd { margin-left: 6px; }
+.lunar-rover-hud .rover-controls kbd:first-child { margin-left: 0; }
+.lunar-rover-hud button { background: #56878b; color: #fffdf3; border: 1px solid #405e62; padding: 7px 9px; }
+@media (max-width: 700px) { .lunar-rover-hud .rover-controls { display: none; } }
 .lunar-rover-hud strong {
   font-size: 20px;
   font-variant-numeric: tabular-nums;

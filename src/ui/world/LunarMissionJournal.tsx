@@ -73,13 +73,11 @@ export default function LunarMissionJournal({
           ? 'Envía el resultado de LAB-L01 a control de misión.'
           : !surveyDone
             ? `Prospección pendiente en ${nextResource?.name}.`
-            : !powerTested
-              ? 'Despliega los paneles PWR-L01 para comprobar energía.'
-              : !telemetryTested
-                ? 'Envía el registro de prueba a control de misión.'
-                : !traversed
-                  ? `Conduce ${LUNAR_TRAVERSE_DISTANCE} m en una salida y baja del rover.`
-                  : 'Informe de superficie completo. El retorno de la roca es opcional.'
+            : !telemetryTested
+              ? 'Envía el registro de prueba a control de misión.'
+              : !traversed
+                ? `Conduce ${LUNAR_TRAVERSE_DISTANCE} m en una salida y baja del rover.`
+                : 'Informe de superficie completo. El retorno de la roca es opcional.'
 
   // Tab activo: 'missions' (5 misiones operativas) o 'simulator' (Simulador de Compensaciones NASA)
   const [tab, setTab] = useState<'missions' | 'simulator'>('missions')
@@ -271,9 +269,39 @@ export default function LunarMissionJournal({
         Prospección simulada
       </h2>
       <p style={{ margin: '0 0 14px', fontSize: 13, color: '#4a6064' }}>
-        <strong>Escenario ficticio del polo sur lunar.</strong> Investiga qué recursos podrían
-        abastecer una base, prueba sus sistemas y entrega un informe de operaciones de superficie.
-        El encargo principal de ODYSSEY sigue siendo un orbitador no tripulado.
+        <strong>Ejercicio ficticio del polo sur lunar.</strong> La campaña comienza en la Tierra:
+        diseñas un orbitador no tripulado, recuperas observaciones y preparas un informe. Aquí
+        ensayas qué verificaciones de superficie podrían seguir a esas observaciones. Esta base y
+        sus depósitos son ficticios; ODYSSEY no aterriza ni lleva tripulación.
+      </p>
+      <div className="lunar-science-brief" aria-label="Secuencia científica">
+        <div>
+          <span>01 · TIERRA</span>
+          <strong>Define la pregunta y diseña el orbitador.</strong>
+        </div>
+        <div>
+          <span>02 · ÓRBITA</span>
+          <strong>Recupera datos y distingue indicios de hallazgos.</strong>
+        </div>
+        <div>
+          <span>03 · CAMPO SIMULADO</span>
+          <strong>Recoge, analiza y transmite una muestra de práctica.</strong>
+        </div>
+      </div>
+      <p className="lunar-source-note">
+        NASA documenta hielo en algunas regiones polares permanentemente sombreadas, con
+        distribución desigual. Una señal orbital no identifica por sí sola un depósito extraíble en
+        este lugar ficticio.{' '}
+        <a
+          href="https://science.nasa.gov/moon/moon-water-and-ices/"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Agua y hielos lunares · NASA ↗
+        </a>{' '}
+        <a href="https://science.nasa.gov/mission/lcross/" target="_blank" rel="noreferrer">
+          Evidencia de LCROSS · NASA ↗
+        </a>
       </p>
 
       {/* Selector de pestañas */}

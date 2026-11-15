@@ -164,8 +164,9 @@ export class RoverLunarController {
           ? 5.5
           : 3.2
     this.speed = approach(this.speed, target, rate * dt)
-    // Correct steering sign: pressing A/Left turns Left, D/Right turns Right
-    this.steering = approach(this.steering, (this.input.steer * Math.PI) / 6, dt * 2.4)
+    // The rover faces +Z. From the chase camera behind it, screen-right is -X,
+    // so a right input must produce a negative yaw in Three.js coordinates.
+    this.steering = approach(this.steering, (-this.input.steer * Math.PI) / 6, dt * 2.4)
     const ds = (oldSpeed + this.speed) * 0.5 * dt
     const curvature = Math.tan(this.steering) / 2.3
     const dyaw = ds * curvature,

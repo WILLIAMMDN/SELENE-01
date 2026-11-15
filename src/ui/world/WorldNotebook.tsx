@@ -21,6 +21,7 @@ import CampusMap from './CampusMap'
 import { OBJECTIVE_NAMES, type Panel } from './worldUiTypes'
 import LunarInventory from './LunarInventory'
 import LunarMissionJournal from './LunarMissionJournal'
+import MarsFieldJournal from './MarsFieldJournal'
 
 type Props = {
   panel: Exclude<Panel, null>
@@ -254,6 +255,8 @@ export default function WorldNotebook({
               onConversation={onConversation}
               onTravelPoint={onTravelPoint}
             />
+          ) : mars ? (
+            <MarsFieldJournal />
           ) : (
             <>
               <span className="paper-kicker">BITÁCORA DE MISIÓN</span>

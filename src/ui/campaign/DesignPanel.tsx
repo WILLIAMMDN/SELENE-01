@@ -1,6 +1,5 @@
 import type { MissionController } from '../../game/hooks/useMissionController'
 import { MODULES, COMPLETE_ASSEMBLY } from '../../spacecraft/assembly'
-import DestinationPicker from './DestinationPicker'
 import {
   INSTRUMENTS,
   ORBITS,
@@ -15,8 +14,6 @@ export default function DesignPanel({ controller }: { controller: MissionControl
     exploded,
     setExploded,
     config,
-    destination,
-    setDestination,
     toggleInstrument,
     assemble,
     updateConfig,
@@ -26,14 +23,27 @@ export default function DesignPanel({ controller }: { controller: MissionControl
   } = controller
   return (
     <>
-      <span className="eyebrow">CUADERNO DE MISIÓN / 02 · DISEÑO</span>
-      <h1>
-        Diseña <em>ODYSSEY.</em>
-      </h1>
-      <p>
-        Cada elemento debe servir al encargo. Revisa cómo una elección cambia también la masa, la
-        potencia, los datos diarios y el presupuesto.
-      </p>
+      <div className="design-intro">
+        <span className="eyebrow">CUADERNO DE MISIÓN / 02 · DISEÑO</span>
+        <h1>
+          Diseña <em>ODYSSEY.</em>
+        </h1>
+        <p>
+          Prepara un orbitador lunar no tripulado. Monta sus sistemas, elige instrumentos para tu
+          pregunta y comprueba los recursos antes del lanzamiento.
+        </p>
+        <ol className="design-route" aria-label="Pasos de diseño">
+          <li>
+            <span>01</span> Monta la nave
+          </li>
+          <li>
+            <span>02</span> Elige instrumentos
+          </li>
+          <li>
+            <span>03</span> Ajusta la misión
+          </li>
+        </ol>
+      </div>
       {guidance.objective && (
         <div className="evidence-card">
           <span className="evidence-label">PREGUNTA ELEGIDA · {guidance.objective.name}</span>
@@ -42,15 +52,20 @@ export default function DesignPanel({ controller }: { controller: MissionControl
           </p>
           <p>{guidance.objective.nasaContext}</p>
           <p className="simulation-note">{guidance.objective.interpretation}</p>
+          <p className="design-requirement">
+            <strong>Necesitas:</strong> {guidance.objective.requirement}
+          </p>
           <a href={guidance.objective.source} target="_blank" rel="noopener noreferrer">
             {guidance.objective.sourceLabel} ↗
           </a>
         </div>
       )}
-      <DestinationPicker value={destination} onChange={setDestination} />
       <div className="odyssey-assembly">
         <div className="assembly-heading">
-          <h2>Ensamblaje de la nave</h2>
+          <div className="design-step-heading">
+            <span>01</span>
+            <h2>Ensamblaje de la nave</h2>
+          </div>
           <span>
             {assembly.length} / {COMPLETE_ASSEMBLY.length} conjuntos
           </span>
@@ -103,92 +118,106 @@ export default function DesignPanel({ controller }: { controller: MissionControl
           instalarlo no convierte este encargo orbital en una misión tripulada.
         </p>
       </div>
-      <h2>Instrumentos científicos</h2>
-      <p className="small-note">
-        Instrumentos simplificados de ODYSSEY. Las cifras siguientes son valores del juego, no
-        especificaciones de los instrumentos NASA citados.
-      </p>
-      <div className="select-list">
-        {INSTRUMENTS.map((item) => (
-          <label className="select-card" key={item.id}>
-            <input
-              type="checkbox"
-              checked={config.instruments.includes(item.id)}
-              onChange={() => toggleInstrument(item.id)}
-            />
-            <span>
-              <strong>{item.name}</strong>
-              <small>
-                {item.benefit} · {item.massKg} kg · {item.watts} W · {item.dataGb} GB/día
-              </small>
-            </span>
-          </label>
-        ))}
-      </div>
-      <h2>Órbita prevista</h2>
-      <select
-        value={config.orbit}
-        onChange={(e) => updateConfig({ orbit: e.target.value as DesignConfig['orbit'] })}
-        aria-label="Tipo de órbita"
-      >
-        {ORBITS.map((option) => (
-          <option key={option.id} value={option.id}>
-            {option.name}
-          </option>
-        ))}
-      </select>
-      <p className="field-help">{ORBITS.find((o) => o.id === config.orbit)?.description}</p>
-      <p className="small-note">
-        Estas opciones representan cobertura y enlace de forma cualitativa; no calculan trayectorias
-        orbitales.
-      </p>
-      <h2>Vehículo de lanzamiento</h2>
-      <select
-        aria-label="Vehículo de lanzamiento"
-        value={config.launcher}
-        onChange={(e) => updateConfig({ launcher: e.target.value as DesignConfig['launcher'] })}
-      >
-        {LAUNCHERS.map((option) => (
-          <option key={option.id} value={option.id}>
-            {option.name} · {option.maxMass} kg
-          </option>
-        ))}
-      </select>
-      <h2>Duración de la misión</h2>
-      <select
-        aria-label="Duración de la misión"
-        value={config.durationDays ?? 90}
-        onChange={(e) => updateConfig({ durationDays: Number(e.target.value) as 30 | 90 | 180 })}
-      >
-        {MISSION_DURATIONS.map((d) => (
-          <option key={d.days} value={d.days}>
-            {d.name} · operaciones +{d.cost} M USD
-          </option>
-        ))}
-      </select>
-      <p className="field-help">
-        Una campaña larga amplía la oportunidad científica y consume más presupuesto y reservas. 180
-        días requiere paneles adicionales. Parámetros educativos.
-      </p>
-      <h2>Mejoras de ingeniería</h2>
-      <label className="option-small">
-        <input
-          type="checkbox"
-          checked={config.solarUpgrade}
-          disabled={!assembly.includes('connectors')}
-          onChange={() => assemble('solar')}
-        />{' '}
-        Paneles solares adicionales (+170 W)
-      </label>
-      <label className="option-small">
-        <input
-          type="checkbox"
-          checked={config.commUpgrade}
-          disabled={!assembly.includes('habitat')}
-          onChange={() => assemble('antenna')}
-        />{' '}
-        Antena mejorada (+14 GB/día)
-      </label>
+      <section className="design-step" aria-labelledby="design-instruments-title">
+        <div className="design-step-heading">
+          <span>02</span>
+          <h2 id="design-instruments-title">Instrumentos científicos</h2>
+        </div>
+        <p className="small-note">
+          Instrumentos simplificados de ODYSSEY. Las cifras siguientes son valores del juego, no
+          especificaciones de los instrumentos NASA citados.
+        </p>
+        <div className="select-list">
+          {INSTRUMENTS.map((item) => (
+            <label className="select-card" key={item.id}>
+              <input
+                type="checkbox"
+                checked={config.instruments.includes(item.id)}
+                onChange={() => toggleInstrument(item.id)}
+              />
+              <span>
+                <strong>{item.name}</strong>
+                <small>
+                  {item.benefit} · {item.massKg} kg · {item.watts} W · {item.dataGb} GB/día
+                </small>
+              </span>
+            </label>
+          ))}
+        </div>
+      </section>
+      <section className="design-step" aria-labelledby="design-parameters-title">
+        <div className="design-step-heading">
+          <span>03</span>
+          <h2 id="design-parameters-title">Perfil de la misión</h2>
+        </div>
+        <p className="small-note">
+          Define la órbita, el lanzador y el tiempo de operación de este modelo educativo.
+        </p>
+        <h3>Órbita prevista</h3>
+        <select
+          value={config.orbit}
+          onChange={(e) => updateConfig({ orbit: e.target.value as DesignConfig['orbit'] })}
+          aria-label="Tipo de órbita"
+        >
+          {ORBITS.map((option) => (
+            <option key={option.id} value={option.id}>
+              {option.name}
+            </option>
+          ))}
+        </select>
+        <p className="field-help">{ORBITS.find((o) => o.id === config.orbit)?.description}</p>
+        <p className="small-note">
+          Estas opciones representan cobertura y enlace de forma cualitativa; no calculan
+          trayectorias orbitales.
+        </p>
+        <h3>Vehículo de lanzamiento</h3>
+        <select
+          aria-label="Vehículo de lanzamiento"
+          value={config.launcher}
+          onChange={(e) => updateConfig({ launcher: e.target.value as DesignConfig['launcher'] })}
+        >
+          {LAUNCHERS.map((option) => (
+            <option key={option.id} value={option.id}>
+              {option.name} · {option.maxMass} kg
+            </option>
+          ))}
+        </select>
+        <h3>Duración de la misión</h3>
+        <select
+          aria-label="Duración de la misión"
+          value={config.durationDays ?? 90}
+          onChange={(e) => updateConfig({ durationDays: Number(e.target.value) as 30 | 90 | 180 })}
+        >
+          {MISSION_DURATIONS.map((d) => (
+            <option key={d.days} value={d.days}>
+              {d.name} · operaciones +{d.cost} M USD
+            </option>
+          ))}
+        </select>
+        <p className="field-help">
+          Una campaña larga amplía la oportunidad científica y consume más presupuesto y reservas.
+          180 días requiere paneles adicionales. Parámetros educativos.
+        </p>
+        <h3>Mejoras de ingeniería</h3>
+        <label className="option-small">
+          <input
+            type="checkbox"
+            checked={config.solarUpgrade}
+            disabled={!assembly.includes('connectors')}
+            onChange={() => assemble('solar')}
+          />{' '}
+          Paneles solares adicionales (+170 W)
+        </label>
+        <label className="option-small">
+          <input
+            type="checkbox"
+            checked={config.commUpgrade}
+            disabled={!assembly.includes('habitat')}
+            onChange={() => assemble('antenna')}
+          />{' '}
+          Antena mejorada (+14 GB/día)
+        </label>
+      </section>
       <button
         className="action-primary"
         onClick={() => (campus ? onReturnToCampus?.() : go('launch'))}

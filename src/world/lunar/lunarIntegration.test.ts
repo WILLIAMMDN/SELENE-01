@@ -58,6 +58,20 @@ function rover() {
 }
 
 describe('boarding and driving the authored lunar rover', () => {
+  it('turns toward the pressed side of the chase camera', () => {
+    const right = rover()
+    const left = rover()
+    right.setInput({ throttle: 1, steer: 1 })
+    left.setInput({ throttle: 1, steer: -1 })
+    for (let i = 0; i < 45; i++) {
+      right.update(1 / 60)
+      left.update(1 / 60)
+    }
+    expect(right.vehicle.position.x).toBeLessThan(LUNAR_ROVER_HOME[0])
+    expect(left.vehicle.position.x).toBeGreaterThan(LUNAR_ROVER_HOME[0])
+    right.dispose()
+    left.dispose()
+  })
   it('boards nearby, drives with animated wheels and dust, and dismounts beside its current position', () => {
     const controller = rover(),
       player = new T.Vector3(55, lunarHeight(55, 63), 63)
@@ -68,8 +82,8 @@ describe('boarding and driving the authored lunar rover', () => {
     for (let i = 0; i < 120; i++) controller.update(1 / 60)
     expect(controller.distance).toBeGreaterThan(2)
     expect(controller.vehicle.getObjectByName('Wheel_FL')!.rotation.x).not.toBe(0)
-    expect(controller.vehicle.getObjectByName('Steering_FL')!.rotation.y).toBeGreaterThan(0)
-    expect(controller.vehicle.position.x).toBeGreaterThan(LUNAR_ROVER_HOME[0])
+    expect(controller.vehicle.getObjectByName('Steering_FL')!.rotation.y).toBeLessThan(0)
+    expect(controller.vehicle.position.x).toBeLessThan(LUNAR_ROVER_HOME[0])
     expect(controller.particleCount).toBeGreaterThan(0)
     expect(toggleLunarRover(mount, player)).toBe(true)
     expect(mount.driving).toBe(false)
