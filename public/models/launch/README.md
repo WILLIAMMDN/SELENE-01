@@ -1,0 +1,2 @@
+# Lanzador y plataforma ODYSSEY
+Origen: Juego NASA.rar, aportado por el usuario. Archivos originales sin modificación; los materiales, escala y acoplamiento se aplican en LaunchComplex.tsx. Modelo ficticio, no recurso oficial NASA. No se infiere una licencia de redistribución pública a partir de la entrega del archivo. Incluye cuatro clips del lanzador y uno de la plataforma. Detalles: docs/NASA_INTEGRATION.md.

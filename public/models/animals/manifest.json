@@ -1,0 +1,183 @@
+[
+  {
+    "id": "crab",
+    "clips": [
+      "Crab_claw_wave",
+      "Crab_idle",
+      "Crab_move",
+      "Crab_react",
+      "Crab_scared"
+    ],
+    "boundsXYZ": [
+      [
+        -0.17982012033462524,
+        -0.31832149624824524,
+        0.006700246594846249
+      ],
+      [
+        0.2518768608570099,
+        0.08758467435836792,
+        0.20180422067642212
+      ]
+    ]
+  },
+  {
+    "id": "dolphin",
+    "clips": [
+      "Dolphin_idle",
+      "Dolphin_jump",
+      "Dolphin_move",
+      "Dolphin_react",
+      "Dolphin_scared",
+      "Dolphin_spin"
+    ],
+    "boundsXYZ": [
+      [
+        -0.5171404480934143,
+        -1.2150559425354004,
+        -0.36000001430511475
+      ],
+      [
+        0.5171405076980591,
+        1.429459571838379,
+        0.6046867966651917
+      ]
+    ]
+  },
+  {
+    "id": "egret",
+    "clips": [
+      "Egret_flap",
+      "Egret_idle",
+      "Egret_move",
+      "Egret_preen",
+      "Egret_react",
+      "Egret_scared"
+    ],
+    "boundsXYZ": [
+      [
+        -0.2503800690174103,
+        -0.7075320482254028,
+        -0.004928202833980322
+      ],
+      [
+        0.2503800690174103,
+        0.5353855490684509,
+        1.4860612154006958
+      ]
+    ]
+  },
+  {
+    "id": "gator",
+    "clips": [
+      "Gator_idle",
+      "Gator_move",
+      "Gator_react",
+      "Gator_scared",
+      "Gator_snap"
+    ],
+    "boundsXYZ": [
+      [
+        -0.43366026878356934,
+        -1.5554982423782349,
+        -0.003660308662801981
+      ],
+      [
+        0.43366026878356934,
+        2.247194528579712,
+        0.5547087788581848
+      ]
+    ]
+  },
+  {
+    "id": "manatee",
+    "clips": [
+      "Manatee_barrel",
+      "Manatee_idle",
+      "Manatee_move",
+      "Manatee_react",
+      "Manatee_scared"
+    ],
+    "boundsXYZ": [
+      [
+        -0.6482095718383789,
+        -1.1451356410980225,
+        0.1300000101327896
+      ],
+      [
+        0.6482096314430237,
+        1.4885936975479126,
+        0.9700000286102295
+      ]
+    ]
+  },
+  {
+    "id": "pelican",
+    "clips": [
+      "Pelican_flap",
+      "Pelican_idle",
+      "Pelican_move",
+      "Pelican_preen",
+      "Pelican_react",
+      "Pelican_scared"
+    ],
+    "boundsXYZ": [
+      [
+        -0.2503800690174103,
+        -0.9078126549720764,
+        -0.004928202833980322
+      ],
+      [
+        0.2503800690174103,
+        0.5353854894638062,
+        1.0161415338516235
+      ]
+    ]
+  },
+  {
+    "id": "spoonbill",
+    "clips": [
+      "Spoonbill_flap",
+      "Spoonbill_idle",
+      "Spoonbill_move",
+      "Spoonbill_preen",
+      "Spoonbill_react",
+      "Spoonbill_scared"
+    ],
+    "boundsXYZ": [
+      [
+        -0.2503800690174103,
+        -0.848201334476471,
+        -0.004928202833980322
+      ],
+      [
+        0.2503800690174103,
+        0.5353855490684509,
+        1.2361558675765991
+      ]
+    ]
+  },
+  {
+    "id": "turtle",
+    "clips": [
+      "Turtle_idle",
+      "Turtle_move",
+      "Turtle_react",
+      "Turtle_scared",
+      "Turtle_spin",
+      "Turtle_swim"
+    ],
+    "boundsXYZ": [
+      [
+        -0.7326495051383972,
+        -0.6177084445953369,
+        0.037999995052814484
+      ],
+      [
+        0.7326495051383972,
+        0.5366920232772827,
+        0.4020000100135803
+      ]
+    ]
+  }
+]
