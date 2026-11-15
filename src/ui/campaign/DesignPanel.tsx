@@ -34,33 +34,40 @@ export default function DesignPanel({ controller }: { controller: MissionControl
         </p>
         <ol className="design-route" aria-label="Pasos de diseño">
           <li>
-            <span>01</span> Monta la nave
+            <a href="#design-assembly">
+              <span>01</span> Monta la nave
+            </a>
           </li>
           <li>
-            <span>02</span> Elige instrumentos
+            <a href="#design-instruments">
+              <span>02</span> Elige instrumentos
+            </a>
           </li>
           <li>
-            <span>03</span> Ajusta la misión
+            <a href="#design-parameters">
+              <span>03</span> Ajusta la misión
+            </a>
           </li>
         </ol>
       </div>
       {guidance.objective && (
-        <div className="evidence-card">
-          <span className="evidence-label">PREGUNTA ELEGIDA · {guidance.objective.name}</span>
-          <p>
-            <strong>{guidance.objective.question}</strong>
-          </p>
-          <p>{guidance.objective.nasaContext}</p>
-          <p className="simulation-note">{guidance.objective.interpretation}</p>
+        <section className="design-brief" aria-label="Encargo científico elegido">
+          <span className="evidence-label">ENCARGO CIENTÍFICO · {guidance.objective.name}</span>
+          <strong className="design-question">{guidance.objective.question}</strong>
           <p className="design-requirement">
-            <strong>Necesitas:</strong> {guidance.objective.requirement}
+            <strong>Para avanzar:</strong> {guidance.objective.requirement}
           </p>
-          <a href={guidance.objective.source} target="_blank" rel="noopener noreferrer">
-            {guidance.objective.sourceLabel} ↗
-          </a>
-        </div>
+          <details>
+            <summary>Ver fundamento NASA y límites del juego</summary>
+            <p>{guidance.objective.nasaContext}</p>
+            <p className="simulation-note">{guidance.objective.interpretation}</p>
+            <a href={guidance.objective.source} target="_blank" rel="noopener noreferrer">
+              {guidance.objective.sourceLabel} ↗
+            </a>
+          </details>
+        </section>
       )}
-      <div className="odyssey-assembly">
+      <div className="odyssey-assembly" id="design-assembly">
         <div className="assembly-heading">
           <div className="design-step-heading">
             <span>01</span>
@@ -118,7 +125,11 @@ export default function DesignPanel({ controller }: { controller: MissionControl
           instalarlo no convierte este encargo orbital en una misión tripulada.
         </p>
       </div>
-      <section className="design-step" aria-labelledby="design-instruments-title">
+      <section
+        className="design-step"
+        id="design-instruments"
+        aria-labelledby="design-instruments-title"
+      >
         <div className="design-step-heading">
           <span>02</span>
           <h2 id="design-instruments-title">Instrumentos científicos</h2>
@@ -145,7 +156,11 @@ export default function DesignPanel({ controller }: { controller: MissionControl
           ))}
         </div>
       </section>
-      <section className="design-step" aria-labelledby="design-parameters-title">
+      <section
+        className="design-step"
+        id="design-parameters"
+        aria-labelledby="design-parameters-title"
+      >
         <div className="design-step-heading">
           <span>03</span>
           <h2 id="design-parameters-title">Perfil de la misión</h2>

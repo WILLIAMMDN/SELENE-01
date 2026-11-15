@@ -148,9 +148,9 @@ function ShipStage({
   const originZ = mode === 'launch' ? LAUNCH_SITE.z : 0
   useEffect(() => {
     camera.position.set(
-      originX + (mode === 'launch' ? 96 : 24),
+      originX + (mode === 'launch' ? 96 : mode === 'workshop' ? 18 : 24),
       focus + 7,
-      originZ + (mode === 'launch' ? 115 : 30),
+      originZ + (mode === 'launch' ? 115 : mode === 'workshop' ? 24 : 30),
     )
     camera.lookAt(originX, focus, originZ)
   }, [camera, mode, focus, originX, originZ])
