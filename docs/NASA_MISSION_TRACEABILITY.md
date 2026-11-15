@@ -17,6 +17,8 @@ Los instrumentos de ODYSSEY, AURORA-S, ATLAS-T, sus masas, potencia, presupuesto
 
 El personaje, el paisaje lunar y el mapa de Ares son reconstrucciones de entrenamiento. El encargo científico es un orbitador lunar no tripulado; seleccionar Marte como mapa de exploración no cambia el objetivo ni simula una misión marciana. La secuencia de embarque y aterrizaje es una dramatización del juego.
 
+La prospección, los interiores, el rover y el soporte vital de la base lunar forman **otro ejercicio simulado de superficie**. Sus seis depósitos, lecturas, reservas de oxígeno, recarga, rescate y diseño de sistemas de superficie son reglas ficticias. La muestra de hielo del juego no es una medición de ODYSSEY ni prueba la existencia de hielo en ese punto. El simulador de diseño de superficie emplea índices de comunicación, masas, costos y capacidades inventados; sus opciones no representan especificaciones de SLS, TBIRD o Kilopower.
+
 ## Pendiente para mayor fidelidad
 
 1. Vincular cada dato simulado a un instrumento y a un objetivo medible.

@@ -3,21 +3,27 @@ import { useFrame } from '@react-three/fiber'
 import { useGLTF } from '@react-three/drei'
 import { clone } from 'three/addons/utils/SkeletonUtils.js'
 import * as T from 'three'
-import { toon } from '../ArtKit'
+import { Sign, toon } from '../ArtKit'
 import OdysseyLander from '../../spacecraft/OdysseyLander'
-import { LUNAR_LANDER, lunarTerrainHeight } from './lunarNavigation'
-import LunarBase from './LunarBase'
+import { LUNAR_LANDER, LUNAR_SECTORS, lunarTerrainHeight } from './lunarNavigation'
+import LunarTracks from './LunarTracks'
+import LunarFootDust from './LunarFootDust'
+import LunarInteriors from './LunarInteriors'
+import { lunarInteriorInstances } from './lunarInteriorNavigation'
 import { LUNAR_BASE_LAYOUT } from './lunarBaseNavigation'
+import RoverLunar from './RoverLunar'
+import LunarResourcesMission from './LunarResourcesMission'
+import { completeLunarOperation } from './lunarMissionProgress'
+import type { LunarSession } from './lunarRoverControl'
+import type { SceneProps } from '../player/types'
 
 export default function LunarEnvironment({
   paused,
   reduced,
+  lunar,
+  input,
   landing = false,
-}: {
-  paused: boolean
-  reduced: boolean
-  landing?: boolean
-}) {
+}: Pick<SceneProps, 'paused' | 'reduced' | 'input' | 'landing'> & { lunar: LunarSession }) {
   const { scene, animations } = useGLTF(`${import.meta.env.BASE_URL}models/lunar/lunar_base.glb`)
   const asset = useMemo(() => {
     const root = clone(scene),
@@ -26,6 +32,7 @@ export default function LunarEnvironment({
       const old = root.getObjectByName(name)
       if (old) old.visible = false
     }
+    for (const { id } of lunarInteriorInstances) root.getObjectByName(id)?.removeFromParent()
     root.traverse((n) => {
       if (!(n instanceof T.Mesh)) return
       const convert = (source: T.Material) => {
@@ -43,8 +50,45 @@ export default function LunarEnvironment({
         return material
       }
       n.material = Array.isArray(n.material) ? n.material.map(convert) : convert(n.material)
+      if (n.name === 'LUNA_TERRENO_MALLA') {
+        const ground = (Array.isArray(n.material) ? n.material[0] : n.material).clone()
+        ground.color.set('#84858a')
+        ground.shadowSide = T.DoubleSide
+        ground.onBeforeCompile = (shader: { vertexShader: string; fragmentShader: string }) => {
+          shader.vertexShader =
+            'varying vec2 lunarXZ;\n' +
+            shader.vertexShader.replace(
+              '#include <begin_vertex>',
+              '#include <begin_vertex>\nlunarXZ = (modelMatrix * vec4(position, 1.0)).xz;',
+            )
+          shader.fragmentShader =
+            `varying vec2 lunarXZ;
+            float dustHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+            float dustNoise(vec2 p) {
+              vec2 i = floor(p), t = fract(p);
+              t = t*t*(3.0-2.0*t);
+              return mix(mix(dustHash(i), dustHash(i+vec2(1,0)), t.x),
+                mix(dustHash(i+vec2(0,1)), dustHash(i+vec2(1,1)), t.x), t.y);
+            }
+          ` +
+            shader.fragmentShader.replace(
+              '#include <color_fragment>',
+              `#include <color_fragment>
+            float grain = mix(dustNoise(lunarXZ * 9.0), 0.5, smoothstep(0.035, 0.16, length(fwidth(lunarXZ))));
+            float mottling = dustNoise(lunarXZ * 0.56);
+            float aggregate = dustNoise(lunarXZ * 2.8);
+            float ridge = aggregate - dustNoise(lunarXZ * 2.8 + vec2(-0.24, 0.19));
+            float pits = smoothstep(0.13, 0.45, aggregate);
+            diffuseColor.rgb *= (0.53 + 0.41*mottling + 0.24*grain)
+              * mix(0.52, 1.0, pits) * clamp(1.0 + 0.88*ridge, 0.65, 1.35);
+          `,
+            )
+        }
+        materials.set(ground, ground)
+        n.material = ground
+      }
       n.receiveShadow = true
-      n.castShadow = !n.name.includes('TERRENO') && !n.name.includes('HORIZONTE')
+      n.castShadow = !n.name.includes('HORIZONTE')
     })
     return { root, mixer: new T.AnimationMixer(root), materials }
   }, [scene])
@@ -53,6 +97,7 @@ export default function LunarEnvironment({
       const open = (event as CustomEvent<boolean>).detail
       const clip = animations.find((a) => a.name === 'PWR_L01_DESPLIEGUE')
       if (!clip) return
+      if (open) completeLunarOperation('power')
       asset.mixer.stopAllAction()
       const action = asset.mixer.clipAction(clip).reset().setLoop(T.LoopOnce, 1)
       action.clampWhenFinished = true
@@ -87,7 +132,9 @@ export default function LunarEnvironment({
   return (
     <>
       <primitive object={asset.root} dispose={null} />
-      <LunarBase paused={paused} />
+      {!reduced && <LunarFootDust lunar={lunar} paused={paused} />}
+      <LunarTracks lunar={lunar} paused={paused} />
+      <LunarInteriors lunar={lunar} paused={paused} reduced={reduced} />
       {!landing && (
         <OdysseyLander
           x={LUNAR_LANDER.x}
@@ -97,6 +144,23 @@ export default function LunarEnvironment({
           showLabel={false}
         />
       )}
+      <RoverLunar lunar={lunar} input={input} paused={paused} />
+      <LunarResourcesMission
+        lunar={lunar}
+        heightAt={lunarTerrainHeight}
+        paused={paused}
+        onConversation={(conv) => {
+          window.dispatchEvent(new CustomEvent('selene-dialogue', { detail: conv }))
+        }}
+      />
+      {LUNAR_SECTORS.filter(({ id }) => id !== 'research' && id !== 'hangar').map((s) => (
+        <Sign
+          key={s.id}
+          text={`${s.number} / ${s.short.toUpperCase()}`}
+          position={[s.entry[0], lunarTerrainHeight(...s.entry) + 1.8, s.entry[1]]}
+          scale={[2.2, 0.55, 1]}
+        />
+      ))}
     </>
   )
 }

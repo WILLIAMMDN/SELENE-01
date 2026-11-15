@@ -1,31 +1,26 @@
-import { useEffect, useMemo, type MutableRefObject } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { useGLTF } from '@react-three/drei'
 import * as T from 'three'
 import { RoverLunarController } from './RoverLunarController'
-import { LUNAR_ROVER_HOME, lunarRoverFits, type LunarRoverMount } from './lunarRoverAccess'
-import { lunarHeight } from './lunarNavigation'
-import type { InputState } from '../player/types'
+import { lunarCanDrive, lunarHeight } from './lunarNavigation'
+import { LUNAR_ROVER_START, type LunarSession } from './lunarRoverControl'
+import type { SceneProps } from '../player/types'
 
-/** The lunar rover shares the player's controls; boarding belongs to PlayerRig. */
 export default function RoverLunar({
-  mount,
+  lunar,
   input,
   paused,
-}: {
-  mount: MutableRefObject<LunarRoverMount>
-  input: MutableRefObject<InputState>
-  paused: boolean
-}) {
-  const { scene } = useGLTF(`${import.meta.env.BASE_URL}models/lunar/Rover_Lunar_Animado.glb`)
+}: Pick<SceneProps, 'input' | 'paused'> & { lunar: LunarSession }) {
+  const gltf = useGLTF(`${import.meta.env.BASE_URL}models/lunar/Rover_Lunar_Animado.glb`)
   const controller = useMemo(
     () =>
-      new RoverLunarController(scene.clone(true), {
-        position: new T.Vector3(...LUNAR_ROVER_HOME),
+      new RoverLunarController(gltf.scene.clone(true), {
+        position: new T.Vector3(LUNAR_ROVER_START[0], 0, LUNAR_ROVER_START[1]),
         heightAt: lunarHeight,
-        canMove: lunarRoverFits,
+        canMove: (p, yaw) => lunarCanDrive(p.x, p.z, yaw),
       }),
-    [scene],
+    [gltf.scene],
   )
   const { gl, size, camera } = useThree()
   useEffect(() => {
@@ -36,30 +31,33 @@ export default function RoverLunar({
     )
   }, [controller, gl, size.height, camera])
   useEffect(() => {
-    mount.current.controller = controller
+    lunar.rover = controller
     return () => {
-      if (mount.current.controller === controller) {
-        mount.current.controller = null
-        mount.current.driving = false
-      }
-      controller.dispose()
+      lunar.rover = undefined
+      lunar.boarded = false
     }
-  }, [controller, mount])
+  }, [controller, lunar])
+  useEffect(() => () => controller.dispose(), [controller])
+
   useFrame((_, delta) => {
-    if (paused || !mount.current.driving) {
-      controller.speed = 0
+    if (paused) {
       controller.stop()
-    } else {
-      const has = (...codes: string[]) => codes.some((code) => input.current.keys.has(code))
+      controller.speed = 0
+      return
+    }
+    if (lunar.boarded) {
+      const keys = input.current.keys
+      const has = (...codes: string[]) => codes.some((code) => keys.has(code))
       controller.setInput({
         throttle: Number(has('KeyW', 'ArrowUp')) - Number(has('KeyS', 'ArrowDown')),
         steer: Number(has('KeyD', 'ArrowRight')) - Number(has('KeyA', 'ArrowLeft')),
         brake: has('Space'),
         boost: has('ShiftLeft', 'ShiftRight'),
       })
-    }
-    if (!paused) controller.update(delta)
-  }, -1)
+    } else controller.stop()
+    controller.update(delta)
+  })
+
   return (
     <group>
       <primitive object={controller.vehicle} dispose={null} />

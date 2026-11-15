@@ -1,3 +1,4 @@
+import type { SamplingPose } from './lunar/lunarSampling'
 import { moveWithCollisions } from './navigation/collision'
 import { MOTION_SCALE } from './physicalScale'
 
@@ -58,6 +59,8 @@ export type CharacterCommand =
   | 'wave'
   | 'talk'
   | 'interact'
+  | 'hatch'
+  | 'workstation'
   | 'blink'
   | 'sit'
   | `perform:${GestureClip}`
@@ -76,6 +79,7 @@ export const LOOP_CLIPS = new Set<string>([
   'Walk_Back',
 ])
 export type CharacterMotion = {
+  samplingPose?: { pose: SamplingPose; progress: number; crouch: number }
   clip: CharacterClip
   serial: number
   speed: number

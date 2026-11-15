@@ -19,6 +19,8 @@ import type { PositionReport, Travel } from '../../world/ExplorerScene'
 import type { SectorId, ViewMode } from '../../world/worldData'
 import CampusMap from './CampusMap'
 import { OBJECTIVE_NAMES, type Panel } from './worldUiTypes'
+import LunarInventory from './LunarInventory'
+import LunarMissionJournal from './LunarMissionJournal'
 
 type Props = {
   panel: Exclude<Panel, null>
@@ -242,56 +244,66 @@ export default function WorldNotebook({
             <small>Una aventura de diseño de misiones. Partida local.</small>
           </>
         )}
-        {panel === 'journal' && (
-          <>
-            <span className="paper-kicker">BITÁCORA DE MISIÓN</span>
-            <h2 id="dialog-title">Una pregunta. Una misión.</h2>
-            <p>
-              Tu encargo: diseñar ODYSSEY, enviarla a estudiar el polo sur lunar y recuperar
-              información que permita responder a tu pregunta.
-            </p>
-            <ol className="quest-list">
-              {(['research', 'hangar', 'control', 'launch', 'observatory'] as SectorId[]).map(
-                (id, i) => (
-                  <li key={id} className={next.sector === id ? 'current' : ''}>
-                    <button onClick={() => onPanel(id)}>
-                      <span>{i + 1}</span>
-                      <strong>{objectiveNames[id]}</strong>
-                      {next.sector === id && <small>Ahora</small>}
-                    </button>
-                  </li>
-                ),
+        {moon && panel === 'lunar-inventory' && <LunarInventory />}
+        {panel === 'journal' &&
+          (moon ? (
+            <LunarMissionJournal
+              position={position}
+              onClose={onClose}
+              onPanel={onPanel}
+              onConversation={onConversation}
+              onTravelPoint={onTravelPoint}
+            />
+          ) : (
+            <>
+              <span className="paper-kicker">BITÁCORA DE MISIÓN</span>
+              <h2 id="dialog-title">Una pregunta. Una misión.</h2>
+              <p>
+                Tu encargo: diseñar ODYSSEY, enviarla a estudiar el polo sur lunar y recuperar
+                información que permita responder a tu pregunta.
+              </p>
+              <ol className="quest-list">
+                {(['research', 'hangar', 'control', 'launch', 'observatory'] as SectorId[]).map(
+                  (id, i) => (
+                    <li key={id} className={next.sector === id ? 'current' : ''}>
+                      <button onClick={() => onPanel(id)}>
+                        <span>{i + 1}</span>
+                        <strong>{objectiveNames[id]}</strong>
+                        {next.sector === id && <small>Ahora</small>}
+                      </button>
+                    </li>
+                  ),
+                )}
+              </ol>
+              {mission.result && (
+                <p>
+                  Último vuelo: {mission.result.score} puntos · {mission.result.delivered} GB
+                  recuperados.
+                </p>
               )}
-            </ol>
-            {mission.result && (
-              <p>
-                Último vuelo: {mission.result.score} puntos · {mission.result.delivered} GB
-                recuperados.
-              </p>
-            )}
-            <button
-              className="primary-world"
-              onClick={() => {
-                onClose()
-                onConversation(stationConversation(next.sector))
-              }}
-            >
-              TARS, explícame el siguiente paso
-            </button>
-            <details>
-              <summary>Por qué importan tus decisiones</summary>
-              <p>
-                Instrumentos, masa, energía, presupuesto, comunicaciones, órbita y duración compiten
-                por recursos. Un diseño compatible debe responder a su objetivo y devolver datos.
-                Puedes rediseñar después de cada vuelo.
-              </p>
-              <p>
-                Los parámetros son educativos. Juegas individualmente; los cuatro cuadernos de TARS
-                no son multijugador en línea.
-              </p>
-            </details>
-          </>
-        )}
+              <button
+                className="primary-world"
+                onClick={() => {
+                  onClose()
+                  onConversation(stationConversation(next.sector))
+                }}
+              >
+                TARS, explícame el siguiente paso
+              </button>
+              <details>
+                <summary>Por qué importan tus decisiones</summary>
+                <p>
+                  Instrumentos, masa, energía, presupuesto, comunicaciones, órbita y duración
+                  compiten por recursos. Un diseño compatible debe responder a su objetivo y
+                  devolver datos. Puedes rediseñar después de cada vuelo.
+                </p>
+                <p>
+                  Los parámetros son educativos. Juegas individualmente; los cuatro cuadernos de
+                  TARS no son multijugador en línea.
+                </p>
+              </details>
+            </>
+          ))}
         {panel === 'tars' && <TarsAssistant position={position} onVisit={onVisit} />}
         {panel === 'map' && (
           <>
@@ -407,19 +419,37 @@ export default function WorldNotebook({
               <dd>Mantener para correr</dd>
               <dt>Espacio</dt>
               <dd>Saltar en exteriores</dd>
-              <dt>Ctrl</dt>
-              <dd>Sentarse junto a un banco</dd>
-              <dt>E</dt>
-              <dd>Conversar, usar una estación o subir y bajar del buggy y del rover lunar</dd>
-              <dt>Buggy</dt>
-              <dd>W/↑: acelerar · S/↓: frenar y retroceder · A/D o ←/→: girar · Espacio: frenar</dd>
+              {moon ? (
+                <>
+                  <dt>E</dt>
+                  <dd>Abrir o cerrar escotillas, muestrear y subir o bajar del rover</dd>
+                  <dt>Rover</dt>
+                  <dd>W/↑ acelerar · S/↓ retroceder · A/D girar · Espacio frenar</dd>
+                  <dt>Soporte vital</dt>
+                  <dd>
+                    Regresa a un módulo y cierra las escotillas exteriores para recargar oxígeno y
+                    batería.
+                  </dd>
+                </>
+              ) : (
+                <>
+                  <dt>Ctrl</dt>
+                  <dd>Sentarse junto a un banco</dd>
+                  <dt>E</dt>
+                  <dd>Conversar, usar una estación o subir y bajar del buggy</dd>
+                  <dt>Buggy</dt>
+                  <dd>
+                    W/↑: acelerar · S/↓: frenar y retroceder · A/D o ←/→: girar · Espacio: frenar
+                  </dd>
+                </>
+              )}
               <dt>Interiores</dt>
               <dd>
                 Primera persona automática; arrastra para mirar. Al salir vuelve la cámara exterior.
               </dd>
             </dl>
             <button className="secondary-world" onClick={() => onVisit('start')}>
-              Volver a la entrada del campus
+              {moon ? 'Volver a la explanada de ODYSSEY' : 'Volver a la entrada del campus'}
             </button>
           </>
         )}
