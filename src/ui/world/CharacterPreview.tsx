@@ -25,7 +25,13 @@ function PreviewCamera({
 }) {
   const { camera, size } = useThree()
   useLayoutEffect(() => {
-    if (!revision || !target.current || !(camera instanceof PerspectiveCamera)) return
+    if (!(camera instanceof PerspectiveCamera)) return
+    if (!revision || !target.current) {
+      camera.position.set(0, 1, 4.8)
+      camera.lookAt(0, 1, 0)
+      camera.updateMatrixWorld(true)
+      return
+    }
     framePreview(camera, visiblePreviewBounds(target.current), size.width / size.height)
   }, [camera, size.width, size.height, revision, target])
   return null
