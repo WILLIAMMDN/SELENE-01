@@ -126,8 +126,12 @@ export default function PlayerRig({
           e.preventDefault()
           if (!e.repeat) input.current.actions.push(CHARACTER_KEYS[e.code])
         } else if (e.code === 'KeyE' && !e.repeat) {
-          const station = stationFor(location.current.x, location.current.z)
-          if (station) onInteract(station.sector)
+          if (Math.hypot(location.current.x - (-14), location.current.z - 36) < 4.8) {
+            window.dispatchEvent(new CustomEvent('selene-authors-panel'))
+          } else {
+            const station = stationFor(location.current.x, location.current.z)
+            if (station) onInteract(station.sector)
+          }
         }
       },
     })
@@ -258,8 +262,12 @@ export default function PlayerRig({
           player.current.rotation.y += difference * Math.min(1, delta * 14)
         }
         if (result.interact) {
-          const station = stationFor(p.x, p.z)
-          if (station) onInteract(station.sector)
+          if (Math.hypot(p.x - (-14), p.z - 36) < 4.8) {
+            window.dispatchEvent(new CustomEvent('selene-authors-panel'))
+          } else {
+            const station = stationFor(p.x, p.z)
+            if (station) onInteract(station.sector)
+          }
         }
       } else {
         input.current.actions.length = 0
@@ -329,6 +337,9 @@ export default function PlayerRig({
       input.current.pitch = indoors ? 0 : 0.14
       firstPerson.current = indoors
       setIsFirstPerson(indoors)
+      if (!indoors) {
+        camera.up.set(0, 1, 0)
+      }
     }
     if (mode === 'walk' && roberRemote.current) {
       const rover = roberRemote.current
@@ -339,16 +350,10 @@ export default function PlayerRig({
     } else if (mode === 'walk') {
       const { yaw, pitch, zoom } = input.current
       if (indoors) {
-        // Steady eye level and level horizon: camera.up ensures zero roll
+        // Direct YXZ Euler rotation guarantees mathematically ZERO roll at any yaw and pitch
         camera.position.set(p.x, p.y + (motion.current.seat ? 1.1 : 1.62), p.z)
-        camera.up.set(0, 1, 0)
-        camera.lookAt(
-          lookTarget.set(
-            p.x - Math.sin(yaw) * Math.cos(pitch),
-            camera.position.y - Math.sin(pitch),
-            p.z - Math.cos(yaw) * Math.cos(pitch),
-          ),
-        )
+        camera.rotation.order = 'YXZ'
+        camera.rotation.set(-pitch, yaw, 0)
       } else {
         const h = Math.cos(pitch) * (buggy.driving && world.id === 'earth' ? 8 : zoom)
         camTarget.set(

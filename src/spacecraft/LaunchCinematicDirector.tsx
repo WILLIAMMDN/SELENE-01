@@ -49,6 +49,8 @@ export default function LaunchCinematicDirector({
   const onElapsedRef = useRef(onElapsed)
   const onCompleteRef = useRef(onComplete)
 
+  const [ox, oy, oz] = origin
+
   useEffect(() => {
     onElapsedRef.current = onElapsed
     onCompleteRef.current = onComplete
@@ -59,7 +61,6 @@ export default function LaunchCinematicDirector({
     completed.current = false
     lastPublished.current = -1
     lastShotId.current = -1
-    const [ox, oy, oz] = origin
     const topY = oy + 56 + (habitat ? 4 : 0)
     camera.position.set(ox + 4.2, topY - 0.2, oz + 5.8)
     camera.lookAt(ox, topY - 0.8, oz)
@@ -70,7 +71,7 @@ export default function LaunchCinematicDirector({
         camera.updateProjectionMatrix()
       }
     }
-  }, [clock, camera, scene, day, habitat, origin])
+  }, [clock, camera, scene, day, habitat, ox, oy, oz])
 
   useFrame((state, rawDelta) => {
     if (completed.current) return

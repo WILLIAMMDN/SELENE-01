@@ -41,11 +41,11 @@ export function driveBuggy(keys: Set<string>, dt: number, clear: Clear, height: 
   const reverse = keys.has('KeyS') || keys.has('ArrowDown')
   const boost = keys.has('ShiftLeft') || keys.has('ShiftRight')
   const brake = keys.has('Space') || (forward && reverse)
-  // Higher velocity: standard 12.5 m/s (45 km/h), boost 18.5 m/s (66.6 km/h)
-  const topSpeed = boost ? 18.5 : 12.5
-  const target = brake ? 0 : forward ? topSpeed : reverse ? -5.5 : 0
+  // Higher velocity on Earth campus roads: standard 16.5 m/s (59.4 km/h), boost 26.0 m/s (93.6 km/h)
+  const topSpeed = boost ? 26.0 : 16.5
+  const target = brake ? 0 : forward ? topSpeed : reverse ? -7.5 : 0
   const decelerating = target === 0 || target * buggy.speed < 0
-  const change = (brake ? 14 : decelerating ? 8.5 : boost ? 7.5 : 5.5) * dt
+  const change = (brake ? 18 : decelerating ? 11 : boost ? 11.5 : 8.5) * dt
   buggy.speed += Math.max(-change, Math.min(change, target - buggy.speed))
   const steer =
     Number(keys.has('KeyD') || keys.has('ArrowRight')) -

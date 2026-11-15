@@ -13,6 +13,8 @@ import { LAUNCH_SITE } from '../spacecraft/LaunchComplex'
 import { useBlueprint } from '../game/state/blueprintStore'
 import { Stars } from '@react-three/drei'
 import type { LaunchClock } from '../spacecraft/launchTimeline'
+import MissionNavigationGuide from './navigation/MissionNavigationGuide'
+import { nextMissionStep, useCampusMission } from '../game/campusMission'
 export type { Travel, InputState, PositionReport } from './player/types'
 
 class SceneBoundary extends Component<
@@ -41,6 +43,8 @@ function SceneReady({ onReady }: { onReady: () => void }) {
   useEffect(onReady, [onReady])
   return null
 }
+const LAUNCH_ORIGIN: [number, number, number] = [LAUNCH_SITE.x, 0, LAUNCH_SITE.z]
+
 export default memo(function ExplorerScene(
   props: SceneProps & {
     quality: 'standard' | 'light'
@@ -56,6 +60,8 @@ export default memo(function ExplorerScene(
     mars = world.id === 'mars',
     moon = world.id === 'moon'
   const { config, parts } = useBlueprint()
+  useCampusMission()
+  const next = nextMissionStep()
 
   return (
     <SceneBoundary onFailure={props.onReady}>
@@ -116,12 +122,19 @@ export default memo(function ExplorerScene(
             />
           )}
           <PlayerRig {...props} cinematic={props.cinematic} />
+          {!mars && !moon && !props.cinematic && next.sector && (
+            <MissionNavigationGuide
+              targetSector={next.sector}
+              reduced={props.reduced}
+              indoor={props.mode !== 'walk'}
+            />
+          )}
           {props.cinematic && props.launchClock && (
             <LaunchCinematicDirector
               clock={props.launchClock.current}
               launcher={config.launcher}
               habitat={parts.includes('habitat')}
-              origin={[LAUNCH_SITE.x, 0, LAUNCH_SITE.z]}
+              origin={LAUNCH_ORIGIN}
               onElapsed={props.onCinematicProgress ?? (() => {})}
               onComplete={props.onCinematicComplete ?? (() => {})}
             />

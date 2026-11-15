@@ -199,6 +199,12 @@ export default function WorldNotebook({
               {!offworld && <button onClick={() => onPanel('sky')}>Cielo y clima</button>}
               <button onClick={() => onPanel('settings')}>Opciones</button>
               <button onClick={() => onPanel('scale')}>El mundo y sus fuentes</button>
+              <button
+                style={{ background: '#457d80', color: '#f6f6ec' }}
+                onClick={() => onPanel('authors')}
+              >
+                👥 Equipo creador y autores
+              </button>
             </div>
             <div className="menu-worlds">
               <button aria-pressed={moon} onClick={() => onWorld('moon')}>

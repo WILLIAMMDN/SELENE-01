@@ -1,6 +1,7 @@
 import { roomLabel } from './buildingEntrances'
 import VehicleDashboard from '../ui/world/VehicleDashboard'
 import WorldNotebook from '../ui/world/WorldNotebook'
+import AuthorsPanel from '../ui/world/AuthorsPanel'
 import { OBJECTIVE_NAMES, type Panel } from '../ui/world/worldUiTypes'
 import { useCampusMission, nextMissionStep, missionVerified, blueprintKey } from '../game/campusMission'
 import { loadBlueprint, useBlueprint } from '../game/state/blueprintStore'
@@ -196,6 +197,13 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
     window.addEventListener('selene-tools-panel', open)
     return () => window.removeEventListener('selene-tools-panel', open)
   }, [offworld, panel, conversation, campaign, mode])
+  useEffect(() => {
+    const open = () => {
+      if (!panel && !conversation && !campaign) setPanel('authors')
+    }
+    window.addEventListener('selene-authors-panel', open)
+    return () => window.removeEventListener('selene-authors-panel', open)
+  }, [panel, conversation, campaign])
   const chooseMode = (m: ViewMode) => {
     setMode(m)
     setPanel(null)
@@ -338,7 +346,27 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
             {offworld
               ? 'El encargo lunar comienza en la Tierra'
               : `${destination.short} · ${Math.round(Math.hypot(position.x - destination.entry[0], position.z - destination.entry[1]))} m`}{' '}
-            <b>↗</b>
+            <b
+              style={{
+                display: 'inline-block',
+                transform: `rotate(${Math.round(
+                  -Math.atan2(
+                    Math.sin(
+                      Math.atan2(destination.entry[0] - position.x, destination.entry[1] - position.z) -
+                        Math.atan2(-Math.sin(input.current.yaw), -Math.cos(input.current.yaw)),
+                    ),
+                    Math.cos(
+                      Math.atan2(destination.entry[0] - position.x, destination.entry[1] - position.z) -
+                        Math.atan2(-Math.sin(input.current.yaw), -Math.cos(input.current.yaw)),
+                    ),
+                  ) *
+                    (180 / Math.PI),
+                )}deg)`,
+                transition: 'transform 0.12s ease',
+              }}
+            >
+              ▲
+            </b>
           </small>
         </button>
       )}
@@ -409,6 +437,11 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
             <kbd>E</kbd> Conducir buggy <span>▶</span>
           </button>
         </div>
+      )}
+      {!launching && mode === 'walk' && !nearby && !position.vehicle && !panel && !conversation && Math.hypot(position.x - (-14), position.z - 36) < 4.8 && (
+        <button className="station-prompt" onClick={() => setPanel('authors')}>
+          <kbd>E</kbd> Ver Equipo Creador & Créditos <span>👥</span>
+        </button>
       )}
       {!launching && mode === 'walk' && position.room && !panel && !conversation && (
         <div className="interior-caption">
@@ -522,7 +555,8 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
           }}
         />
       )}
-      {panel && (
+      {panel === 'authors' && <AuthorsPanel onClose={() => setPanel(null)} />}
+      {panel && panel !== 'authors' && (
         <WorldNotebook
           panel={panel}
           position={position}

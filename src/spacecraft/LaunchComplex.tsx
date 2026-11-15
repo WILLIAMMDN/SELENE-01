@@ -88,25 +88,33 @@ function Asset({
       if (!platform) return
       const clip = animations.find((a) => a.name === 'SERVICIOS_RETIRADA')
       if (!clip) return
-      const action = mixer.clipAction(clip)
-      action.reset()
-      action.setLoop(T.LoopOnce, 1)
-      action.clampWhenFinished = true
-      action.time = withdrawn.current ? clip.duration : 0
-      action.timeScale = withdrawn.current ? -1 : 1
-      action.play()
-      withdrawn.current = !withdrawn.current
+      try {
+        const action = mixer.clipAction(clip.clone())
+        action.reset()
+        action.setLoop(T.LoopOnce, 1)
+        action.clampWhenFinished = true
+        action.time = withdrawn.current ? clip.duration : 0
+        action.timeScale = withdrawn.current ? -1 : 1
+        action.play()
+        withdrawn.current = !withdrawn.current
+      } catch (err) {
+        console.warn('Services animation error:', err)
+      }
     }
     const mechanism = (event: Event) => {
       if (platform) return
       const name = (event as CustomEvent<string>).detail
-      mixer.stopAllAction()
-      if (name === 'reset') return
-      const clip = animations.find((a) => a.name === name)
-      if (clip) {
-        const action = mixer.clipAction(clip).reset().setLoop(T.LoopOnce, 1)
-        action.clampWhenFinished = true
-        action.play()
+      try {
+        mixer.stopAllAction()
+        if (name === 'reset') return
+        const clip = animations.find((a) => a.name === name)
+        if (clip) {
+          const action = mixer.clipAction(clip.clone()).reset().setLoop(T.LoopOnce, 1)
+          action.clampWhenFinished = true
+          action.play()
+        }
+      } catch (err) {
+        console.warn('Mechanism animation error:', err)
       }
     }
     window.addEventListener('odyssey-ground-services', services)
@@ -114,34 +122,42 @@ function Asset({
     return () => {
       window.removeEventListener('odyssey-ground-services', services)
       window.removeEventListener('odyssey-mechanism', mechanism)
-      mixer.stopAllAction()
-      mixer.uncacheRoot(root)
+      try {
+        mixer.stopAllAction()
+      } catch {
+        /* no-op */
+      }
     }
   }, [platform, animations, mixer, root])
   useFrame((_, dt) => {
-    if (flightClock) {
-      const frame = getLaunchFrame(flightClock.current, config?.launcher ?? 'aurora')
-      if (platform && frame.time >= 0.8 && !withdrawn.current) {
-        const clip = animations.find((a) => a.name === 'SERVICIOS_RETIRADA')
-        if (clip) {
-          const action = mixer.clipAction(clip).reset().setLoop(T.LoopOnce, 1)
-          action.clampWhenFinished = true
-          action.play()
-          withdrawn.current = true
+    try {
+      if (flightClock) {
+        const frame = getLaunchFrame(flightClock.current, config?.launcher ?? 'aurora')
+        if (platform && frame.time >= 0.8 && !withdrawn.current) {
+          const clip = animations.find((a) => a.name === 'SERVICIOS_RETIRADA')
+          if (clip) {
+            mixer.stopAllAction()
+            const action = mixer.clipAction(clip.clone()).reset().setLoop(T.LoopOnce, 1)
+            action.clampWhenFinished = true
+            action.play()
+            withdrawn.current = true
+          }
+        }
+        if (!platform && frame.mechanism && lastMechanism.current !== frame.mechanism) {
+          lastMechanism.current = frame.mechanism
+          const clip = animations.find((a) => a.name === frame.mechanism)
+          if (clip) {
+            mixer.stopAllAction()
+            const action = mixer.clipAction(clip.clone()).reset().setLoop(T.LoopOnce, 1)
+            action.clampWhenFinished = true
+            action.play()
+          }
         }
       }
-      if (!platform && frame.mechanism && lastMechanism.current !== frame.mechanism) {
-        lastMechanism.current = frame.mechanism
-        const clip = animations.find((a) => a.name === frame.mechanism)
-        if (clip) {
-          mixer.stopAllAction()
-          const action = mixer.clipAction(clip).reset().setLoop(T.LoopOnce, 1)
-          action.clampWhenFinished = true
-          action.play()
-        }
-      }
+      mixer.update(Math.min(dt, 0.05))
+    } catch (err) {
+      console.warn('LaunchComplex animation update warning:', err)
     }
-    mixer.update(Math.min(dt, 0.05))
   })
   return (
     <>

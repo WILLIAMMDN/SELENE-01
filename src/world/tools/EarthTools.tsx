@@ -58,8 +58,12 @@ export default function EarthTools({ paused, reduced }: { paused: boolean; reduc
   const playback = useRef({ time: 0, end: 0, playing: false })
   useEffect(() => {
     const seek = (frame: number) => {
-      asset.actions.forEach((a) => a.reset().play())
-      asset.mixer.setTime(frame / timeline.fps)
+      try {
+        asset.actions.forEach((a) => a.reset().play())
+        asset.mixer.setTime(frame / timeline.fps)
+      } catch (err) {
+        console.warn('EarthTools animation warning:', err)
+      }
     }
     seek(0)
     const play = (event: Event) => {
@@ -95,8 +99,11 @@ export default function EarthTools({ paused, reduced }: { paused: boolean; reduc
     return () => {
       window.removeEventListener('selene-tool-action', play)
       window.removeEventListener('keydown', open)
-      asset.mixer.stopAllAction()
-      asset.mixer.uncacheRoot(asset.root)
+      try {
+        asset.mixer.stopAllAction()
+      } catch {
+        /* no-op */
+      }
     }
   }, [asset])
   useEffect(() => () => asset.materials.forEach((m) => m.dispose()), [asset])

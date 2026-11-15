@@ -157,8 +157,11 @@ export default function ExplorerCharacter({
     window.addEventListener('selene-avatar-preview', perform)
     return () => {
       window.removeEventListener('selene-avatar-preview', perform)
-      asset.mixer.stopAllAction()
-      asset.mixer.uncacheRoot(asset.actor)
+      try {
+        asset.mixer.stopAllAction()
+      } catch {
+        /* no-op */
+      }
       const geometries = new Set<T.BufferGeometry>(),
         materials = new Set<T.Material>()
       asset.actor.traverse((n) => {
@@ -219,7 +222,11 @@ export default function ExplorerCharacter({
                 : 1,
       )
     }
-    asset.mixer.update(dt)
+    try {
+      asset.mixer.update(dt)
+    } catch {
+      /* ignore */
+    }
     if (preview.current && action.time >= action.getClip().duration) {
       preview.current = null
       phase.current = ''

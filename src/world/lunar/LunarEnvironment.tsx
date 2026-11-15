@@ -62,8 +62,11 @@ export default function LunarEnvironment({
     window.addEventListener('selene-lunar-power', command)
     return () => {
       window.removeEventListener('selene-lunar-power', command)
-      asset.mixer.stopAllAction()
-      asset.mixer.uncacheRoot(asset.root)
+      try {
+        asset.mixer.stopAllAction()
+      } catch {
+        /* no-op */
+      }
     }
   }, [asset, animations, reduced])
   useEffect(
