@@ -49,6 +49,7 @@ export default function DesignPanel({ controller }: { controller: MissionControl
     exploded,
     setExploded,
     config,
+    evaluation,
     toggleInstrument,
     assemble,
     updateConfig,
@@ -84,6 +85,44 @@ export default function DesignPanel({ controller }: { controller: MissionControl
             </button>
           </li>
         </ol>
+      </div>
+      <div className="design-metrics" aria-label="Recursos del diseño">
+        {[
+          {
+            label: 'Masa',
+            used: evaluation.total.mass,
+            limit: evaluation.capacity.mass,
+            unit: 'kg',
+          },
+          {
+            label: 'Potencia',
+            used: evaluation.total.power,
+            limit: evaluation.capacity.power,
+            unit: 'W',
+          },
+          {
+            label: 'Datos',
+            used: evaluation.total.data,
+            limit: evaluation.capacity.data,
+            unit: 'GB/día',
+          },
+          {
+            label: 'Costo',
+            used: evaluation.total.cost,
+            limit: evaluation.capacity.budget,
+            unit: 'M USD',
+          },
+        ].map((metric) => (
+          <div className={metric.used > metric.limit ? 'is-over' : ''} key={metric.label}>
+            <span>{metric.label}</span>
+            <strong>
+              {metric.used} / {metric.limit} <small>{metric.unit}</small>
+            </strong>
+            <i aria-hidden="true">
+              <b style={{ width: `${Math.min(100, (metric.used / metric.limit) * 100)}%` }} />
+            </i>
+          </div>
+        ))}
       </div>
       {guidance.objective && (
         <section className="design-brief" aria-label="Encargo científico elegido">
@@ -154,12 +193,15 @@ export default function DesignPanel({ controller }: { controller: MissionControl
             />{' '}
             Separar las piezas para ver los acoplamientos
           </label>
-          <p className="small-note">
-            Hábitat: +90 kg, +55 W, +14 M USD. Soportes: +12 kg, +2 M USD. Valores ficticios para
-            aprender; los sistemas básicos están incluidos en el presupuesto base. No se simula
-            soporte vital ni combustible real. El módulo habitable es una pieza opcional del modelo;
-            instalarlo no convierte este encargo orbital en una misión tripulada.
-          </p>
+          <details className="assembly-facts">
+            <summary>Supuestos y límites de estas piezas</summary>
+            <p className="small-note">
+              Hábitat: +90 kg, +55 W, +14 M USD. Soportes: +12 kg, +2 M USD. Valores ficticios para
+              aprender; los sistemas básicos están incluidos en el presupuesto base. No se simula
+              soporte vital ni combustible real. El módulo habitable es una pieza opcional del
+              modelo; instalarlo no convierte este encargo orbital en una misión tripulada.
+            </p>
+          </details>
         </div>
       )}
       {activeStep === 2 && (

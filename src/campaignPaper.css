@@ -77,6 +77,8 @@
   color: #fffdf3;
   box-shadow: 2px 3px 0 #52656b;
 }
+.app-shell .stage-nav .demo-entry { margin-left: auto; align-self: center; white-space: nowrap; border: 1px solid #56878b; background: #e3eee9; color: #355f64; padding: 9px 12px; font-size: 12px; font-weight: 700; text-decoration: none; }
+.app-shell .stage-nav .demo-entry:hover { background: #d2e5dc; }
 
 .app-shell .exploration-story,
 .app-shell .campaign-panel,
