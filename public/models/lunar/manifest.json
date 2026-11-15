@@ -1,0 +1,27 @@
+{
+  "source": "ODYSSEY_BASE_LUNAR_v01.blend",
+  "sourceSHA256": "4916b1564d40067046d89c905e4fcfb55b9b7cbf0ef45b16440984392a49dc2e",
+  "units": "m",
+  "landmarks": {
+    "LUNA_PUNTO_ATERRIZAJE": [
+      -84.0,
+      78.0
+    ],
+    "LUNA_ZONA_CRATER": [
+      26.0,
+      -63.0
+    ],
+    "LUNA_ZONA_BASE": [
+      57.0,
+      66.0
+    ],
+    "LUNA_ZONA_ROCAS": [
+      -77.0,
+      -32.0
+    ],
+    "LUNA_ZONA_INVESTIGACION": [
+      94.0,
+      -86.0
+    ]
+  }
+}

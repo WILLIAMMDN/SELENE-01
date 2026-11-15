@@ -1,3 +1,4 @@
+import EarthTools from './tools/EarthTools'
 import OdysseyLander from '../spacecraft/OdysseyLander'
 import EnvironmentProps from './EnvironmentProps'
 import CampusWildlife from './CampusWildlife'
@@ -5,7 +6,7 @@ import { useFrame } from '@react-three/fiber'
 import type { Group } from 'three'
 import OdysseyShip from '../spacecraft/OdysseyShip'
 import { occupant, buildingAt, INTERIOR_STATIONS } from './buildingNavigation'
-import PaintedClouds from './PaintedClouds'
+import CampusObservatory from './CampusObservatory'
 import CampusAtmosphere from './CampusAtmosphere'
 import ArtemisaBuildings from './ArtemisaBuildings'
 import { IllustratedGround, CampusRoads } from './IllustratedTerrain'
@@ -213,7 +214,6 @@ function Landscape({ reduced = false }: { reduced?: boolean }) {
           variant={i}
         />
       ))}
-      <PaintedClouds />
     </>
   )
 }
@@ -229,6 +229,7 @@ export default memo(function Environment({
       <IllustratedGround />
       <CampusRoads />
       <EnvironmentProps />
+      <EarthTools paused={paused} reduced={reduced} />
       <OdysseyLander x={87} z={-13} height={groundHeight} paused={paused} training />
       <CampusWildlife reduced={reduced} paused={paused} />
       <CampusAtmosphere reduced={reduced} />
@@ -246,6 +247,7 @@ export default memo(function Environment({
       <OdysseyDisplay position={[49, groundHeight(49, -16), -16]} />
       <Launch />
       <Observatory />
+      <CampusObservatory paused={paused} reduced={reduced} />
       <Rober
         position={[34, groundHeight(34, 8), 8]}
         height={groundHeight}

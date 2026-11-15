@@ -22,7 +22,9 @@ type Props = {
 export default function OdysseyLander({ x, z, height, paused = false, training = false }: Props) {
   const pausedRef = useRef(paused)
   pausedRef.current = paused
-  const { scene, animations } = useGLTF(`${import.meta.env.BASE_URL}models/lander/lander_l01.glb`)
+  const { scene, animations } = useGLTF(
+    `${import.meta.env.BASE_URL}models/lander/lander_l01_v01.glb`,
+  )
   const root = useMemo(() => {
     const copy = clone(scene),
       meshes: T.Mesh[] = []

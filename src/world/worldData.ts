@@ -98,7 +98,7 @@ export const SECTORS: Sector[] = [
     description:
       'Un lugar para mirar el cielo y entender la escala del proyecto: esta zona es el primer capítulo de un mundo conectado por destinos.',
     detail:
-      'Mirador ajardinado y telescopio. La órbita lunar ya existe en la campaña; el cuaderno de este puesto conserva tus decisiones y los resultados de la misión.',
+      'Mirador ajardinado, telescopio y observatorio de cúpula animada. La órbita lunar ya existe en la campaña; el cuaderno de este puesto conserva tus decisiones y los resultados de la misión.',
     chapter: 'EL SIGUIENTE HORIZONTE',
   },
 ]

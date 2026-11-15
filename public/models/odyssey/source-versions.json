@@ -1,0 +1,30 @@
+[
+  {
+    "source": "ODYSSEY_LANDER_L01_v01.blend",
+    "sourceSHA256": "75d03140fe55bde6b994d369cd26b1c3b1567a9a32321185d55e2169af9609fe",
+    "file": "lander/lander_l01_v01.glb",
+    "root": "LANDER_L01_ROOT",
+    "bytes": 423388
+  },
+  {
+    "source": "Nave_ODYSSEY_Lanzador_Animado_v01.blend",
+    "sourceSHA256": "09469ea59e1a84173b5b926698e91fef2e03bf7d6f49872b0625f12bbe89d0c5",
+    "file": "launch/lanzador_odyssey_v01.glb",
+    "root": "LANZADOR_ROOT",
+    "bytes": 653896
+  },
+  {
+    "source": "Nave_ODYSSEY_Lanzador_Animado_v01.blend",
+    "sourceSHA256": "09469ea59e1a84173b5b926698e91fef2e03bf7d6f49872b0625f12bbe89d0c5",
+    "file": "launch/plataforma_odyssey_v01.glb",
+    "root": "PLATAFORMA_ROOT",
+    "bytes": 1339520
+  },
+  {
+    "source": "Nave_ODYSSEY_Final_Modelado_v01.blend",
+    "sourceSHA256": "a15d36b980bc5c833b7e68372ab561b0ff4e91085cc3f0b6e147d3ac88b46517",
+    "file": "odyssey/nave_modelada_v01.glb",
+    "root": "ODYSSEY_ROOT",
+    "bytes": 2976848
+  }
+]

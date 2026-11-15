@@ -1,5 +1,9 @@
 import type { SectorId } from '../../game/missionTypes'
 export type Panel =
+  | 'tools'
+  | 'wardrobe'
+  | 'sky'
+  | 'observatory-demo'
   | 'lander'
   | 'menu'
   | 'journal'

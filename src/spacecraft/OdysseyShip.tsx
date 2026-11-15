@@ -209,7 +209,13 @@ export function OdysseyDisplay({ position }: { position: [number, number, number
         color="#c8c4ac"
       />
       <group position={[0, 0.3, 0]}>
-        <OdysseyShip />
+        <group scale={ODYSSEY_SCALE} position={[0, 6.075 * ODYSSEY_SCALE, 0]}>
+          <AssetBoundary>
+            <Suspense fallback={null}>
+              <ModuleModel file="nave_modelada_v01" />
+            </Suspense>
+          </AssetBoundary>
+        </group>
       </group>
       <Sign
         text="ODYSSEY / PROTOTIPO"

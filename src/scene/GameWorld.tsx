@@ -1,3 +1,5 @@
+import { useWardrobe } from '../world/wardrobe'
+import CampusSky from '../world/sky/CampusSky'
 import AdaptiveResolution from '../world/performance/AdaptiveResolution'
 import { bindCharacterKeyboard } from '../world/controls/keyboard'
 import LaunchComplex from '../spacecraft/LaunchComplex'
@@ -31,6 +33,7 @@ function Campus({
   onInteract: (id: Station) => void
   controls: RefObject<CharacterControls>
 }) {
+  const wardrobe = useWardrobe()
   const player = useRef<THREE.Group>(null)
   const motion = useRef(createCharacterMotion())
   const activate = useCallback(() => {
@@ -96,22 +99,15 @@ function Campus({
     <>
       <color attach="background" args={['#68babc']} />
       <fog attach="fog" args={['#68babc', 300, 580]} />
-      <ambientLight intensity={1.25} />
-      <directionalLight
-        position={[-80, 150, 65]}
-        intensity={2.1}
-        castShadow
-        shadow-mapSize={[2048, 2048]}
-        shadow-camera-left={-95}
-        shadow-camera-right={95}
-        shadow-camera-top={95}
-        shadow-camera-bottom={-95}
-        shadow-camera-far={420}
-        shadow-normalBias={0.025}
-      />
+      <CampusSky reduced={false} paused={false} quality="standard" />
       <Environment />
       <group ref={player} position={[0, 0, 37]}>
-        <ExplorerCharacter motion={motion} />
+        <ExplorerCharacter
+          motion={motion}
+          character={wardrobe.character}
+          outfit={wardrobe.earth}
+          helmet={wardrobe.helmet}
+        />
       </group>
       <TarsCompanions
         targets={[{ id: 'crew-1', body: player, motion }]}
@@ -215,7 +211,7 @@ export default function GameWorld({
   return (
     <div className="world-frame" aria-label="Mundo 3D de SELENE-01">
       <Canvas
-        camera={{ position: [8, 9, 20], fov: 48, near: 0.1, far: 400 }}
+        camera={{ position: [8, 9, 20], fov: 48, near: 0.1, far: 650 }}
         shadows
         dpr={[1, 1.6]}
       >

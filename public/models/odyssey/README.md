@@ -11,3 +11,7 @@ Materiales mates, sombreado por bandas, texturas y contornos aplicados por Three
 El manifiesto conserva sus validaciones de autoría; no constituyen pruebas ejecutadas durante esta integración. Procedencia y derechos de los adjuntos: materiales aportados por el usuario.
 
 La plataforma tiene 10,3 m de radio para alojar los paneles diagonales, con margen de colisión de 11 m. El camino hacia lanzamiento rodea la exposición.
+
+## Modelo fuente v01 — 15 de noviembre de 2026
+
+`nave_modelada_v01.glb` se exporta del montaje ODYSSEY_ROOT de `Nave_ODYSSEY_Final_Modelado_v01.blend` y ocupa la exposición del prototipo en Tierra y Marte. El archivo no contiene clips de animación. El hangar y la campaña conservan los 13 GLB finales y sus acoplamientos mejorados para permitir añadir y retirar módulos. No se sustituye el constructor por una nave monolítica. El modelo fuente se muestra a la misma escala 5/3 y con la misma referencia vertical. `source-versions.json` registra hashes y procedencia de las cuatro exportaciones ODYSSEY nuevas.

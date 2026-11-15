@@ -45,7 +45,7 @@ Consulta docs/TEAM.md y CONTRIBUTING.md. No introducir código, arte ni archivos
 
 ## Actualización de recursos
 
-Abrir `?world=earth` para Tierra o `?world=mars` para Marte. ROBER está junto al taller: pulsa su rótulo para abrir el control remoto. La exploradora de Quaternius es el único personaje terrestre; Ellis fue retirado. Shift corre, Espacio salta y Ctrl funciona junto a los bancos. El objetivo y el diseño se guardan en este navegador. Ver `docs/WORLD_DELIVERY.md` y los README de `public/models` para procedencia, controles y alcance.
+Abrir `?world=earth` para Tierra o `?world=mars` para Marte. ROBER está junto al taller: pulsa su rótulo para abrir el control remoto. La exploradora de Quaternius conserva su versión clásica y dispone de vestuario ampliado; Ellis sigue retirado. Shift corre, Espacio salta y Ctrl funciona junto a los bancos. El objetivo y el diseño se guardan en este navegador. Ver `docs/WORLD_DELIVERY.md` y los README de `public/models` para procedencia, controles y alcance.
 
 ## Documentos
 
@@ -101,3 +101,15 @@ Las pantallas se agrupan en `src/ui/`; las reglas, el controlador y los almacene
 
 
 La campaña ofrece requisitos consultables en TARS y las estaciones, consecuencias calculadas de cada decisión de operaciones e informes vinculados al encargo elegido. Volver a revisar un diseño ya aprobado conserva su vuelo guardado. Ver [narrativa e interfaz](docs/NARRATIVE_AND_INTERFACE.md).
+
+## Vestuario, cielo y destino lunar — 15 de noviembre de 2026
+
+- Menú → Vestuario y gestos: uniforme formal, ropa original editada y traje EVA con casco opcional, además de los personajes clásicos. Preferencias guardadas por destino.
+- Menú → Cielo y clima, en Tierra: ciclo día/noche, hora fija, lluvia y tormenta; nubes ilustradas instanciadas con modo ligero.
+- Mirador: observatorio adicional con apertura, seguimiento, giro y cierre. Se mantienen la estación de informes y su acceso.
+- Menú → Luna (`?world=moon`): base ODYSSEY, terreno original, módulos y corredores, despliegue de paneles de energía y cápsula L01 en su explanada. Exploración exterior, sin una segunda campaña.
+- Versiones fuente v01 de nave, lanzador, plataforma y cápsula integradas en sus funciones correspondientes. El ensamblaje modular de la campaña continúa intacto.
+
+Detalles: [integración de recursos](docs/NEW_ASSETS_2026-11-15.md). Las pruebas y la revisión visual de esta ampliación quedan a cargo del usuario por indicación expresa.
+
+El menú de vestuario también permite elegir **Piloto**, con los mismos controles de locomoción y gestos. El **banco de herramientas**, junto al taller terrestre, ofrece ocho demostraciones originales: visita su acceso desde el mapa y pulsa E o el cofre. El cielo se amplió con cuatro siluetas de nubes, capas de profundidad y luz de horizonte, conservando modos estándar y ligero.

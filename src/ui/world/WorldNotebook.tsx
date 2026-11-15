@@ -1,3 +1,9 @@
+import ToolsPanel from './ToolsPanel'
+import { TOOL_STATION } from '../../world/tools/toolLayout'
+import { LUNAR_LANDER } from '../../world/lunar/lunarNavigation'
+import WardrobePanel from './WardrobePanel'
+import SkyPanel from './SkyPanel'
+import { OBSERVATORY_ACTIONS } from '../../world/observatoryLayout'
 import { useEffect, useRef } from 'react'
 import { LANDER_ACTIONS } from '../../spacecraft/OdysseyLander'
 import MissionStation from '../../world/MissionStation'
@@ -57,6 +63,8 @@ export default function WorldNotebook({
     next = nextMissionStep(),
     world = useWorld(),
     mars = world.id === 'mars',
+    moon = world.id === 'moon',
+    offworld = world.id !== 'earth',
     SECTORS = world.sectors
   const active = SECTORS.find((s) => s.id === panel),
     objectiveNames = OBJECTIVE_NAMES
@@ -99,6 +107,35 @@ export default function WorldNotebook({
         <button className="dialog-close" aria-label="Cerrar" onClick={() => onClose()}>
           ×
         </button>
+        {panel === 'tools' && !offworld && <ToolsPanel onClose={onClose} />}
+        {panel === 'wardrobe' && <WardrobePanel world={world.id} onClose={onClose} />}
+        {panel === 'sky' && !offworld && <SkyPanel reduced={reduced} />}
+        {panel === 'observatory-demo' && !offworld && (
+          <>
+            <span className="paper-kicker">MIRADOR / OBSERVATORIO</span>
+            <h2 id="dialog-title">Una ventana al cielo.</h2>
+            <p>Abre la cúpula y explora los mecanismos del telescopio.</p>
+            <div className="menu-grid">
+              {OBSERVATORY_ACTIONS.map(([id, label]) => (
+                <button
+                  key={id}
+                  onClick={() => {
+                    window.dispatchEvent(
+                      new CustomEvent('selene-observatory-action', { detail: id }),
+                    )
+                    onClose()
+                  }}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <small>
+              Demostración de mecanismos. El seguimiento es una animación artística, sin cálculo
+              astronómico.
+            </small>
+          </>
+        )}
         {panel === 'lander' && (
           <>
             <span className="paper-kicker">ODYSSEY / L01</span>
@@ -143,15 +180,20 @@ export default function WorldNotebook({
             <div className="menu-grid">
               <button onClick={() => onClose()}>Continuar explorando</button>
               <button onClick={() => onPanel('journal')}>Bitácora de misión</button>
-              <button onClick={() => onPanel('map')}>Mapa de Artemisa</button>
+              <button onClick={() => onPanel('map')}>Mapa de {world.place}</button>
               <button onClick={() => onMode('map')}>Vista aérea</button>
               <button onClick={() => onMode('tour')}>Recorrido del campus</button>
               <button onClick={() => onPanel('controls')}>Controles</button>
+              <button onClick={() => onPanel('wardrobe')}>Vestuario y gestos</button>
+              {!offworld && <button onClick={() => onPanel('sky')}>Cielo y clima</button>}
               <button onClick={() => onPanel('settings')}>Opciones</button>
               <button onClick={() => onPanel('scale')}>El mundo y sus fuentes</button>
             </div>
             <div className="menu-worlds">
-              <button aria-pressed={!mars} onClick={() => onWorld('earth')}>
+              <button aria-pressed={moon} onClick={() => onWorld('moon')}>
+                Luna
+              </button>
+              <button aria-pressed={!offworld} onClick={() => onWorld('earth')}>
                 Tierra
               </button>
               <button aria-pressed={mars} onClick={() => onWorld('mars')}>
@@ -237,7 +279,12 @@ export default function WorldNotebook({
                 ))}
               </div>
             </div>
-            {!mars && (
+            {!offworld && (
+              <button className="secondary-world" onClick={() => onTravelPoint(TOOL_STATION.entry)}>
+                Visitar el banco de herramientas →
+              </button>
+            )}
+            {!offworld && (
               <button
                 className="secondary-world"
                 onClick={() => {
@@ -250,14 +297,18 @@ export default function WorldNotebook({
             <button
               className="secondary-world"
               onClick={() => {
-                onTravelPoint(mars ? [61, -49] : [87, -5])
+                onTravelPoint(
+                  moon ? [LUNAR_LANDER.x, LUNAR_LANDER.z + 8] : mars ? [61, -49] : [87, -5],
+                )
               }}
             >
               Visitar la cápsula L01 →
             </button>
             <small>
-              Las actividades se realizan dentro de las estaciones. La costa de fauna está al oeste
-              del campus.
+              Las actividades se realizan dentro de las estaciones.{' '}
+              {moon
+                ? 'El mapa lunar muestra los módulos y destinos del terreno.'
+                : 'La costa de fauna está al oeste del campus terrestre.'}
             </small>
           </>
         )}
@@ -327,8 +378,8 @@ export default function WorldNotebook({
           <>
             <h2 id="dialog-title">Un mundo para aprender.</h2>
             <p>
-              Artemisa: 240 × 240 m. Ares: 320 × 320 m. Escenarios ficticios con una escala común de
-              un metro por unidad.
+              Artemisa: 240 × 240 m. Ares: 320 × 320 m. Base lunar: 300 × 300 m. Escenarios
+              ficticios con una escala común de un metro por unidad.
             </p>
             <details>
               <summary>Medidas y referencias NASA</summary>
@@ -360,13 +411,62 @@ export default function WorldNotebook({
                 Ir a la entrada →
               </button>
             )}
-            <MissionStation
-              key={active.id}
-              sector={active.id}
-              present={mode === 'walk' && position.nearby === active.id}
-              mars={mars}
-              onCampaign={onCampaign}
-            />
+            {!offworld && active.id === 'observatory' && (
+              <button
+                className="secondary-world"
+                disabled={position.nearby !== 'observatory'}
+                onClick={() => onPanel('observatory-demo')}
+              >
+                Explorar el observatorio →
+              </button>
+            )}
+            {moon ? (
+              <>
+                <p>{active.description}</p>
+                <p>{active.detail}</p>
+                {active.id === 'control' && (
+                  <div className="menu-grid">
+                    {[
+                      [true, 'Desplegar paneles'],
+                      [false, 'Recoger paneles'],
+                    ].map(([open, label]) => (
+                      <button
+                        key={String(open)}
+                        disabled={position.nearby !== active.id}
+                        onClick={() => {
+                          window.dispatchEvent(
+                            new CustomEvent('selene-lunar-power', { detail: open }),
+                          )
+                          onClose()
+                        }}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {active.id === 'launch' && (
+                  <button
+                    className="secondary-world"
+                    disabled={position.nearby !== active.id}
+                    onClick={() => onPanel('lander')}
+                  >
+                    Controlar cápsula L01 →
+                  </button>
+                )}
+                <button className="secondary-world" onClick={() => onWorld('earth')}>
+                  Volver a Artemisa
+                </button>
+              </>
+            ) : (
+              <MissionStation
+                key={active.id}
+                sector={active.id}
+                present={mode === 'walk' && position.nearby === active.id}
+                mars={mars}
+                onCampaign={onCampaign}
+              />
+            )}
           </>
         )}
       </section>

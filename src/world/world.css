@@ -35,3 +35,6 @@
 .mission-objectives{display:grid;gap:12px}.mission-objectives article{padding:16px;border:1px solid #b8bfaa;border-radius:8px;background:#e7e8d9}.mission-objectives p{margin:8px 0}.mission-objectives small{display:block}
 .station-notice{padding:12px;background:#dce3cc;border-left:3px solid #457d80;font-size:13px}
 .mission-resources{display:grid;grid-template-columns:1fr 1fr;gap:10px}.mission-resources>div{background:#e4e7d5;padding:12px;border-radius:6px}.mission-resources dt{font-size:11px;letter-spacing:.08em;text-transform:uppercase}.mission-resources dd{margin:6px 0 0;font-weight:600}
+
+.world-recovery { position: absolute; bottom: 24px; left: 24px; }
+.world-recovery button { padding: 10px 16px; background: #f8f5e9; border: 1px solid #40575c; color: #40575c; cursor: pointer; }

@@ -1,3 +1,5 @@
+import { TOOL_COLLIDERS } from '../tools/toolLayout'
+import { OBSERVATORY_COLLIDERS } from '../observatoryLayout'
 import { createCollisionGrid, type BoxCollider } from './collision'
 
 // Shared by renderers and navigation: changing an object location also moves its collision.
@@ -42,6 +44,8 @@ export const LAMPS = [
   [-70, 16],
 ]
 export const PROP_COLLIDERS: BoxCollider[] = [
+  ...OBSERVATORY_COLLIDERS,
+  ...TOOL_COLLIDERS,
   ...RAILS.map(([x, z, angle]) => ({ x, z, angle, hx: 2.2, hz: 0.08 })),
   ...CABINETS.map(([x, z], i) => ({ x, z, angle: i * 0.7, hx: 0.425, hz: 0.21 })),
   ...BENCHES.map(([x, z, angle]) => ({ x, z, angle, hx: 0.95, hz: 0.35 })),

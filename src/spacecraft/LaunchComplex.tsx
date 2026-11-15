@@ -73,7 +73,7 @@ function Asset({
   config?: DesignConfig
 }) {
   const { scene, animations } = useGLTF(
-    `${import.meta.env.BASE_URL}models/launch/${platform ? 'plataforma' : 'lanzador'}_odyssey.glb?v=juego-nasa-1`,
+    `${import.meta.env.BASE_URL}models/launch/${platform ? 'plataforma' : 'lanzador'}_odyssey_v01.glb`,
   )
   const root = useMemo(() => prepare(scene), [scene]),
     mixer = useMemo(() => new T.AnimationMixer(root), [root]),

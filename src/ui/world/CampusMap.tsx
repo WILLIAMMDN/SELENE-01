@@ -1,3 +1,4 @@
+import lunarLayout from '../../world/lunar/lunarLayout.json'
 import { CAMPUS_ROADS, CAMPUS_BUILDINGS } from '../../world/campusLayout'
 import { useWorld } from '../../world/worldConfig'
 import type { PositionReport } from '../../world/ExplorerScene'
@@ -61,29 +62,45 @@ export default function CampusMap({
           </text>
         </>
       )}
-      {CAMPUS_ROADS.map((road, i) => (
-        <polyline
-          key={i}
-          points={road.points.map(([x, z]) => `${tx(x)},${tz(z)}`).join(' ')}
-          fill="none"
-          stroke="#f9f1d9"
-          strokeWidth={road.width * factor}
-          strokeLinejoin="round"
-          strokeLinecap="round"
-        />
-      ))}
-      {CAMPUS_BUILDINGS.map((b) => (
-        <rect
-          key={b.id}
-          x={tx(b.x - b.width / 2)}
-          y={tz(b.z - b.depth / 2)}
-          width={b.width * factor}
-          height={b.depth * factor}
-          fill="#8daba1"
-          stroke="#526e68"
-          strokeWidth=".5"
-        />
-      ))}
+      {world.id !== 'moon' &&
+        CAMPUS_ROADS.map((road, i) => (
+          <polyline
+            key={i}
+            points={road.points.map(([x, z]) => `${tx(x)},${tz(z)}`).join(' ')}
+            fill="none"
+            stroke="#f9f1d9"
+            strokeWidth={road.width * factor}
+            strokeLinejoin="round"
+            strokeLinecap="round"
+          />
+        ))}
+      {world.id !== 'moon' &&
+        CAMPUS_BUILDINGS.map((b) => (
+          <rect
+            key={b.id}
+            x={tx(b.x - b.width / 2)}
+            y={tz(b.z - b.depth / 2)}
+            width={b.width * factor}
+            height={b.depth * factor}
+            fill="#8daba1"
+            stroke="#526e68"
+            strokeWidth=".5"
+          />
+        ))}
+      {world.id === 'moon' &&
+        lunarLayout.colliders
+          .slice(0, 10)
+          .map((b, i) => (
+            <rect
+              key={i}
+              x={tx(b.x - b.hx)}
+              y={tz(b.z - b.hz)}
+              width={b.hx * 2 * factor}
+              height={b.hz * 2 * factor}
+              fill="#8daba1"
+              stroke="#526e68"
+            />
+          ))}
       {world.id === 'earth' && (
         <rect
           x={tx(27.667)}
@@ -142,15 +159,15 @@ export default function CampusMap({
       ))}
       <g>
         <circle
-          cx={tx(world.id === 'earth' ? 87 : 61)}
-          cy={tz(world.id === 'earth' ? -13 : -57)}
+          cx={tx(world.id === 'moon' ? -84 : world.id === 'earth' ? 87 : 61)}
+          cy={tz(world.id === 'moon' ? 78 : world.id === 'earth' ? -13 : -57)}
           r={6 * factor}
           fill="#e5dac1"
           stroke="#586e69"
         />
         <text
-          x={tx(world.id === 'earth' ? 87 : 61)}
-          y={tz(world.id === 'earth' ? -13 : -57) + 2}
+          x={tx(world.id === 'moon' ? -84 : world.id === 'earth' ? 87 : 61)}
+          y={tz(world.id === 'moon' ? 78 : world.id === 'earth' ? -13 : -57) + 2}
           textAnchor="middle"
           fontSize="6"
           fill="#405c60"

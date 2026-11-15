@@ -1,3 +1,5 @@
+import { lunarStationAt } from '../lunar/lunarNavigation'
+import CharacterBoundary from './CharacterBoundary'
 import { moveWithCollisions } from '../navigation/collision'
 import { useEffect, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
@@ -9,6 +11,7 @@ import { roberRemote } from '../roberControl'
 import { useWorld } from '../worldConfig'
 import TarsCompanions from '../../robot/TarsCompanion'
 import Astronaut from '../Astronaut'
+import { useWardrobe } from '../wardrobe'
 import ExplorerCharacter from '../ExplorerCharacter'
 import { MOTION_SCALE } from '../physicalScale'
 import { CHARACTER_KEYS, createCharacterMotion, stepCharacter } from '../characterMotion'
@@ -29,10 +32,15 @@ export default function PlayerRig({
   onPosition,
   onInteract,
 }: SceneProps) {
+  const wardrobe = useWardrobe()
   const world = useWorld(),
     { sectors: SECTORS, start: START, height: terrainHeight, canWalk } = world
+  const moon = world.id === 'moon'
   const groundHeight = (x: number, z: number) =>
-    walkingHeight(x, z, terrainHeight, world.id === 'earth')
+    moon ? terrainHeight(x, z) : walkingHeight(x, z, terrainHeight, world.id === 'earth')
+  const roomAt = (x: number, z: number) => (moon ? null : buildingAt(x, z, world.id === 'earth'))
+  const stationFor = (x: number, z: number) =>
+    moon ? lunarStationAt(x, z) : stationAt(x, z, world.id === 'earth')
 
   const player = useRef<T.Group>(null),
     moving = useRef(0),
@@ -63,16 +71,12 @@ export default function PlayerRig({
       controls: input.current,
       enabled: () => !paused && modeRef.current === 'walk' && !roberRemote.current,
       onAction: (e) => {
-        if (
-          e.code === 'Space' &&
-          buildingAt(location.current.x, location.current.z, world.id === 'earth')
-        )
-          return
+        if (e.code === 'Space' && roomAt(location.current.x, location.current.z)) return
         if (world.id === 'earth' && CHARACTER_KEYS[e.code]) {
           e.preventDefault()
           if (!e.repeat) input.current.actions.push(CHARACTER_KEYS[e.code])
         } else if (e.code === 'KeyE' && !e.repeat) {
-          const station = stationAt(location.current.x, location.current.z, world.id === 'earth')
+          const station = stationFor(location.current.x, location.current.z)
           if (station) onInteract(station.sector)
         }
       },
@@ -166,7 +170,7 @@ export default function PlayerRig({
           player.current.rotation.y += difference * Math.min(1, delta * 14)
         }
         if (result.interact) {
-          const station = stationAt(p.x, p.z, world.id === 'earth')
+          const station = stationFor(p.x, p.z)
           if (station) onInteract(station.sector)
         }
       } else {
@@ -208,6 +212,12 @@ export default function PlayerRig({
         }
       }
     }
+    if (world.id !== 'earth') {
+      motion.current.speed =
+        moving.current *
+        (k.has('ShiftLeft') || k.has('ShiftRight') ? MOTION_SCALE.run : MOTION_SCALE.walk)
+      motion.current.clip = motion.current.speed > 2.5 ? 'Run' : moving.current ? 'Walk' : 'Idle'
+    }
     occupant.x = p.x
     occupant.z = p.z
     occupant.active = mode === 'walk'
@@ -220,7 +230,7 @@ export default function PlayerRig({
       camera.lookAt(rover.position.x, rover.position.y + 1, rover.position.z)
     } else if (mode === 'walk') {
       const { yaw, pitch, zoom } = input.current
-      const indoors = !!buildingAt(p.x, p.z, world.id === 'earth')
+      const indoors = !!roomAt(p.x, p.z)
       const h = Math.cos(pitch) * (indoors ? 2.6 : zoom)
       camTarget.set(
         p.x + Math.sin(yaw) * h,
@@ -260,20 +270,42 @@ export default function PlayerRig({
       onPosition({
         x: p.x,
         z: p.z,
-        nearby: stationAt(p.x, p.z, world.id === 'earth')?.sector ?? null,
+        nearby: stationFor(p.x, p.z)?.sector ?? null,
         fps: fps.current,
-        room: buildingAt(p.x, p.z, world.id === 'earth'),
+        room: roomAt(p.x, p.z),
       })
     }
   })
   return (
     <>
       <group ref={player} position={[START[0], 0, START[1]]} rotation={[0, Math.PI, 0]}>
-        {world.id === 'earth' ? (
-          <ExplorerCharacter motion={motion} reduced={reduced} paused={paused || mode !== 'walk'} />
-        ) : (
-          <Astronaut moving={moving} phase={phase} />
-        )}
+        <CharacterBoundary
+          key={`${world.id}-${wardrobe.character}-${wardrobe[world.id]}`}
+          fallback={
+            world.id === 'earth' ? (
+              <ExplorerCharacter
+                motion={motion}
+                reduced={reduced}
+                paused={paused || mode !== 'walk'}
+              />
+            ) : (
+              <Astronaut moving={moving} phase={phase} />
+            )
+          }
+        >
+          {world.id === 'earth' || wardrobe[world.id] === 'eva' ? (
+            <ExplorerCharacter
+              motion={motion}
+              reduced={reduced}
+              paused={paused || mode !== 'walk'}
+              character={wardrobe.character}
+              outfit={world.id === 'earth' ? wardrobe.earth : 'eva'}
+              helmet={wardrobe.helmet}
+            />
+          ) : (
+            <Astronaut moving={moving} phase={phase} />
+          )}
+        </CharacterBoundary>
       </group>
       <TarsCompanions
         targets={[{ id: 'crew-1', body: player, motion }]}

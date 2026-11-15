@@ -1,3 +1,4 @@
+import { OBSERVATORY } from './observatoryLayout'
 import { coastDistance, PARKING } from './environmentLayout'
 import modules from './artemisaModules.json'
 export const CAMPUS_BUILDINGS = [
@@ -219,6 +220,7 @@ export const CAMPUS_TREES = [
   ...nearTrees,
 ].filter(
   ([x, z]) =>
+    Math.hypot(x - OBSERVATORY.x, z - OBSERVATORY.z) > 11 &&
     coastDistance(x, z) > 1.2 &&
     Math.hypot(x - 87, z + 13) > 11 &&
     !PARKING.some((b) => Math.abs(x - b.x) < b.hx + 3 && Math.abs(z - b.z) < b.hz + 3) &&

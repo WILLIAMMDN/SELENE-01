@@ -6,19 +6,26 @@ import { mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js'
 import * as T from 'three'
 import { toon } from './ArtKit'
 import { HUMAN_SCALE } from './physicalScale'
+import { wardrobeVisible, type Outfit } from './wardrobe'
 import type { CharacterMotion } from './characterMotion'
 
 export default function ExplorerCharacter({
   motion,
   paused = false,
   reduced = false,
+  outfit = 'classic',
+  character = 'explorer',
+  helmet = true,
 }: {
   motion: RefObject<CharacterMotion>
   paused?: boolean
   reduced?: boolean
+  outfit?: Outfit
+  character?: 'explorer' | 'pilot'
+  helmet?: boolean
 }) {
   const { scene, animations } = useGLTF(
-    `${import.meta.env.BASE_URL}models/characters/quaternius/explorer.glb`,
+    `${import.meta.env.BASE_URL}models/characters/${character === 'pilot' ? 'pilot/pilot.glb' : outfit === 'classic' ? 'quaternius/explorer.glb' : 'wardrobe/explorer_wardrobe.glb?v=wardrobe-2'}`,
   )
   const asset = useMemo(() => {
     const actor = clone(scene),
@@ -35,20 +42,24 @@ export default function ExplorerCharacter({
       const convert = (source: T.Material) => {
         const old = source as T.MeshStandardMaterial
         const color =
-          source.name === 'Shirt'
+          character === 'explorer' && outfit === 'classic' && source.name === 'Shirt'
             ? '#e6e5d0'
-            : source.name === 'Pants'
+            : character === 'explorer' && outfit === 'classic' && source.name === 'Pants'
               ? '#a95b60'
-              : source.name === 'Hair'
+              : character === 'explorer' && outfit === 'classic' && source.name === 'Hair'
                 ? '#454554'
-                : source.name === 'Belt'
+                : character === 'explorer' && outfit === 'classic' && source.name === 'Belt'
                   ? '#477f7f'
                   : old.color
         return new T.MeshToonMaterial({
           color,
           map: old.map,
           gradientMap: toon('#e6e5d0').gradientMap,
-          side: T.DoubleSide,
+          side: old.side,
+          transparent: old.transparent,
+          opacity: old.opacity,
+          depthWrite: !old.transparent,
+          alphaTest: old.alphaTest,
         })
       }
       mesh.material = Array.isArray(mesh.material)
@@ -57,6 +68,10 @@ export default function ExplorerCharacter({
       mesh.castShadow = true
       mesh.receiveShadow = true
       mesh.frustumCulled = false
+      if (
+        (Array.isArray(mesh.material) ? mesh.material : [mesh.material]).some((m) => m.transparent)
+      )
+        continue
       const mat = new T.MeshBasicMaterial({ color: '#303d43', side: T.BackSide })
       mat.onBeforeCompile = (shader) => {
         shader.vertexShader = shader.vertexShader.replace(
@@ -72,6 +87,9 @@ export default function ExplorerCharacter({
         ink.bind(mesh.skeleton, mesh.bindMatrix)
         ink.bindMatrixInverse.copy(mesh.bindMatrixInverse)
       }
+      ink.morphTargetInfluences = mesh.morphTargetInfluences
+      ink.morphTargetDictionary = mesh.morphTargetDictionary
+      ink.userData = { ...mesh.userData }
       ink.position.copy(mesh.position)
       ink.quaternion.copy(mesh.quaternion)
       ink.scale.copy(mesh.scale)
@@ -82,8 +100,15 @@ export default function ExplorerCharacter({
     actor.traverse((n) => {
       if (n instanceof T.SkinnedMesh) n.skeleton.update()
     })
-    const bounds = new T.Box3().setFromObject(actor),
-      size = bounds.getSize(new T.Vector3()),
+    // Use the civil outfit as a common stature reference; helmet must not shrink the body.
+    actor.traverse((n) => {
+      if (n.userData.wardrobe) n.visible = wardrobeVisible(n.userData.wardrobe, 'original', false)
+    })
+    const bounds = new T.Box3()
+    actor.traverseVisible((n) => {
+      if (n instanceof T.Mesh) bounds.union(new T.Box3().setFromObject(n))
+    })
+    const size = bounds.getSize(new T.Vector3()),
       center = bounds.getCenter(new T.Vector3()),
       scale = HUMAN_SCALE.stature / size.y
     const root = new T.Group()
@@ -101,15 +126,30 @@ export default function ExplorerCharacter({
       }
       actions[clip.name] = action
     }
-    return { root, mixer, actions }
+    return { root, actor, mixer, actions }
   }, [scene, animations])
+  useEffect(() => {
+    asset.actor.traverse((n) => {
+      if (n.userData.wardrobe)
+        n.visible = wardrobeVisible(
+          n.userData.wardrobe,
+          character === 'pilot' && outfit === 'classic' ? 'original' : outfit,
+          helmet,
+        )
+    })
+  }, [asset, outfit, helmet, character])
   const active = useRef<T.AnimationAction | null>(null),
     phase = useRef(''),
     preview = useRef<string | null>(null)
   useEffect(() => {
     const perform = (event: Event) => {
       const name = (event as CustomEvent<string>).detail
-      if (['PickUp', 'Punch', 'RecieveHit'].includes(name)) {
+      if (
+        ['PickUp', 'Punch', 'RecieveHit', 'ReceiveHit', 'Saludar', 'MirarAlrededor'].includes(
+          name,
+        ) &&
+        asset.actions[name]
+      ) {
         preview.current = name
         phase.current = ''
       }
@@ -118,6 +158,17 @@ export default function ExplorerCharacter({
     return () => {
       window.removeEventListener('selene-avatar-preview', perform)
       asset.mixer.stopAllAction()
+      asset.mixer.uncacheRoot(asset.actor)
+      const geometries = new Set<T.BufferGeometry>(),
+        materials = new Set<T.Material>()
+      asset.actor.traverse((n) => {
+        if (n instanceof T.Mesh) {
+          geometries.add(n.geometry)
+          for (const m of Array.isArray(n.material) ? n.material : [n.material]) materials.add(m)
+        }
+      })
+      geometries.forEach((g) => g.dispose())
+      materials.forEach((m) => m.dispose())
       active.current = null
       phase.current = ''
     }
@@ -132,13 +183,15 @@ export default function ExplorerCharacter({
       preview.current ??
       (seated
         ? 'SitDown'
-        : state.clip === 'Interact' || state.clip === 'Pick_Up' || state.clip === 'Use_Panel'
-          ? 'PickUp'
-          : state.speed > 2.5
-            ? 'Run'
-            : state.speed > 0.08
-              ? 'Walk'
-              : 'Idle')
+        : state.clip === 'Wave' && asset.actions.Saludar
+          ? 'Saludar'
+          : state.clip === 'Interact' || state.clip === 'Pick_Up' || state.clip === 'Use_Panel'
+            ? 'PickUp'
+            : state.speed > 2.5
+              ? 'Run'
+              : state.speed > 0.08
+                ? 'Walk'
+                : 'Idle')
     const action = asset.actions[name] ?? asset.actions.Idle,
       key = seated ? state.clip : (preview.current ?? name)
     if (action && (active.current !== action || phase.current !== key)) {
