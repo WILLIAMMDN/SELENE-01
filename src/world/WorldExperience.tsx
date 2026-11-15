@@ -83,6 +83,16 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
     [mars, moon],
   )
   useEffect(() => {
+    if (!ready) return
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('launch') === 'true' || params.get('cinematic') === 'true') {
+      launchClock.current.current = 0
+      setLaunchElapsed(0)
+      setLaunching(true)
+    }
+  }, [ready])
+
+  useEffect(() => {
     if (!ready || offworld) return
     try {
       if (localStorage.getItem('selene-arrival-story-v1')) return
