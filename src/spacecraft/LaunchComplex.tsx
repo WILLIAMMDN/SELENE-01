@@ -188,7 +188,7 @@ function EngineExhaust({
           </mesh>
         </group>
       ))}
-      <pointLight color="#e8a76b" intensity={14} distance={34} position={[0, -3, 0]} />
+      <pointLight color="#e8a76b" intensity={28} distance={75} position={[0, -3, 0]} />
     </group>
   )
 }
@@ -198,23 +198,23 @@ function LaunchPadDust({ clock }: { clock: LaunchClock }) {
   useFrame(() => {
     if (!puffs.current) return
     const t = clock.current
-    puffs.current.visible = t >= 5 && t < 14
+    puffs.current.visible = t >= 5 && t < 15
     puffs.current.children.forEach((child, i) => {
-      const angle = (i / 14) * Math.PI * 2
-      const radius = 5 + (t - 5) * 2.25 + (i % 3)
+      const angle = (i / 16) * Math.PI * 2
+      const radius = 6 + (t - 5) * 2.8 + (i % 3)
       child.position.set(Math.cos(angle) * radius, 0.8 + ((i + t) % 4), Math.sin(angle) * radius)
-      child.scale.setScalar(Math.max(0.1, 1.3 + (t - 5) * 0.2))
+      child.scale.setScalar(Math.max(0.1, 1.4 + (t - 5) * 0.25))
     })
   })
   return (
     <group ref={puffs} visible={false}>
-      {Array.from({ length: 14 }, (_, i) => (
+      {Array.from({ length: 16 }, (_, i) => (
         <mesh key={i}>
-          <icosahedronGeometry args={[1.5, 1]} />
+          <icosahedronGeometry args={[1.8, 1]} />
           <meshToonMaterial
             color={i % 3 === 0 ? '#dedac4' : '#a2afa3'}
             transparent
-            opacity={0.5}
+            opacity={0.55}
             depthWrite={false}
           />
         </mesh>

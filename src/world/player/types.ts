@@ -22,4 +22,5 @@ export type SceneProps = {
   reduced: boolean
   onPosition: (p: PositionReport) => void
   onInteract: (id: SectorId) => void
+  cinematic?: boolean
 }

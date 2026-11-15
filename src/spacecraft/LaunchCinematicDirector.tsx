@@ -26,12 +26,14 @@ export default function LaunchCinematicDirector({
   clock,
   launcher,
   habitat,
+  origin = [0, 0, 0],
   onElapsed,
   onComplete,
 }: {
   clock: LaunchClock
   launcher: LauncherId
   habitat: boolean
+  origin?: [number, number, number]
   onElapsed: (seconds: number) => void
   onComplete: () => void
 }) {
@@ -57,14 +59,18 @@ export default function LaunchCinematicDirector({
     completed.current = false
     lastPublished.current = -1
     lastShotId.current = -1
-    // Initial hero close-up start position
-    const topY = 42 + (habitat ? 3 : 0)
-    camera.position.set(4.2, topY - 0.2, 5.8)
-    camera.lookAt(0, topY - 0.8, 0)
+    const [ox, oy, oz] = origin
+    const topY = oy + 42 + (habitat ? 3 : 0)
+    camera.position.set(ox + 4.2, topY - 0.2, oz + 5.8)
+    camera.lookAt(ox, topY - 0.8, oz)
     return () => {
       scene.background = day.clone()
+      if (camera instanceof THREE.PerspectiveCamera) {
+        camera.fov = 50
+        camera.updateProjectionMatrix()
+      }
     }
-  }, [clock, camera, scene, day, habitat])
+  }, [clock, camera, scene, day, habitat, origin])
 
   useFrame((state, rawDelta) => {
     if (completed.current) return
@@ -73,7 +79,8 @@ export default function LaunchCinematicDirector({
     const t = clock.current
     const frame = getLaunchFrame(t, launcher)
     const altitude = frame.altitudeMeters
-    const top = 42 + (habitat ? 3 : 0) + altitude
+    const [ox, oy, oz] = origin
+    const top = oy + 42 + (habitat ? 3 : 0) + altitude
 
     let targetFov = 42
     let shake = 0
@@ -85,15 +92,15 @@ export default function LaunchCinematicDirector({
       const progress = t / 3.0
       const angle = 0.85 + progress * 0.35
       const radius = 5.8 - progress * 0.6
-      cameraGoal.set(Math.sin(angle) * radius, top - 0.2 + progress * 0.2, Math.cos(angle) * radius)
-      lookGoal.set(0, top - 0.8, 0)
+      cameraGoal.set(ox + Math.sin(angle) * radius, top - 0.2 + progress * 0.2, oz + Math.cos(angle) * radius)
+      lookGoal.set(ox, top - 0.8, oz)
       targetFov = 34
     } else if (t < 5.0) {
       // SHOT 2: Plano contra-picado desde la torre de lanzamiento
       currentShotId = 2
       const progress = (t - 3.0) / 2.0
-      cameraGoal.set(15 - progress * 2, 2.5 + progress * 1.5, 14 - progress * 2)
-      lookGoal.set(0, 32 + progress * 6, 0)
+      cameraGoal.set(ox + 15 - progress * 2, oy + 2.5 + progress * 1.5, oz + 14 - progress * 2)
+      lookGoal.set(ox, oy + 32 + progress * 6, oz)
       targetFov = 54
     } else if (t < 8.5) {
       // SHOT 3: Primer plano de toberas e ignición de motores con temblor de cámara
@@ -101,16 +108,16 @@ export default function LaunchCinematicDirector({
       const progress = (t - 5.0) / 3.5
       const angle = 0.72 + progress * 0.22
       const radius = 8.5
-      cameraGoal.set(Math.sin(angle) * radius, altitude + 1.2 + progress * 1.0, Math.cos(angle) * radius)
-      lookGoal.set(0, altitude + 2.5, 0)
+      cameraGoal.set(ox + Math.sin(angle) * radius, oy + altitude + 1.2 + progress * 1.0, oz + Math.cos(angle) * radius)
+      lookGoal.set(ox, oy + altitude + 2.5, oz)
       targetFov = 46
       shake = Math.min(1, (t - 5.0) / 1.2) * 0.38
     } else if (t < 14.5) {
       // SHOT 4: Plano lateral de ascenso y seguimiento de despegue
       currentShotId = 4
       const progress = (t - 8.5) / 6.0
-      cameraGoal.set(24 + Math.sin(t * 0.3) * 4, altitude * 0.68 + 16, 26 + Math.cos(t * 0.3) * 4)
-      lookGoal.set(0, altitude + 16, 0)
+      cameraGoal.set(ox + 24 + Math.sin(t * 0.3) * 4, oy + altitude * 0.68 + 16, oz + 26 + Math.cos(t * 0.3) * 4)
+      lookGoal.set(ox, oy + altitude + 16, oz)
       targetFov = 44
       shake = Math.max(0, 0.26 - progress * 0.2)
     } else if (t < 18.5) {
@@ -119,16 +126,16 @@ export default function LaunchCinematicDirector({
       const progress = (t - 14.5) / 4.0
       const angle = 0.95 + progress * 0.3
       const radius = 11.5 - progress * 1.5
-      cameraGoal.set(Math.sin(angle) * radius, altitude + 14, Math.cos(angle) * radius)
-      lookGoal.set(0, altitude + 12.5, 0)
+      cameraGoal.set(ox + Math.sin(angle) * radius, oy + altitude + 14, oz + Math.cos(angle) * radius)
+      lookGoal.set(ox, oy + altitude + 12.5, oz)
       targetFov = 38
       shake = t >= 15.0 && t <= 15.8 ? 0.22 : 0.04
     } else if (t < 22.5) {
       // SHOT 6: Primer plano: separación de la etapa central
       currentShotId = 6
       const progress = (t - 18.5) / 4.0
-      cameraGoal.set(7.5 + Math.sin(progress * 0.5) * 2, altitude + 24, -8.0 + progress * 2)
-      lookGoal.set(0, altitude + 20, 0)
+      cameraGoal.set(ox + 7.5 + Math.sin(progress * 0.5) * 2, oy + altitude + 24, oz - 8.0 + progress * 2)
+      lookGoal.set(ox, oy + altitude + 20, oz)
       targetFov = 42
       shake = t >= 19.0 && t <= 19.7 ? 0.18 : 0.03
     } else if (t < 26.5) {
@@ -137,8 +144,8 @@ export default function LaunchCinematicDirector({
       const progress = (t - 22.5) / 4.0
       const angle = 0.6 + progress * 0.45
       const radius = 5.8 - progress * 0.6
-      cameraGoal.set(Math.sin(angle) * radius, altitude + 38, Math.cos(angle) * radius)
-      lookGoal.set(0, altitude + 37, 0)
+      cameraGoal.set(ox + Math.sin(angle) * radius, oy + altitude + 38, oz + Math.cos(angle) * radius)
+      lookGoal.set(ox, oy + altitude + 37, oz)
       targetFov = 35
       shake = t >= 23.0 && t <= 23.6 ? 0.12 : 0
     } else if (t < 30.0) {
@@ -147,8 +154,8 @@ export default function LaunchCinematicDirector({
       const progress = (t - 26.5) / 3.5
       const angle = 1.2 + progress * 0.5
       const radius = 4.8 + progress * 0.8
-      cameraGoal.set(Math.sin(angle) * radius, altitude + 37.8, Math.cos(angle) * radius)
-      lookGoal.set(0, altitude + 36.8, 0)
+      cameraGoal.set(ox + Math.sin(angle) * radius, oy + altitude + 37.8, oz + Math.cos(angle) * radius)
+      lookGoal.set(ox, oy + altitude + 36.8, oz)
       targetFov = 34
     } else {
       // SHOT 9: Órbita final: panorámica de ODYSSEY en órbita lunar entre las estrellas
@@ -157,11 +164,11 @@ export default function LaunchCinematicDirector({
       const orbitAngle = 0.5 + progress * 1.6
       const orbitRadius = 9.5
       cameraGoal.set(
-        Math.sin(orbitAngle) * orbitRadius,
-        altitude + 37.2 + Math.sin(progress * Math.PI) * 1.2,
-        Math.cos(orbitAngle) * orbitRadius,
+        ox + Math.sin(orbitAngle) * orbitRadius,
+        oy + altitude + 37.2 + Math.sin(progress * Math.PI) * 1.2,
+        oz + Math.cos(orbitAngle) * orbitRadius,
       )
-      lookGoal.set(0, altitude + 36.8, 0)
+      lookGoal.set(ox, oy + altitude + 36.8, oz)
       targetFov = 38
     }
 

@@ -160,7 +160,45 @@
 .launch-film-subtitles span { display: block; color: #c1d5cc; font-size: 9px; letter-spacing: .18em; margin-bottom: 5px; }
 .launch-film-subtitles strong { display: block; font: 700 clamp(17px, 2vw, 23px) 'Space Grotesk',sans-serif; }
 .launch-film-subtitles p { margin: 8px 0 0; font-size: clamp(12px,1.35vw,15px); line-height:1.5; }
-.launch-film-data { display:flex; justify-content:space-between; gap:10px; font-size:11px; color:#ecf0e4; font-variant-numeric:tabular-nums; text-shadow:0 1px 5px #132733; }
+.launch-sub-kicker {
+  color: #79bcc1 !important;
+  font-weight: 700;
+  letter-spacing: .15em !important;
+}
+.launch-film-telemetry-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.telemetry-pill {
+  background: rgba(23, 45, 56, 0.92);
+  border: 1px solid #56878b;
+  border-radius: 4px;
+  padding: 6px 10px;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+.telemetry-label {
+  display: block;
+  font-size: 8.5px;
+  letter-spacing: .12em;
+  color: #c1d5cc;
+  margin-bottom: 2px;
+  font-family: 'Space Grotesk', sans-serif;
+}
+.telemetry-pill strong {
+  display: block;
+  font-size: clamp(12px, 1.2vw, 15px);
+  color: #f6f6ec;
+  font-family: 'Space Grotesk', sans-serif;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+@media(max-width: 600px) {
+  .launch-film-telemetry-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
 .launch-film-progress { background:#cad2c488; height:3px; overflow:hidden; }
 .launch-film-progress > div { height:100%; background:#e6b57b; transition:width .12s linear; }
 .launch-film-disclaimer { font-size:9px; color:#e9e5d6; text-align:center; text-shadow:0 1px 5px #14212c; }

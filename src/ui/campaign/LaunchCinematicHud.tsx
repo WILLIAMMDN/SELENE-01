@@ -52,21 +52,27 @@ export default function LaunchCinematicHud({
       )}
       <div className="launch-film-footer">
         <div className="launch-film-subtitles" aria-live="off">
-          <span>TARS / CONTROL DE MISIÓN</span>
+          <span className="launch-sub-kicker">TARS · DIRECTOR DE VUELO DE MISIÓN (NASA / ARTEMIS)</span>
           <strong>{frame.title}</strong>
           <p>{frame.narration}</p>
         </div>
-        <div className="launch-film-data">
-          <span>
-            T+
-            {Math.max(0, Math.floor(seconds - 9))
-              .toString()
-              .padStart(2, '0')}{' '}
-            s
-          </span>
-          <span>
-            {Math.round(frame.altitudeMeters).toLocaleString('es-PE')} m · altitud ilustrativa
-          </span>
+        <div className="launch-film-telemetry-grid">
+          <div className="telemetry-pill">
+            <span className="telemetry-label">ALTITUD</span>
+            <strong>{Math.round(frame.altitudeMeters).toLocaleString('es-PE')} m</strong>
+          </div>
+          <div className="telemetry-pill">
+            <span className="telemetry-label">VELOCIDAD</span>
+            <strong>{frame.velocityKmh.toLocaleString('es-PE')} km/h</strong>
+          </div>
+          <div className="telemetry-pill">
+            <span className="telemetry-label">PRESIÓN MAX-Q</span>
+            <strong>{frame.maxQKpa} kPa</strong>
+          </div>
+          <div className="telemetry-pill">
+            <span className="telemetry-label">ACELERACIÓN</span>
+            <strong>{frame.gForce.toFixed(1)} g</strong>
+          </div>
         </div>
         <div
           className="launch-film-progress"
@@ -79,7 +85,7 @@ export default function LaunchCinematicHud({
           <div style={{ width: `${(seconds / LAUNCH_DURATION) * 100}%` }} />
         </div>
         <span className="launch-film-disclaimer">
-          Simulación visual educativa. No representa una trayectoria ni telemetría real.
+          Telemetría y perfiles de vuelo ilustrativos basados en especificaciones del Sistema de Lanzamiento Espacial (SLS) y Programa Artemis de NASA.
         </span>
       </div>
     </div>

@@ -226,8 +226,19 @@ export default function MissionStation({
               ? savedFlight.ops.status === 'running'
                 ? 'Continuar operación guardada →'
                 : 'Abrir informe del vuelo →'
-              : 'Ir a la autorización de vuelo →'}
+              : 'Autorizar despegue in-situ en LC-01 →'}
           </button>
+          {savedFlight && (
+            <button
+              className="secondary-world"
+              disabled={!present}
+              onClick={() => {
+                window.dispatchEvent(new CustomEvent('selene-launch-cinematic'))
+              }}
+            >
+              Repetir despegue cinematográfico LC-01 ◒
+            </button>
+          )}
           {!verified && (
             <p>Necesitas un objetivo aceptado y una revisión vigente en comunicaciones.</p>
           )}

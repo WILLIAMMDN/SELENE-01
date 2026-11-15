@@ -34,6 +34,7 @@ export default function PlayerRig({
   reduced,
   onPosition,
   onInteract,
+  cinematic = false,
 }: SceneProps) {
   const wardrobe = useWardrobe()
   const world = useWorld(),
@@ -104,11 +105,14 @@ export default function PlayerRig({
       document.removeEventListener('visibilitychange', stop)
     }
   }, [input])
+  const cinematicRef = useRef(cinematic)
+  cinematicRef.current = cinematic
   useEffect(() => {
     const releaseKeyboard = bindCharacterKeyboard({
       controls: input.current,
-      enabled: () => !paused && modeRef.current === 'walk' && !roberRemote.current,
+      enabled: () => !paused && !cinematicRef.current && modeRef.current === 'walk' && !roberRemote.current,
       onAction: (e) => {
+        if (cinematicRef.current) return
         if (world.id === 'earth' && buggy.driving) {
           if (e.code === 'Space') {
             e.preventDefault()
@@ -132,14 +136,14 @@ export default function PlayerRig({
       lastX = 0,
       lastY = 0
     const pointerDown = (e: PointerEvent) => {
-      if (modeRef.current !== 'walk') return
+      if (modeRef.current !== 'walk' || cinematicRef.current) return
       dragging = true
       lastX = e.clientX
       lastY = e.clientY
       canvas.setPointerCapture(e.pointerId)
     }
     const pointerMove = (e: PointerEvent) => {
-      if (!dragging || modeRef.current !== 'walk') return
+      if (!dragging || modeRef.current !== 'walk' || cinematicRef.current) return
       input.current.yaw -= (e.clientX - lastX) * 0.005
       input.current.pitch = T.MathUtils.clamp(
         input.current.pitch + (e.clientY - lastY) * 0.004,
@@ -153,7 +157,7 @@ export default function PlayerRig({
       dragging = false
     }
     const wheel = (e: WheelEvent) => {
-      if (modeRef.current !== 'walk' || firstPerson.current) return
+      if (modeRef.current !== 'walk' || firstPerson.current || cinematicRef.current) return
       e.preventDefault()
       input.current.zoom = T.MathUtils.clamp(input.current.zoom + e.deltaY * 0.006, 4, 15)
     }
@@ -172,6 +176,10 @@ export default function PlayerRig({
     }
   }, [input, gl, paused, onInteract])
   useFrame((state, rawDelta) => {
+    if (cinematic) {
+      if (player.current) player.current.visible = false
+      return
+    }
     const delta = Math.min(rawDelta, 0.05),
       p = location.current,
       k = input.current.keys

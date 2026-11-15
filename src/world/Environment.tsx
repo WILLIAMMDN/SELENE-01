@@ -12,12 +12,14 @@ import { CAMPUS_TREES } from './campusLayout'
 import Tree from './IllustratedTrees'
 import Rober from './Rober'
 import LaunchComplex, { LAUNCH_SITE } from '../spacecraft/LaunchComplex'
-import { OdysseyDisplay } from '../spacecraft/OdysseyShip'
+import type { LaunchClock } from '../spacecraft/launchTimeline'
 import { memo } from 'react'
+import { useBlueprint } from '../game/state/blueprintStore'
 import { Solid, Sign, Window, Door, Solar, Bench, Stroke } from './ArtKit'
 import { canWalk, groundHeight, PALETTE as P } from './worldData'
 
 function Hangar() {
+  const { config, parts } = useBlueprint()
   return (
     <group position={[24, 0, -16]}>
       <Solid position={[0, 0.15, 0]} scale={[25, 0.3, 23]} color="#afb2a0" />
@@ -39,7 +41,7 @@ function Hangar() {
         <Solar position={[4, 24.8, 0]} />
       </group>
       <group position={[0, 0.31, -2]}>
-        <OdysseyShip parts={['fuselage', 'connectors', 'engine', 'cabin']} />
+        <OdysseyShip parts={parts} config={config} />
       </group>
       <group position={[-6, 0.31, 5]}>
         <Solid position={[0, 0.5, 0]} scale={[1.4, 1, 0.65]} color={P.teal} />
@@ -90,15 +92,16 @@ function Hangar() {
     </group>
   )
 }
-function Launch() {
+function Launch({ flightClock }: { flightClock?: LaunchClock }) {
+  const { config, parts } = useBlueprint()
   return (
     <>
       <group position={[LAUNCH_SITE.x, 0, LAUNCH_SITE.z]}>
-        <LaunchComplex />
+        <LaunchComplex parts={parts} config={config} flightClock={flightClock} />
       </group>
       <Sign
         text="04 / LANZAMIENTO ODYSSEY"
-        sub="VEHÍCULO FICTICIO · AUTORIZACIÓN EN ESTE PUESTO"
+        sub="PLATAFORMA LC-01 · PUESTO DE AUTORIZACIÓN"
         position={[64, 1.6, -35]}
         scale={[4.5, 1.12, 1]}
       />
@@ -111,6 +114,14 @@ function Launch() {
           color={P.aqua}
         />
       </group>
+      <Sign
+        text="PASARELA DE ACCESO · TRIPULACIÓN"
+        sub="CREW ACCESS ARM · TORRE LC-01 · CABINA ODYSSEY"
+        position={[61, 2.6, -44]}
+        scale={[5.2, 1.25, 1]}
+        bg={P.teal}
+        fg={P.cream}
+      />
     </>
   )
 }
@@ -214,9 +225,11 @@ function Landscape({ reduced = false }: { reduced?: boolean }) {
 export default memo(function Environment({
   reduced = false,
   paused = false,
+  flightClock,
 }: {
   reduced?: boolean
   paused?: boolean
+  flightClock?: LaunchClock
 }) {
   return (
     <>
@@ -238,8 +251,7 @@ export default memo(function Environment({
         />
       ))}
       <Hangar />
-      <OdysseyDisplay position={[49, groundHeight(49, -16), -16]} />
-      <Launch />
+      <Launch flightClock={flightClock} />
       <Observatory />
       <CampusObservatory paused={paused} reduced={reduced} />
       <Rober

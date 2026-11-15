@@ -2,7 +2,7 @@ import { roomLabel } from './buildingEntrances'
 import VehicleDashboard from '../ui/world/VehicleDashboard'
 import WorldNotebook from '../ui/world/WorldNotebook'
 import { OBJECTIVE_NAMES, type Panel } from '../ui/world/worldUiTypes'
-import { useCampusMission, nextMissionStep, missionVerified } from '../game/campusMission'
+import { useCampusMission, nextMissionStep, missionVerified, blueprintKey } from '../game/campusMission'
 import { loadBlueprint, useBlueprint } from '../game/state/blueprintStore'
 import Icon from '../ui/world/Icon'
 import CampusMap from '../ui/world/CampusMap'
@@ -15,10 +15,15 @@ import StoryDialogue from '../ui/world/StoryDialogue'
 import { ARRIVAL, stationConversation, type Conversation } from '../game/narrative/conversations'
 import { MOTION_SCALE } from './physicalScale'
 import { WorldContext, WORLDS, useWorld, type WorldId } from './worldConfig'
+import LaunchCinematicHud from '../ui/campaign/LaunchCinematicHud'
+import '../spacecraft/launchCinematic.css'
+import { startOperations } from '../game/missionDesign'
+import { loadOperationSession, saveOperationSession } from '../game/state/operationStore'
+import type { LaunchClock } from '../spacecraft/launchTimeline'
 
 const Campaign = lazy(() => import('../App'))
 function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
-  useBlueprint()
+  const blueprint = useBlueprint()
   useCampusMission()
   const world = useWorld(),
     mars = world.id === 'mars',
@@ -36,6 +41,9 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
     [miniMap, setMiniMap] = useState(false)
   const [campaign, setCampaign] = useState(false),
     [campaignStage, setCampaignStage] = useState<'briefing' | 'design' | 'launch'>('briefing')
+  const [launching, setLaunching] = useState(false),
+    [launchElapsed, setLaunchElapsed] = useState(0)
+  const launchClock = useRef<LaunchClock>({ current: 0 })
   const [position, setPosition] = useState<PositionReport>({ x: 0, z: 37, nearby: null, fps: 0 }),
     [travel, setTravel] = useState<Travel>({ id: 'start', serial: 0 })
   const [quality, setQuality] = useState<'standard' | 'light'>('standard'),
@@ -189,10 +197,62 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
     setPanel(null)
     setConversation(null)
   }
+  const finishInSituLaunch = useCallback(() => {
+    setLaunching(false)
+    const draft = loadBlueprint()
+    const next = startOperations()
+    saveOperationSession(blueprintKey(draft.config, draft.parts), next)
+    setConversation({
+      speaker: 'TARS · DIRECTOR DE VUELO',
+      lines: [
+        '¡ODYSSEY ha alcanzado la trayectoria translunar (TLI) nominalmente!',
+        'Separación de etapas completada y paneles solares desplegados. Telemetría Artemis nominal.',
+        'La nave ha entrado en la fase de operaciones científicas en el polo sur lunar.',
+      ],
+      action: 'Ver operaciones en órbita',
+      sector: 'launch',
+    })
+  }, [])
+
+  useEffect(() => {
+    if (!launching) return
+    const handleSkip = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        finishInSituLaunch()
+      }
+    }
+    window.addEventListener('keydown', handleSkip)
+    return () => window.removeEventListener('keydown', handleSkip)
+  }, [launching, finishInSituLaunch])
+
+  useEffect(() => {
+    const launchReplay = () => {
+      setPanel(null)
+      setConversation(null)
+      launchClock.current.current = 0
+      setLaunchElapsed(0)
+      setLaunching(true)
+    }
+    window.addEventListener('selene-launch-cinematic', launchReplay)
+    return () => window.removeEventListener('selene-launch-cinematic', launchReplay)
+  }, [])
+
   const openCampaign = (id: SectorId) => {
     if (offworld || position.nearby !== id) return
     const draft = loadBlueprint()
-    if (id === 'launch' && !missionVerified(draft.config, draft.parts)) return
+    if (id === 'launch') {
+      if (!missionVerified(draft.config, draft.parts)) return
+      const saved = loadOperationSession(blueprintKey(draft.config, draft.parts))
+      if (!saved) {
+        setPanel(null)
+        setConversation(null)
+        launchClock.current.current = 0
+        setLaunchElapsed(0)
+        setLaunching(true)
+        return
+      }
+    }
     setCampaignStage(id === 'hangar' ? 'design' : 'launch')
     setCampaign(true)
     setPanel(null)
@@ -233,21 +293,34 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
           tourIndex={tourIndex}
           travel={travel}
           input={input}
-          paused={!!panel || !!conversation}
+          paused={!!panel || !!conversation || launching}
           reduced={reduced}
           onPosition={onPosition}
           onInteract={onInteract}
           quality={quality}
           onReady={onReady}
+          cinematic={launching}
+          launchClock={launchClock}
+          launchElapsed={launchElapsed}
+          onCinematicProgress={setLaunchElapsed}
+          onCinematicComplete={finishInSituLaunch}
         />
       </div>
+      {launching && (
+        <LaunchCinematicHud
+          seconds={launchElapsed}
+          config={blueprint.config}
+          parts={blueprint.parts}
+          onSkip={finishInSituLaunch}
+        />
+      )}
       {!ready && (
         <div className="world-loading">
           <span className="orbit-mark">◒</span>
           <h1>Bienvenida a {world.place}.</h1>
         </div>
       )}
-      {!conversation && !panel && !(mode === 'walk' && position.room) && (
+      {!launching && !conversation && !panel && !(mode === 'walk' && position.room) && (
         <button className="quest-slip" onClick={() => setPanel('journal')}>
           <span>{offworld ? (moon ? 'LUNA' : 'ARES') : `MISIÓN ${next.number} / 05`}</span>
           <strong>{offworld ? 'Explora el paisaje' : objectiveNames[next.sector]}</strong>
@@ -259,21 +332,23 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
           </small>
         </button>
       )}
-      <button
-        className="paper-icon menu-toggle"
-        aria-label="Abrir menú"
-        title="Menú · Esc"
-        onClick={() => {
-          closeConversation()
-          setPanel('menu')
-        }}
-      >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M9 6h12M9 12h12M9 18h12" />
-          <path d="M3 5h2v2H3zm0 6h2v2H3zm0 6h2v2H3z" />
-        </svg>
-      </button>
-      {!panel && !conversation && (
+      {!launching && (
+        <button
+          className="paper-icon menu-toggle"
+          aria-label="Abrir menú"
+          title="Menú · Esc"
+          onClick={() => {
+            closeConversation()
+            setPanel('menu')
+          }}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M9 6h12M9 12h12M9 18h12" />
+            <path d="M3 5h2v2H3zm0 6h2v2H3zm0 6h2v2H3z" />
+          </svg>
+        </button>
+      )}
+      {!launching && !panel && !conversation && (
         <nav className="paper-dock" aria-label="Herramientas">
           <button
             className="paper-icon"
@@ -301,36 +376,36 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
           </button>
         </nav>
       )}
-      {miniMap && !panel && !conversation && (
+      {miniMap && !launching && !panel && !conversation && (
         <aside className="small-map">
           <CampusMap position={position} visited={visited} />
         </aside>
       )}
-      {mode === 'walk' && nearby && !position.vehicle && !panel && !conversation && (
+      {!launching && mode === 'walk' && nearby && !position.vehicle && !panel && !conversation && (
         <button className="station-prompt" onClick={() => onInteract(nearby.id)}>
           <kbd>E</kbd> {nearby.id === 'research' ? 'Hablar con la Dra. Vega' : 'Usar estación'}{' '}
           <span>▶</span>
         </button>
       )}
-      {mode === 'walk' && position.vehicle === 'driving' && !panel && !conversation && (
+      {!launching && mode === 'walk' && position.vehicle === 'driving' && !panel && !conversation && (
         <VehicleDashboard
           exitBlocked={position.exitBlocked}
           onExit={() => input.current.actions.push('interact')}
         />
       )}
-      {mode === 'walk' && position.vehicle === 'near' && !panel && !conversation && (
+      {!launching && mode === 'walk' && position.vehicle === 'near' && !panel && !conversation && (
         <div className="vehicle-controls">
           <button className="station-prompt" onClick={() => input.current.actions.push('interact')}>
             <kbd>E</kbd> Conducir buggy <span>▶</span>
           </button>
         </div>
       )}
-      {mode === 'walk' && position.room && !panel && !conversation && (
+      {!launching && mode === 'walk' && position.room && !panel && !conversation && (
         <div className="interior-caption">
           {roomLabel(position.room)} <small>Primera persona · arrastra para mirar</small>
         </div>
       )}
-      {mode !== 'walk' && !panel && !conversation && (
+      {!launching && mode !== 'walk' && !panel && !conversation && (
         <div className="view-controls">
           <button onClick={() => chooseMode('walk')}>← Volver a caminar</button>
           {mode === 'tour' && (
@@ -344,7 +419,7 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
           )}
         </div>
       )}
-      {!panel && !conversation && mode === 'walk' && (
+      {!launching && !panel && !conversation && mode === 'walk' && (
         <>
           <div className="touch-movement" aria-label="Movimiento táctil">
             {[
@@ -420,7 +495,20 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
               kind = conversation.kind
             closeConversation()
             if (kind === 'lander') setPanel('lander')
-            else if (sector) setPanel(sector)
+            else if (sector) {
+              if (sector === 'launch') {
+                const draft = loadBlueprint()
+                const saved = loadOperationSession(blueprintKey(draft.config, draft.parts))
+                if (saved) {
+                  setCampaignStage('launch')
+                  setCampaign(true)
+                } else {
+                  setPanel(sector)
+                }
+              } else {
+                setPanel(sector)
+              }
+            }
           }}
         />
       )}
