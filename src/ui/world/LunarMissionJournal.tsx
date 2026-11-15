@@ -252,7 +252,7 @@ export default function LunarMissionJournal({
           count === 6
             ? 'Los registros de prospección están completos. Puedes preparar la roca para retorno desde la explanada L01.'
             : count > 0
-              ? 'Buen avance en el sendero. Usa el Rover Lunar para acelerar la travesía hacia los afloramientos occidentales.'
+              ? 'Buen avance en el sendero. Usa el Rover Lunar para acelerar la travesía entre la base y los afloramientos del cráter.'
               : 'Acércate a la Dra. Elena Silva [46, 64] o sigue las balizas luminosas a lo largo de la explanada para iniciar la extracción.'
         }`,
         'Recuerda: equilibrar masa, potencia, presupuesto, comunicaciones y retorno científico es lo que convierte un concepto teórico en una misión espacial exitosa.',

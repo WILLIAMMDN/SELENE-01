@@ -6,6 +6,7 @@ import * as T from 'three'
 import { Sign, toon } from '../ArtKit'
 import OdysseyLander from '../../spacecraft/OdysseyLander'
 import { LUNAR_LANDER, LUNAR_SECTORS, lunarTerrainHeight } from './lunarNavigation'
+import LunarTracks from './LunarTracks'
 import LunarFootDust from './LunarFootDust'
 import LunarInteriors from './LunarInteriors'
 import { lunarInteriorInstances } from './lunarInteriorNavigation'
@@ -45,6 +46,8 @@ export default function LunarEnvironment({
       n.material = Array.isArray(n.material) ? n.material.map(convert) : convert(n.material)
       if (n.name === 'LUNA_TERRENO_MALLA') {
         const ground = (Array.isArray(n.material) ? n.material[0] : n.material).clone()
+        ground.color.set('#84858a')
+        ground.shadowSide = T.DoubleSide
         ground.onBeforeCompile = (shader: { vertexShader: string; fragmentShader: string }) => {
           shader.vertexShader =
             'varying vec2 lunarXZ;\n' +
@@ -66,7 +69,12 @@ export default function LunarEnvironment({
               '#include <color_fragment>',
               `#include <color_fragment>
             float grain = mix(dustNoise(lunarXZ * 9.0), 0.5, smoothstep(0.035, 0.16, length(fwidth(lunarXZ))));
-            diffuseColor.rgb *= 0.83 + 0.24*dustNoise(lunarXZ*.43) + 0.13*grain;
+            float mottling = dustNoise(lunarXZ * 0.56);
+            float aggregate = dustNoise(lunarXZ * 2.8);
+            float ridge = aggregate - dustNoise(lunarXZ * 2.8 + vec2(-0.24, 0.19));
+            float pits = smoothstep(0.13, 0.45, aggregate);
+            diffuseColor.rgb *= (0.53 + 0.41*mottling + 0.24*grain)
+              * mix(0.52, 1.0, pits) * clamp(1.0 + 0.88*ridge, 0.65, 1.35);
           `,
             )
         }
@@ -74,7 +82,7 @@ export default function LunarEnvironment({
         n.material = ground
       }
       n.receiveShadow = true
-      n.castShadow = !n.name.includes('TERRENO') && !n.name.includes('HORIZONTE')
+      n.castShadow = !n.name.includes('HORIZONTE')
     })
     return { root, mixer: new T.AnimationMixer(root), materials }
   }, [scene])
@@ -116,6 +124,7 @@ export default function LunarEnvironment({
     <>
       <primitive object={asset.root} dispose={null} />
       {!reduced && <LunarFootDust lunar={lunar} paused={paused} />}
+      <LunarTracks lunar={lunar} paused={paused} />
       <LunarInteriors lunar={lunar} paused={paused} reduced={reduced} />
       <OdysseyLander
         x={LUNAR_LANDER.x}

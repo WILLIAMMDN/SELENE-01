@@ -24,13 +24,37 @@ export function lunarHeight(x: number, z: number) {
   const pad = landingPadHeight(LUNAR_LANDER.x, LUNAR_LANDER.z, lunarTerrainHeight)
   return distance <= 6 ? pad : ground + ((pad - ground) * (8.5 - distance)) / 2.5
 }
-const clear = createCollisionGrid([
-  ...layout.colliders,
+const structures = [
   ...lunarExteriorObjects,
   ...LUNAR_RESOURCES.map(({ position: [x, z] }) => ({ x, z, hx: 1.12, hz: 1.12 })),
   { x: LUNAR_GEOLOGIST[0], z: LUNAR_GEOLOGIST[1], hx: 0.4, hz: 0.45 },
   { x: LUNAR_LANDER.x, z: LUNAR_LANDER.z, hx: 2.6, hz: 2.6 },
-])
+]
+const clear = createCollisionGrid([...layout.colliders, ...structures])
+// The exporter writes module footprints first, then terrain rocks. Small rocks remain
+// pedestrian obstacles but are traversable by the rover's wider wheels.
+const moduleFootprintCount = 10
+const roverClear = createCollisionGrid(
+  [
+    ...layout.colliders.filter(
+      (box, index) => index < moduleFootprintCount || Math.min(box.hx, box.hz) >= 1.05,
+    ),
+    ...structures,
+  ],
+  0.04,
+)
+export function lunarCanDrive(x: number, z: number, yaw: number) {
+  const c = Math.cos(yaw),
+    s = Math.sin(yaw)
+  return (
+    Math.abs(x) < 146 &&
+    Math.abs(z) < 146 &&
+    roverClear(x, z) &&
+    [-1.19, 1.19].every((side) =>
+      [-1.64, 0, 1.64].every((end) => roverClear(x + side * c + end * s, z - side * s + end * c)),
+    )
+  )
+}
 export function lunarCanWalk(x: number, z: number) {
   return Math.abs(x) < 148 && Math.abs(z) < 148 && clear(x, z)
 }

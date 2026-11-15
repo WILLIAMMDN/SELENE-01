@@ -3,7 +3,7 @@ import { useFrame, useThree } from '@react-three/fiber'
 import { useGLTF } from '@react-three/drei'
 import * as T from 'three'
 import { RoverLunarController } from './RoverLunarController'
-import { lunarCanWalk, lunarHeight } from './lunarNavigation'
+import { lunarCanDrive, lunarHeight } from './lunarNavigation'
 import { LUNAR_ROVER_START, type LunarSession } from './lunarRoverControl'
 import type { SceneProps } from '../player/types'
 
@@ -18,16 +18,7 @@ export default function RoverLunar({
       new RoverLunarController(gltf.scene.clone(true), {
         position: new T.Vector3(LUNAR_ROVER_START[0], 0, LUNAR_ROVER_START[1]),
         heightAt: lunarHeight,
-        canMove: (p, yaw) => {
-          const c = Math.cos(yaw)
-          const s = Math.sin(yaw)
-          return (
-            lunarCanWalk(p.x, p.z) &&
-            [-1.35, 1.35].every((x) =>
-              [-1.8, 1.8].every((z) => lunarCanWalk(p.x + x * c + z * s, p.z - x * s + z * c)),
-            )
-          )
-        },
+        canMove: (p, yaw) => lunarCanDrive(p.x, p.z, yaw),
       }),
     [gltf.scene],
   )

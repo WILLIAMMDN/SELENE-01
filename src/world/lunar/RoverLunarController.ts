@@ -147,8 +147,8 @@ export class RoverLunarController {
     const x = this.vehicle.position.x, z = this.vehicle.position.z, s = Math.sin(this.yaw), c = Math.cos(this.yaw)
     const front = this.heightAt(x + s * 1.15, z + c * 1.15), rear = this.heightAt(x - s * 1.15, z - c * 1.15)
     const right = this.heightAt(x + c * 1.04, z - s * 1.04), left = this.heightAt(x - c * 1.04, z + s * 1.04)
-    const pitch = T.MathUtils.clamp(Math.atan2(rear - front, 2.3), -.28, .28)
-    const roll = T.MathUtils.clamp(Math.atan2(right - left, 2.08), -.28, .28)
+    const pitch = T.MathUtils.clamp(Math.atan2(rear - front, 2.3), -.49, .49)
+    const roll = T.MathUtils.clamp(Math.atan2(right - left, 2.08), -.43, .43)
     this.vehicle.position.y = (front + rear + right + left) * .25
     this.vehicle.rotation.set(pitch, this.yaw, roll, 'YXZ')
     for (let i = 0; i < 4; i++) {

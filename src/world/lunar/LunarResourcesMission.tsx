@@ -101,7 +101,7 @@ export default function LunarResourcesMission({ heightAt, paused, onConversation
         total < LUNAR_RESOURCE_COUNT
           ? [
               '¿Qué recursos podrían abastecer una base en el polo sur lunar? Vamos a comparar seis registros de campo en la simulación.',
-              'Sigue las balizas hacia el oeste. Usa el rover para cubrir distancia, bájate junto a la estación y pulsa E a pie para tomar una muestra o una lectura.',
+              'Sigue las balizas desde la base hasta la cuenca del cráter. Usa el rover para cubrir distancia, bájate junto a la estación y pulsa E a pie para tomar una muestra o una lectura.',
               `Registros de campo: ${total} de ${LUNAR_RESOURCE_COUNT}. Usa la bitácora para encontrar la siguiente estación.`,
             ]
           : [
