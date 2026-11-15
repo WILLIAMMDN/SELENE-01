@@ -47,7 +47,7 @@ export function getLaunchFrame(
   const ascentSeconds = Math.max(0, time - LIFTOFF_AT)
   const acceleration = launcher === 'atlas' ? 1.12 : 1
   const altitudeMeters = 9 * Math.pow(ascentSeconds, 1.65) * acceleration
-  const spaceBlend = Math.max(0, Math.min(1, (time - 32) / 11))
+  const spaceBlend = Math.max(0, Math.min(1, (time - 29) / 13))
   const exhaust =
     time < 12 || time > 38 ? 0 : Math.min(1, (time - 12) / 1.8) * (time > 35 ? 0.5 : 1)
   let beat: LaunchBeat

@@ -195,6 +195,22 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
     window.addEventListener('keydown', key)
     return () => window.removeEventListener('keydown', key)
   }, [conversation, campaign, launchPhase, finishLaunch])
+  // The latest campus menu uses a shared event for cinematic previews.
+  // Keep that shortcut functional without bypassing mission authorization.
+  useEffect(() => {
+    const previewLaunch = () => {
+      const url = new URL(window.location.href)
+      url.searchParams.set('preview', 'launch')
+      window.location.assign(url.toString())
+    }
+    window.addEventListener('selene-launch-cinematic', previewLaunch)
+    return () => window.removeEventListener('selene-launch-cinematic', previewLaunch)
+  }, [])
+  useEffect(() => {
+    const showTeam = () => setPanel('authors')
+    window.addEventListener('selene-authors-panel', showTeam)
+    return () => window.removeEventListener('selene-authors-panel', showTeam)
+  }, [])
   useEffect(() => {
     const observe = (e: Event) => {
       if (panel || conversation || mode !== 'walk' || campaign) return
@@ -322,6 +338,7 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
           onLaunchPhase={onLaunchPhase}
           onCinematicProgress={setFlightElapsed}
           onCinematicComplete={finishLaunch}
+          targetSector={!offworld ? next.sector : undefined}
           onPosition={onPosition}
           onInteract={onInteract}
           quality={quality}

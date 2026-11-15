@@ -8,6 +8,8 @@ import MarsEnvironment from './MarsEnvironment'
 import { useWorld } from './worldConfig'
 import PlayerRig from './player/PlayerRig'
 import LaunchCinematicDirector from '../spacecraft/LaunchCinematicDirector'
+import LaunchCloudLayers from '../spacecraft/LaunchCloudLayers'
+import MissionNavigationGuide from './navigation/MissionNavigationGuide'
 import { LAUNCH_SITE } from '../spacecraft/LaunchComplex'
 import { useBlueprint } from '../game/state/blueprintStore'
 import type { SceneProps } from './player/types'
@@ -64,6 +66,7 @@ export default memo(function ExplorerScene(
             quality={props.quality}
             reduced={props.reduced}
             paused={props.paused || props.mode !== 'walk'}
+            launchClock={props.launchPhase === 'flight' ? props.flightClock?.current : undefined}
           />
         ) : (
           <>
@@ -103,6 +106,23 @@ export default memo(function ExplorerScene(
             />
           )}
           <PlayerRig {...props} />
+          {!mars &&
+            !moon &&
+            props.mode === 'walk' &&
+            props.launchPhase === 'idle' &&
+            props.targetSector && (
+              <MissionNavigationGuide
+                targetSector={props.targetSector}
+                reduced={props.reduced}
+                indoor={false}
+              />
+            )}
+          {!mars && !moon && props.launchPhase === 'flight' && props.flightClock && (
+            <LaunchCloudLayers
+              clock={props.flightClock.current}
+              launcher={blueprint.config.launcher}
+            />
+          )}
           {!mars &&
             !moon &&
             props.launchPhase === 'flight' &&

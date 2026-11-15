@@ -25,6 +25,7 @@ export type SceneProps = {
   reduced: boolean
   onPosition: (p: PositionReport) => void
   onInteract: (id: SectorId) => void
+  targetSector?: SectorId
   launchPhase?: BoardingPhase
   boardingMotion?: MutableRefObject<BoardingMotion>
   flightClock?: MutableRefObject<LaunchClock>

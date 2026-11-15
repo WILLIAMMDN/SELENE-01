@@ -3,6 +3,7 @@ import OdysseyLander from '../spacecraft/OdysseyLander'
 import EnvironmentProps from './EnvironmentProps'
 import CampusWildlife from './CampusWildlife'
 import OdysseyShip from '../spacecraft/OdysseyShip'
+import AuthorsMonument from './AuthorsMonument'
 import { INTERIOR_STATIONS } from './buildingNavigation'
 import CampusObservatory from './CampusObservatory'
 import CampusAtmosphere from './CampusAtmosphere'
@@ -310,6 +311,7 @@ export default memo(function Environment({
       />
       <Wayfinding />
       <Vega />
+      <AuthorsMonument position={[-14, groundHeight(-14, 36), 36]} rotation={[0, 0.45, 0]} />
       {[0, 1, 2, 3, 4].map((i) => (
         <Solid
           key={`crossing${i}`}
