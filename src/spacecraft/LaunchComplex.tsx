@@ -88,25 +88,33 @@ function Asset({
       if (!platform) return
       const clip = animations.find((a) => a.name === 'SERVICIOS_RETIRADA')
       if (!clip) return
-      const action = mixer.clipAction(clip)
-      action.reset()
-      action.setLoop(T.LoopOnce, 1)
-      action.clampWhenFinished = true
-      action.time = withdrawn.current ? clip.duration : 0
-      action.timeScale = withdrawn.current ? -1 : 1
-      action.play()
-      withdrawn.current = !withdrawn.current
+      try {
+        const action = mixer.clipAction(clip.clone())
+        action.reset()
+        action.setLoop(T.LoopOnce, 1)
+        action.clampWhenFinished = true
+        action.time = withdrawn.current ? clip.duration : 0
+        action.timeScale = withdrawn.current ? -1 : 1
+        action.play()
+        withdrawn.current = !withdrawn.current
+      } catch (err) {
+        console.warn('Services animation error:', err)
+      }
     }
     const mechanism = (event: Event) => {
       if (platform) return
       const name = (event as CustomEvent<string>).detail
-      mixer.stopAllAction()
-      if (name === 'reset') return
-      const clip = animations.find((a) => a.name === name)
-      if (clip) {
-        const action = mixer.clipAction(clip).reset().setLoop(T.LoopOnce, 1)
-        action.clampWhenFinished = true
-        action.play()
+      try {
+        mixer.stopAllAction()
+        if (name === 'reset') return
+        const clip = animations.find((a) => a.name === name)
+        if (clip) {
+          const action = mixer.clipAction(clip.clone()).reset().setLoop(T.LoopOnce, 1)
+          action.clampWhenFinished = true
+          action.play()
+        }
+      } catch (err) {
+        console.warn('Mechanism animation error:', err)
       }
     }
     window.addEventListener('odyssey-ground-services', services)
@@ -114,38 +122,46 @@ function Asset({
     return () => {
       window.removeEventListener('odyssey-ground-services', services)
       window.removeEventListener('odyssey-mechanism', mechanism)
-      mixer.stopAllAction()
-      // Keep actions bound through React StrictMode's effect replay.
+      try {
+        mixer.stopAllAction()
+      } catch {
+        /* no-op */
+      }
     }
   }, [platform, animations, mixer, root])
   useFrame((_, dt) => {
-    if (flightClock) {
-      const frame = getLaunchFrame(
-        flightClock.current,
-        config?.launcher ?? 'aurora',
-        parts.includes('habitat'),
-      )
-      if (platform && frame.time >= 8 && !withdrawn.current) {
-        const clip = animations.find((a) => a.name === 'SERVICIOS_RETIRADA')
-        if (clip) {
-          const action = mixer.clipAction(clip).reset().setLoop(T.LoopOnce, 1)
-          action.clampWhenFinished = true
-          action.play()
-          withdrawn.current = true
+    try {
+      if (flightClock) {
+        const frame = getLaunchFrame(
+          flightClock.current,
+          config?.launcher ?? 'aurora',
+          parts.includes('habitat'),
+        )
+        if (platform && frame.time >= 8 && !withdrawn.current) {
+          const clip = animations.find((a) => a.name === 'SERVICIOS_RETIRADA')
+          if (clip) {
+            mixer.stopAllAction()
+            const action = mixer.clipAction(clip).reset().setLoop(T.LoopOnce, 1)
+            action.clampWhenFinished = true
+            action.play()
+            withdrawn.current = true
+          }
+        }
+        if (!platform && frame.mechanism && lastMechanism.current !== frame.mechanism) {
+          lastMechanism.current = frame.mechanism
+          const clip = animations.find((a) => a.name === frame.mechanism)
+          if (clip) {
+            mixer.stopAllAction()
+            const action = mixer.clipAction(clip).reset().setLoop(T.LoopOnce, 1)
+            action.clampWhenFinished = true
+            action.play()
+          }
         }
       }
-      if (!platform && frame.mechanism && lastMechanism.current !== frame.mechanism) {
-        lastMechanism.current = frame.mechanism
-        const clip = animations.find((a) => a.name === frame.mechanism)
-        if (clip) {
-          mixer.stopAllAction()
-          const action = mixer.clipAction(clip).reset().setLoop(T.LoopOnce, 1)
-          action.clampWhenFinished = true
-          action.play()
-        }
-      }
+      mixer.update(Math.min(dt, flightClock ? 0.35 : 0.05))
+    } catch (err) {
+      console.warn('LaunchComplex animation update warning:', err)
     }
-    mixer.update(Math.min(dt, flightClock ? 0.35 : 0.05))
   })
   return (
     <>
@@ -192,7 +208,7 @@ function EngineExhaust({
           </mesh>
         </group>
       ))}
-      <pointLight color="#e8a76b" intensity={14} distance={34} position={[0, -3, 0]} />
+      <pointLight color="#e8a76b" intensity={28} distance={75} position={[0, -3, 0]} />
     </group>
   )
 }
@@ -212,13 +228,13 @@ function LaunchPadDust({ clock }: { clock: LaunchClock }) {
   })
   return (
     <group ref={puffs} visible={false}>
-      {Array.from({ length: 14 }, (_, i) => (
+      {Array.from({ length: 16 }, (_, i) => (
         <mesh key={i}>
-          <icosahedronGeometry args={[1.5, 1]} />
+          <icosahedronGeometry args={[1.8, 1]} />
           <meshToonMaterial
             color={i % 3 === 0 ? '#dedac4' : '#a2afa3'}
             transparent
-            opacity={0.5}
+            opacity={0.55}
             depthWrite={false}
           />
         </mesh>

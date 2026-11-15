@@ -7,7 +7,6 @@ import type { LauncherId } from '../game/missionDesign'
  */
 export const LAUNCH_DURATION = 45
 export const LIFTOFF_AT = 18
-
 export type LaunchClock = { current: number }
 export type LaunchBeat =
   | 'boarding'

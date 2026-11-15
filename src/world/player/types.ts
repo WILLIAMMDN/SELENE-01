@@ -31,6 +31,7 @@ export type SceneProps = {
   onGuide?: (report: MissionGuideReport) => void
   onPosition: (p: PositionReport) => void
   onInteract: (id: SectorId) => void
+  cinematic?: boolean
   targetSector?: SectorId
   launchPhase?: BoardingPhase
   boardingMotion?: MutableRefObject<BoardingMotion>

@@ -113,12 +113,19 @@ export default function OdysseyLander({
     return () => {
       window.removeEventListener('odyssey-lander-action', play)
       window.removeEventListener('keydown', key)
-      mixer.stopAllAction()
-      // Keep actions bound through React StrictMode's effect replay.
+      try {
+        mixer.stopAllAction()
+      } catch {
+        /* no-op */
+      }
     }
   }, [animations, mixer, root, x, z])
   useFrame((_, dt) => {
-    if (!paused) mixer.update(Math.min(dt, 0.05))
+    try {
+      if (!paused) mixer.update(Math.min(dt, 0.05))
+    } catch {
+      /* ignore */
+    }
   })
   const ramp = useMemo(() => {
     const points: number[] = [],

@@ -68,8 +68,11 @@ export default function LunarEnvironment({
     window.addEventListener('selene-lunar-power', command)
     return () => {
       window.removeEventListener('selene-lunar-power', command)
-      asset.mixer.stopAllAction()
-      // Keep actions bound through React StrictMode's effect replay.
+      try {
+        asset.mixer.stopAllAction()
+      } catch {
+        /* no-op */
+      }
     }
   }, [asset, animations, reduced])
   useEffect(
