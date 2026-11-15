@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import GameWorld from '../../scene/GameWorld'
+import { LUNAR_RESOURCES } from '../../world/lunar/lunarResources'
 import {
   DEMO_CONFIG,
   DEMO_EVALUATION,
@@ -17,6 +18,9 @@ const BEATS = [
   { stage: '04 · Operaciones', title: 'Enlace con la Tierra', mode: 'orbit' },
   { stage: '04 · Operaciones', title: 'Eclipse polar', mode: 'orbit' },
   { stage: '05 · Informe', title: 'Lo que realmente sabemos', mode: 'orbit' },
+  { stage: '06 · Luna', title: 'Trabajo de superficie', mode: 'field' },
+  { stage: '07 · Marte', title: 'Reconocimiento marciano', mode: 'field' },
+  { stage: '08 · Cierre', title: 'Tres ejercicios, tres límites', mode: 'field' },
 ] as const
 
 export default function DemoMission() {
@@ -40,7 +44,7 @@ export default function DemoMission() {
         <a href="/" className="demo-logo">
           ◐ <strong>SELENE—01</strong>
         </a>
-        <span>DEMOSTRACIÓN RÁPIDA · PARTIDA INDEPENDIENTE</span>
+        <span>DEMOSTRACIÓN RÁPIDA · RECORRIDO INDEPENDIENTE</span>
         <a href="/" className="demo-exit">
           Volver al juego ↗
         </a>
@@ -71,14 +75,78 @@ export default function DemoMission() {
       </div>
       <main className="demo-grid">
         <section className="demo-scene" aria-label="Vista de ODYSSEY">
-          <GameWorld
-            mode={current.mode}
-            onInteract={() => {}}
-            parts={DEMO_PARTS}
-            config={DEMO_CONFIG}
-          />
+          {current.mode === 'field' ? (
+            <div className="demo-field-plate">
+              <span className="demo-plate-kicker">
+                {beat === 7
+                  ? 'LUNA / CUADERNO DE CAMPO'
+                  : beat === 8
+                    ? 'MARTE / PLAN DE OBSERVACIÓN'
+                    : 'SELENE—01 / RESUMEN'}
+              </span>
+              <h2>
+                {beat === 7
+                  ? 'Superficie lunar'
+                  : beat === 8
+                    ? 'Ares, Marte'
+                    : 'Recorrido completo'}
+              </h2>
+              {beat === 7 ? (
+                <>
+                  <p>
+                    Secuencia abreviada del ejercicio de campo. Seis muestras ficticias, cada una
+                    con herramienta y registro propios.
+                  </p>
+                  <div className="demo-plate-list">
+                    {LUNAR_RESOURCES.map((resource) => (
+                      <div key={resource.id}>
+                        <b>{resource.number}</b>
+                        <span>{resource.name}</span>
+                        <small>{resource.tool}</small>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="demo-plate-foot">
+                    ENERGÍA → TRAVESÍA → ANÁLISIS → TELEMETRÍA → RETORNO
+                  </div>
+                </>
+              ) : beat === 8 ? (
+                <>
+                  <p>Pregunta elegida: ¿qué minerales podrían registrar agua antigua?</p>
+                  <div className="demo-instrument-pair">
+                    <span>Pregunta científica</span>
+                    <strong>Minerales</strong>
+                    <span>Instrumento de referencia</span>
+                    <strong>CRISM · espectros</strong>
+                  </div>
+                  <div className="demo-plate-foot">
+                    TIERRA → OBSERVACIÓN ORBITAL → INTERPRETACIÓN
+                  </div>
+                </>
+              ) : (
+                <div className="demo-summary-list">
+                  <span>
+                    01 <b>ODYSSEY</b> Datos recuperados
+                  </span>
+                  <span>
+                    02 <b>LUNA</b> Ruta de campo explicada
+                  </span>
+                  <span>
+                    03 <b>MARTE</b> Instrumento relacionado con la pregunta
+                  </span>
+                </div>
+              )}
+            </div>
+          ) : (
+            <GameWorld
+              mode={current.mode}
+              onInteract={() => {}}
+              parts={DEMO_PARTS}
+              config={DEMO_CONFIG}
+            />
+          )}
           <div className="demo-scene-caption">
-            ODYSSEY es un modelo educativo. Las cifras y la secuencia son del juego.
+            Recorrido educativo abreviado. No modifica la partida ni representa una misión real.
           </div>
         </section>
         <section className="demo-story" aria-live="polite">
@@ -197,10 +265,59 @@ export default function DemoMission() {
               >
                 Contexto: agua y hielos lunares · NASA ↗
               </a>
+            </>
+          )}
+          {beat === 7 && (
+            <>
+              <p>
+                En el escenario lunar independiente, una ruta válida despliega energía, recorre el
+                área de trabajo, registra las seis muestras del juego, analiza el hielo simulado y
+                envía el resultado antes de preparar el retorno de la roca.
+              </p>
+              <p className="demo-caution">
+                La ruta es una demostración condensada. La presencia de hielo en esta escena
+                ficticia no identifica un depósito lunar real.
+              </p>
+              <a
+                href="https://science.nasa.gov/moon/moon-water-and-ices/"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Referencia: agua y hielos lunares · NASA ↗
+              </a>
+            </>
+          )}
+          {beat === 8 && (
+            <>
+              <p>
+                El ejercicio marciano empieza de nuevo en la Tierra. Para estudiar minerales
+                asociados con agua antigua, escogemos CRISM como instrumento de referencia de Mars
+                Reconnaissance Orbiter.
+              </p>
+              <p>
+                En Ares se plantea un estudio; este recorrido no presenta espectros reales del lugar
+                ni confirma minerales en el terreno ficticio.
+              </p>
+              <a
+                href="https://science.nasa.gov/mission/mars-reconnaissance-orbiter/science-instruments/"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Instrumentos de MRO · NASA ↗
+              </a>
+            </>
+          )}
+          {beat === 9 && (
+            <>
+              <p>
+                Has visto el cierre de la campaña orbital y el camino de los dos ejercicios
+                independientes. La demo resume decisiones y resultados en unos 20 segundos.
+              </p>
               <div className="demo-followups">
-                <strong>Escenarios independientes para explorar después</strong>
-                <a href="/?world=moon">Ejercicio de superficie lunar ↗</a>
-                <a href="/?world=mars">Reconocimiento de Marte ↗</a>
+                <strong>Jugar cada escenario completo</strong>
+                <a href="/?stage=briefing">Campaña ODYSSEY ↗</a>
+                <a href="/?world=moon">Superficie lunar ↗</a>
+                <a href="/?world=mars">Reconocimiento marciano ↗</a>
               </div>
             </>
           )}

@@ -87,7 +87,7 @@ export default function App(props: CampaignProps) {
           </button>
         ))}
         <a className="demo-entry" href="/?demo=1">
-          ▶ Demo rápida · 15 s
+          ▶ Demo rápida · 20 s
         </a>
       </nav>
       <main className="game-layout">
