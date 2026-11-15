@@ -145,7 +145,7 @@ function Asset({
         }
       }
     }
-    mixer.update(Math.min(dt, 0.05))
+    mixer.update(Math.min(dt, flightClock ? 0.35 : 0.05))
   })
   return (
     <>

@@ -7,8 +7,16 @@ import {
   nextMissionStep,
   missionVerified,
   blueprintKey,
+  getMission,
 } from '../game/campusMission'
 import { loadOperationSession, saveOperationSession } from '../game/state/operationStore'
+import { wardrobeStore } from './wardrobe'
+import {
+  makeMissionArrival,
+  savePendingMissionArrival,
+  loadPendingMissionArrival,
+  clearPendingMissionArrival,
+} from '../game/missionArrival'
 import { startOperations } from '../game/missionDesign'
 import type { BoardingMotion, BoardingPhase } from '../spacecraft/boardingRoute'
 import LaunchCinematicOverlay from '../spacecraft/LaunchCinematicOverlay'
@@ -45,6 +53,9 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
     [miniMap, setMiniMap] = useState(false)
   const [campaign, setCampaign] = useState(false),
     [campaignStage, setCampaignStage] = useState<'briefing' | 'design' | 'launch'>('briefing')
+  const [arrival, setArrival] = useState(() =>
+    offworld ? loadPendingMissionArrival(world.id as 'moon' | 'mars') : null,
+  )
   const [launchPhase, setLaunchPhase] = useState<BoardingPhase>('idle')
   const boardingMotion = useRef<BoardingMotion>({ lift: 0 })
   const flightClock = useRef({ current: 0 })
@@ -52,6 +63,11 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
   const [flightFinished, setFlightFinished] = useState(false)
   const recordedFlight = useRef(false)
   const onLaunchPhase = useCallback((phase: BoardingPhase) => {
+    if (phase === 'access') {
+      // The same playable explorer equips the existing EVA character model.
+      const wardrobe = wardrobeStore.getSnapshot()
+      wardrobeStore.set({ ...wardrobe, earth: 'eva', moon: 'eva', helmet: true })
+    }
     if (phase === 'flight') {
       flightClock.current.current = 0
       setFlightElapsed(0)
@@ -67,13 +83,17 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
       if (missionVerified(draft.config, draft.parts)) {
         const key = blueprintKey(draft.config, draft.parts)
         if (!loadOperationSession(key)) saveOperationSession(key, startOperations())
-        setCampaignStage('launch')
-        setCampaign(true)
+        const objective = getMission().objective
+        const arrival = makeMissionArrival(key, objective)
+        savePendingMissionArrival(arrival)
+        // The same Earth scene is used for lift-off; then transition into
+        // the destination scene already built by the other world team.
+        onWorld(arrival.world)
       }
     }
     setLaunchPhase('idle')
     setFlightFinished(false)
-  }, [flightFinished])
+  }, [flightFinished, onWorld])
   const [position, setPosition] = useState<PositionReport>({ x: 0, z: 37, nearby: null, fps: 0 }),
     [travel, setTravel] = useState<Travel>({ id: 'start', serial: 0 })
   const [quality, setQuality] = useState<'standard' | 'light'>('standard'),
@@ -246,7 +266,7 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
         setCampaign(true)
       } else {
         recordedFlight.current = false
-        onLaunchPhase('access')
+        onLaunchPhase('suiting')
       }
       setPanel(null)
       setConversation(null)
@@ -321,6 +341,35 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
           onSkip={finishLaunch}
         />
       )}
+      {arrival && (
+        <div className="mission-arrival" role="region" aria-label="Llegada a la misión">
+          <span className="mission-arrival-label">TARS · DESTINO ALCANZADO</span>
+          <strong>{arrival.title}</strong>
+          <p>{arrival.narrative.replace(/^TARS:\s*/, '')}</p>
+          <div className="mission-arrival-actions">
+            <button
+              type="button"
+              onClick={() => {
+                clearPendingMissionArrival()
+                setArrival(null)
+              }}
+            >
+              Explorar el escenario
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                clearPendingMissionArrival()
+                setArrival(null)
+                setCampaignStage('launch')
+                setCampaign(true)
+              }}
+            >
+              Continuar operaciones
+            </button>
+          </div>
+        </div>
+      )}
       {launchPhase === 'cockpit' && (
         <div className="boarding-cockpit-prompt">
           <strong>ODYSSEY · Cabina asegurada</strong>
@@ -330,9 +379,17 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
           </button>
         </div>
       )}
+      {launchPhase === 'suiting' && !position.boardingSpot && (
+        <div className="boarding-guidance" role="status">
+          Acércate al vestuario EVA junto a la plataforma.
+          <button type="button" onClick={() => onLaunchPhase('idle')}>
+            Cancelar
+          </button>
+        </div>
+      )}
       {launchPhase === 'access' && !position.boardingSpot && (
         <div className="boarding-guidance" role="status">
-          Sigue la vía señalizada hasta el ascensor de LC-01.
+          Sigue el sendero, sube las escaleras y toma el ascensor de LC-01.
           <button type="button" onClick={() => onLaunchPhase('idle')}>
             Cancelar
           </button>
@@ -347,10 +404,22 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
         <button
           className="station-prompt boarding-interact"
           type="button"
-          onClick={() => onLaunchPhase(position.boardingSpot === 'lift' ? 'ascending' : 'cockpit')}
+          onClick={() =>
+            onLaunchPhase(
+              position.boardingSpot === 'suit'
+                ? 'access'
+                : position.boardingSpot === 'lift'
+                  ? 'ascending'
+                  : 'cockpit',
+            )
+          }
         >
           <kbd>E</kbd>{' '}
-          {position.boardingSpot === 'lift' ? 'Subir al ascensor' : 'Entrar a la cabina'}
+          {position.boardingSpot === 'suit'
+            ? 'Equipar traje de astronauta'
+            : position.boardingSpot === 'lift'
+              ? 'Subir al ascensor'
+              : 'Entrar a la cabina'}
         </button>
       )}
       {launchPhase === 'ascending' && (

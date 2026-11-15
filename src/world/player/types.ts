@@ -14,7 +14,7 @@ export type PositionReport = {
   exitBlocked?: boolean
   fps: number
   room?: string | null
-  boardingSpot?: 'lift' | 'hatch' | null
+  boardingSpot?: 'suit' | 'lift' | 'hatch' | null
 }
 export type SceneProps = {
   mode: ViewMode

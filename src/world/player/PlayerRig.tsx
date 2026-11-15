@@ -23,6 +23,9 @@ import type { SceneProps } from './types'
 import {
   LIFT,
   HATCH,
+  nearSuit,
+  boardingStairHeight,
+  STAIR_TOTAL_HEIGHT,
   CABIN,
   DECK_HEIGHT,
   nearLift,
@@ -61,8 +64,14 @@ export default function PlayerRig({
     nearBuggy(x, z) &&
     !buildingAt(x, z) &&
     [0.2, 0.4, 0.6, 0.8].every((t) => worldClear(x + (buggy.x - x) * t, z + (buggy.z - z) * t))
-  const groundHeight = (x: number, z: number) =>
-    moon ? terrainHeight(x, z) : walkingHeight(x, z, terrainHeight, world.id === 'earth')
+  const groundHeight = (x: number, z: number) => {
+    const base = moon
+      ? terrainHeight(x, z)
+      : walkingHeight(x, z, terrainHeight, world.id === 'earth')
+    return world.id === 'earth' && (launchPhase === 'access' || launchPhase === 'suiting')
+      ? base + boardingStairHeight(x, z)
+      : base
+  }
   const roomAt = (x: number, z: number) => (moon ? null : buildingAt(x, z, world.id === 'earth'))
   const stationFor = (x: number, z: number) =>
     moon ? lunarStationAt(x, z) : stationAt(x, z, world.id === 'earth')
@@ -130,6 +139,11 @@ export default function PlayerRig({
       onAction: (e) => {
         if (world.id === 'earth' && e.code === 'KeyE' && !e.repeat && onLaunchPhase) {
           const here = location.current
+          if (launchPhase === 'suiting' && nearSuit(here.x, here.z)) {
+            e.preventDefault()
+            onLaunchPhase('access')
+            return
+          }
           if (launchPhase === 'access' && nearLift(here.x, here.z)) {
             e.preventDefault()
             onLaunchPhase('ascending')
@@ -218,7 +232,7 @@ export default function PlayerRig({
     }
     if (lastLaunchPhase.current !== launchPhase) {
       if (launchPhase === 'ascending') {
-        p.set(LIFT.x, groundHeight(LIFT.x, LIFT.z) + 0.4, LIFT.z)
+        p.set(LIFT.x, groundHeight(LIFT.x, LIFT.z) + STAIR_TOTAL_HEIGHT + 0.4, LIFT.z)
         if (boardingMotion) boardingMotion.current.lift = 0
       } else if (launchPhase === 'bridge') {
         p.set(LIFT.x, DECK_HEIGHT + 0.4, LIFT.z)
@@ -285,7 +299,14 @@ export default function PlayerRig({
       input.current.actions.length = 0
       const height = boardingMotion ? Math.min(1, boardingMotion.current.lift + delta / 7) : 1
       if (boardingMotion) boardingMotion.current.lift = height
-      p.set(LIFT.x, groundHeight(LIFT.x, LIFT.z) + 0.4 + height * DECK_HEIGHT, LIFT.z)
+      p.set(
+        LIFT.x,
+        groundHeight(LIFT.x, LIFT.z) +
+          STAIR_TOTAL_HEIGHT +
+          0.4 +
+          height * (DECK_HEIGHT - STAIR_TOTAL_HEIGHT),
+        LIFT.z,
+      )
       motion.current.speed = 0
       motion.current.clip = 'Idle'
       if (height >= 1) onLaunchPhase?.('bridge')
@@ -478,11 +499,13 @@ export default function PlayerRig({
         fps: fps.current,
         room: launchPhase === 'idle' ? roomAt(p.x, p.z) : null,
         boardingSpot:
-          launchPhase === 'access' && nearLift(p.x, p.z)
-            ? 'lift'
-            : launchPhase === 'bridge' && nearHatch(p.x, p.z)
-              ? 'hatch'
-              : null,
+          launchPhase === 'suiting' && nearSuit(p.x, p.z)
+            ? 'suit'
+            : launchPhase === 'access' && nearLift(p.x, p.z)
+              ? 'lift'
+              : launchPhase === 'bridge' && nearHatch(p.x, p.z)
+                ? 'hatch'
+                : null,
       })
     }
   })

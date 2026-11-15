@@ -3,7 +3,7 @@ import GameWorld from '../scene/GameWorld'
 import { useBlueprint } from '../game/state/blueprintStore'
 import { LAUNCHERS, type LauncherId } from '../game/missionDesign'
 import { COMPLETE_ASSEMBLY, assemblyReady, type ModuleId } from '../spacecraft/assembly'
-import LaunchCinematicHud from '../ui/campaign/LaunchCinematicHud'
+import LaunchCinematicOverlay from './LaunchCinematicOverlay'
 import './launchCinematic.css'
 import './launchPreview.css'
 
@@ -83,9 +83,7 @@ export default function LaunchPreview() {
           onCinematicProgress={setElapsed}
           onCinematicComplete={finish}
         />
-        {playing && (
-          <LaunchCinematicHud seconds={elapsed} parts={parts} config={config} onSkip={finish} />
-        )}
+        {playing && <LaunchCinematicOverlay seconds={elapsed} config={config} onSkip={finish} />}
       </div>
 
       {!playing && (

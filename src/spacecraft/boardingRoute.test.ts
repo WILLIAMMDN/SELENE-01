@@ -1,6 +1,17 @@
 import { describe, expect, it } from 'vitest'
 import { canWalk } from '../world/worldData'
-import { LIFT, HATCH, nearLift, nearHatch, onCrewBridge, onGroundRoute } from './boardingRoute'
+import {
+  LIFT,
+  HATCH,
+  SUIT_POINT,
+  STAIR_TOTAL_HEIGHT,
+  nearLift,
+  nearHatch,
+  nearSuit,
+  boardingStairHeight,
+  onCrewBridge,
+  onGroundRoute,
+} from './boardingRoute'
 
 describe('recorrido físico al lanzador LC-01', () => {
   it('permite caminar por el corredor sin atravesar el puesto de control', () => {
@@ -20,6 +31,14 @@ describe('recorrido físico al lanzador LC-01', () => {
       expect(canWalk(x, -33.8), `acceso (x=${x.toFixed(1)}, z=-33.8)`).toBe(true)
     for (let z = -33.8; z >= -84; z -= 0.2)
       expect(canWalk(80, z), `acceso (x=80, z=${z.toFixed(1)})`).toBe(true)
+  })
+
+  it('mantiene el vestuario a nivel de suelo y doce peldaños hasta el ascensor', () => {
+    expect(nearSuit(SUIT_POINT.x, SUIT_POINT.z)).toBe(true)
+    expect(boardingStairHeight(80, -68)).toBe(0)
+    expect(boardingStairHeight(80, -83)).toBeCloseTo(STAIR_TOTAL_HEIGHT)
+    expect(boardingStairHeight(80, -76)).toBeGreaterThan(0)
+    expect(boardingStairHeight(70, -76)).toBe(0)
   })
 
   it('limita la pasarela elevada al brazo de acceso', () => {
