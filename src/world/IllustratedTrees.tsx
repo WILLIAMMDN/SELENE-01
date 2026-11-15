@@ -1,4 +1,4 @@
-import { Component, Suspense, useEffect, useMemo, type ReactNode } from 'react'
+import { Component, Suspense, useEffect, useMemo, useRef, type ReactNode } from 'react'
 import { useGLTF } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import * as T from 'three'
@@ -10,6 +10,10 @@ type Props = {
   variant?: number
   reduced?: boolean
 }
+// Empty leaf mesh for distant trees; its canopy children retain the full silhouette.
+const distantLeaves = new T.BufferGeometry()
+distantLeaves.setAttribute('position', new T.Float32BufferAttribute([], 3))
+distantLeaves.boundingSphere = new T.Sphere(new T.Vector3(), 0)
 const FILES = ['anime_tree_grove', 'anime_tree_slender', 'anime_tree_shelter']
 // Share GPU geometry and materials among the forty trees; only transforms and mixers are per tree.
 const templates = new WeakMap<T.Object3D, T.Object3D>()
@@ -78,6 +82,16 @@ function TreeModel({ position, scale = 1, variant = 0, reduced = false }: Props)
     `${import.meta.env.BASE_URL}models/trees/${FILES[variant % FILES.length]}.glb?v=foliage-2`,
   )
   const tree = useMemo(() => illustratedTemplate(scene).clone(true), [scene])
+  const detail = useMemo(() => {
+    const leaves: { mesh: T.Mesh; geometry: T.BufferGeometry; ink?: T.Object3D }[] = []
+    tree.traverse((node) => {
+      if (node instanceof T.Mesh && node.name.startsWith('Foliage'))
+        leaves.push({ mesh: node, geometry: node.geometry, ink: node.getObjectByName('Ink') })
+    })
+    return leaves
+  }, [tree])
+  const distant = useRef(false),
+    accumulated = useRef(0)
   const playback = useMemo(() => {
     const mixer = new T.AnimationMixer(tree)
     const actions = animations.map((clip) => mixer.clipAction(clip))
@@ -91,12 +105,23 @@ function TreeModel({ position, scale = 1, variant = 0, reduced = false }: Props)
     }
   }, [playback, variant])
   useFrame((state, delta) => {
-    if (reduced) return
     const distance = Math.hypot(
       state.camera.position.x - position[0],
       state.camera.position.z - position[2],
     )
-    if (distance < 110) playback.mixer.update(Math.min(delta, 0.05) * (0.85 + (variant % 5) * 0.07))
+    const lowDetail = distant.current ? distance > 65 : distance > 80
+    if (lowDetail !== distant.current) {
+      distant.current = lowDetail
+      for (const { mesh, geometry, ink } of detail) {
+        mesh.geometry = lowDetail ? distantLeaves : geometry
+        if (ink) ink.visible = !lowDetail
+      }
+    }
+    if (reduced || distance > 130) return
+    accumulated.current += Math.min(delta, 0.05)
+    if (distance > 40 && accumulated.current < 1 / 15) return
+    playback.mixer.update(accumulated.current * (0.85 + (variant % 5) * 0.07))
+    accumulated.current = 0
   })
   return (
     <group position={position} scale={scale} rotation={[0, variant * 2.399, 0]}>

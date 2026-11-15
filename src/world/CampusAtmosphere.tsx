@@ -1,3 +1,5 @@
+import { createRoadClearance } from './navigation/collision'
+import { RAILS, CABINETS } from './navigation/propLayout'
 import { useEffect, useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as T from 'three'
@@ -67,6 +69,7 @@ function Grass({ reduced }: { reduced: boolean }) {
       points: r.curve.getPoints(160),
       margin: r.width / 2 + 0.65,
     }))
+    const roadClear = createRoadClearance(samples)
     const result: [number, number, number][] = []
     routes.forEach(({ curve, width }, j) => {
       for (let i = 0; i < 80; i++) {
@@ -76,11 +79,7 @@ function Grass({ reduced }: { reduced: boolean }) {
           offset = width * 0.5 + 0.95 + (i % 5) * 0.18,
           x = p.x - t.z * offset * side,
           z = p.z + t.x * offset * side
-        if (
-          canWalk(x, z) &&
-          !insideBuilding(x, z, 1) &&
-          !samples.some((r) => r.points.some((p) => Math.hypot(p.x - x, p.z - z) < r.margin))
-        )
+        if (canWalk(x, z) && !insideBuilding(x, z, 1) && roadClear(x, z))
           result.push([x, z, (i * 7 + j) % 11])
       }
     })
@@ -101,13 +100,13 @@ function Grass({ reduced }: { reduced: boolean }) {
       )
     })
     instances.current.instanceMatrix.needsUpdate = true
+    instances.current.computeBoundingSphere()
+    if (instances.current.boundingSphere) instances.current.boundingSphere.radius += 0.1
   }, [points])
   useFrame((_, dt) => {
     if (!reduced) time.value += Math.min(dt, 0.05)
   })
-  return (
-    <instancedMesh ref={instances} args={[blades, material, points.length]} frustumCulled={false} />
-  )
+  return <instancedMesh ref={instances} args={[blades, material, points.length]} />
 }
 function DriftingLeaves({ reduced }: { reduced: boolean }) {
   const ref = useRef<T.InstancedMesh>(null),
@@ -177,21 +176,10 @@ export default function CampusAtmosphere({ reduced = false }: { reduced?: boolea
     <>
       <Grass reduced={reduced} />
       <DriftingLeaves reduced={reduced} />
-      {[
-        [-11, 40, -0.12],
-        [-20, 43, -0.3],
-        [-32, 47, -0.1],
-        [6, 49, Math.PI / 2],
-        [6, 55, Math.PI / 2],
-      ].map(([x, z, a], i) => (
+      {RAILS.map(([x, z, a], i) => (
         <Rail key={i} x={x} z={z} angle={a} />
       ))}
-      {[
-        [8, 20],
-        [-30, 15],
-        [-57, -23],
-        [30, 4],
-      ].map(([x, z], i) => (
+      {CABINETS.map(([x, z], i) => (
         <group key={i} position={[x, groundHeight(x, z), z]} rotation={[0, i * 0.7, 0]}>
           <Solid position={[0, 0.55, 0]} scale={[0.85, 1.1, 0.42]} color="#78aaa1" />
           <Solid position={[0, 0.86, 0.23]} scale={[0.55, 0.18, 0.035]} color="#dce0d5" />

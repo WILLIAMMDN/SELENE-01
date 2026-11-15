@@ -1,3 +1,4 @@
+import { moveWithCollisions } from './navigation/collision'
 import { MOTION_SCALE } from './physicalScale'
 
 export const CLIP_SECONDS = {
@@ -113,7 +114,7 @@ export const MOVEMENT_KEYS = [
   'AltRight',
 ]
 export const EXPLORER_MOVEMENT = {
-  run: 4.2,
+  run: 6.5,
   crouch: 0.65,
   jumpSpeed: 4.4,
   gravity: 9.81,
@@ -185,7 +186,7 @@ export function stepCharacter(
     }
     if (command === 'sit') {
       const seat = SEATS.find((s) => Math.hypot(p.x - s.x, p.z - s.z) < 2.1)
-      if (seat && canWalk(seat.x, seat.z)) {
+      if (seat && canWalk(seat.x + Math.sin(seat.yaw) * 0.9, seat.z + Math.cos(seat.yaw) * 0.9)) {
         p.x = seat.x + Math.sin(seat.yaw) * 0.08
         p.z = seat.z + Math.cos(seat.yaw) * 0.08
         state.seat = 'down'
@@ -231,6 +232,12 @@ export function stepCharacter(
       if (state.seatTimer <= 0) {
         if (state.seat === 'down') state.seat = 'idle'
         else {
+          const exitX = p.x + Math.sin(state.facing) * 0.9,
+            exitZ = p.z + Math.cos(state.facing) * 0.9
+          if (canWalk(exitX, exitZ)) {
+            p.x = exitX
+            p.z = exitZ
+          }
           state.seat = null
           state.seatHeight = 0
         }
@@ -301,8 +308,7 @@ export function stepCharacter(
       : !directional && (keys.has('ShiftLeft') || keys.has('ShiftRight'))
         ? EXPLORER_MOVEMENT.run
         : MOTION_SCALE.walk
-    if (canWalk(p.x + wx * velocity * delta, p.z)) p.x += wx * velocity * delta
-    if (canWalk(p.x, p.z + wz * velocity * delta)) p.z += wz * velocity * delta
+    moveWithCollisions(p, wx * velocity * delta, wz * velocity * delta, canWalk)
     desiredYaw = directional ? yaw + Math.PI : Math.atan2(wx, wz)
     state.facing = desiredYaw
   }

@@ -1,3 +1,4 @@
+import { BENCHES, CHAIRS, BINS, LAMPS } from './navigation/propLayout'
 import { useMemo } from 'react'
 import { useGLTF } from '@react-three/drei'
 import * as T from 'three'
@@ -13,6 +14,7 @@ const palette = (m: T.Material) => {
   if (h.s > 0.35 && (h.h < 0.12 || h.h > 0.9)) return '#bd7760'
   return c.lerp(new T.Color('#95b4aa'), 0.18)
 }
+const preparedProps = new WeakMap<T.Object3D, T.Object3D>()
 export function SceneryProp({
   name,
   position,
@@ -28,6 +30,8 @@ export function SceneryProp({
   const actor = useMemo(() => {
     const source = scene.getObjectByName(name)
     if (!source) return null
+    const cached = preparedProps.get(source)
+    if (cached) return cached.clone(true)
     const root = source.clone(true)
     root.position.set(0, 0, 0)
     const meshes: T.Mesh[] = []
@@ -53,7 +57,8 @@ export function SceneryProp({
       )
       mesh.add(ink)
     }
-    return root
+    preparedProps.set(source, root)
+    return root.clone(true)
   }, [scene, name])
   return actor ? (
     <group position={position} rotation={[0, rotation, 0]} scale={scale}>
@@ -72,11 +77,7 @@ export default function EnvironmentProps() {
       <SceneryProp name="Vehiculo_Camion_Carga" position={[61, 0.13, 31]} />
       <SceneryProp name="Vehiculo_Buggy_Colonia" position={[30, 0, 20]} />
       <Sign text="TRANSPORTE / ARTEMISA" position={[42, 1.5, 48]} scale={[2.3, 0.575, 1]} />
-      {[
-        [-8, 23, 0.35],
-        [12, 22, -0.35],
-        [-73, 8, -Math.PI / 2],
-      ].map(([x, z, r], i) => (
+      {BENCHES.map(([x, z, r], i) => (
         <SceneryProp
           key={`bench${i}`}
           name="Prop_Banca_Colonia"
@@ -84,10 +85,7 @@ export default function EnvironmentProps() {
           rotation={r}
         />
       ))}
-      {[
-        [-30, 33, 0.2],
-        [-28, 33, -0.2],
-      ].map(([x, z, r], i) => (
+      {CHAIRS.map(([x, z, r], i) => (
         <SceneryProp
           key={`chair${i}`}
           name="Prop_Silla_Colonia"
@@ -95,30 +93,14 @@ export default function EnvironmentProps() {
           rotation={r}
         />
       ))}
-      {[
-        [-10, 24],
-        [10, 24],
-        [41, 47],
-        [-72, 12],
-      ].map(([x, z], i) => (
+      {BINS.map(([x, z], i) => (
         <SceneryProp
           key={`bin${i}`}
           name="Prop_Tacho_Basura"
           position={[x, groundHeight(x, z), z]}
         />
       ))}
-      {[
-        [-4, 38],
-        [4, 48],
-        [-4, 16],
-        [13, 9],
-        [-32, 11],
-        [-44, -9],
-        [41, 4],
-        [61, -23],
-        [-26, 46],
-        [-70, 16],
-      ].map(([x, z], i) => (
+      {LAMPS.map(([x, z], i) => (
         <SceneryProp
           key={`lamp${i}`}
           name="Prop_Farola_Colonia"

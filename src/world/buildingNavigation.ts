@@ -1,9 +1,18 @@
+import { createCollisionGrid, PLAYER_RADIUS } from './navigation/collision'
 import { PARKING, LANDER_SITES, landingPadHeight } from './environmentLayout'
 import { CAMPUS_BUILDINGS } from './campusLayout'
 type Height = (x: number, z: number) => number
 export const occupant = { x: 0, z: 37, active: true, earth: true }
+const foundationCache = new WeakMap<Height, Map<string, number>>()
 export function foundation(b: (typeof CAMPUS_BUILDINGS)[number], height: Height) {
-  return (
+  let cache = foundationCache.get(height)
+  if (!cache) {
+    cache = new Map()
+    foundationCache.set(height, cache)
+  }
+  const cached = cache.get(b.id)
+  if (cached !== undefined) return cached
+  const value =
     Math.max(
       ...[
         [-1, -1],
@@ -13,7 +22,8 @@ export function foundation(b: (typeof CAMPUS_BUILDINGS)[number], height: Height)
         [0, 0],
       ].map(([x, z]) => height(b.x + (x * b.width) / 2, b.z + (z * b.depth) / 2)),
     ) + 0.16
-  )
+  cache.set(b.id, value)
+  return value
 }
 export function buildingAt(x: number, z: number, earth = true) {
   if (earth && Math.abs(x - 24) < 11.2 && z > -25.7 && z < -5.9) return 'hangar'
@@ -28,7 +38,14 @@ export function buildingAt(x: number, z: number, earth = true) {
     )?.id ?? null
   )
 }
-export function buildingClear(x: number, z: number, radius = 0.22, earth = true) {
+const buildingBoxes = CAMPUS_BUILDINGS.flatMap((b) => {
+  const floor = b.floors[0]?.top ?? 0.3
+  return b.blockers
+    .filter((o) => o.top > floor + 0.36 && o.bottom < floor + 1.65)
+    .map((o) => ({ x: b.x + o.x, z: b.z + o.z, hx: o.hx, hz: o.hz }))
+})
+const buildingGrids = new Map<number, ReturnType<typeof createCollisionGrid>>()
+export function buildingClear(x: number, z: number, radius = PLAYER_RADIUS, earth = true) {
   for (const b of CAMPUS_BUILDINGS) {
     if (Math.abs(x - b.x) > b.width / 2 + 1 || Math.abs(z - b.z) > b.depth / 2 + 1) continue
     if (b.id === 'habitat') {
@@ -38,18 +55,13 @@ export function buildingClear(x: number, z: number, radius = 0.22, earth = true)
       if (r > 4.65 - radius && r < 5.15 + radius && !(dz > 4 && Math.abs(dx) < 0.58 - radius))
         return false
     }
-    const floor = b.floors[0]?.top ?? 0.3
-    if (
-      b.blockers.some(
-        (o) =>
-          o.top > floor + 0.36 &&
-          o.bottom < floor + 1.65 &&
-          Math.abs(x - b.x - o.x) < o.hx + radius &&
-          Math.abs(z - b.z - o.z) < o.hz + radius,
-      )
-    )
-      return false
   }
+  let clear = buildingGrids.get(radius)
+  if (!clear) {
+    clear = createCollisionGrid(buildingBoxes, radius)
+    buildingGrids.set(radius, clear)
+  }
+  if (!clear(x, z)) return false
   // Industrial hangar: open central entrance, real wall shell, central spacecraft work area.
   if (earth && Math.abs(x - 24) < 11.8 && z > -26.4 && z < -5.6) {
     if (Math.abs(x - 24) > 11.15 || z < -25.65 || (z > -6.25 && Math.abs(x - 24) > 7)) return false

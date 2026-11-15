@@ -26,7 +26,7 @@ El rango antropométrico describe acomodación de asientos de Orion, no un requi
 - Banco: 0,50 m de altura superior del asiento, 1,80 m de longitud. Estas son decisiones arquitectónicas del proyecto, no normas NASA.
 - Lanzador ODYSSEY: 90,407 m de alto, modelo ficticio escalado 5/3. La plataforma usa su GLB animado; SLS se conserva únicamente como referencia documental de dimensiones, no como el lanzador activo.
 - ROBER: GLB aportado por el usuario, normalizado uniformemente a 3 m de longitud tomando Perseverance como referencia. Se conserva la relación original de anchura y altura; no se fuerza a una envolvente de 3 × 2,7 × 2,2 m. Incluye rig, seis ruedas, mástil y brazo animado, sin afirmar que sea un CAD exacto ni una simulación científica. Velocidad jugable de 1,1 m/s, o 0,55 m/s en modo terreno irregular; son valores educativos, no velocidades operativas NASA.
-- Marcha 1,4 m/s; carrera de la exploradora en Tierra 4,2 m/s; desplazamiento rápido del astronauta marciano 3,2 m/s. No son velocidades EVA documentadas. La simulación no modela carga del traje ni gravedad reducida.
+- Marcha 2 m/s; carrera de la exploradora en Tierra 6,5 m/s; desplazamiento rápido del astronauta marciano 5 m/s. No son velocidades EVA documentadas. La simulación no modela carga del traje ni gravedad reducida.
 
 ## Integración
 

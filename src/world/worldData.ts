@@ -1,3 +1,4 @@
+import { propsClear } from './navigation/propLayout'
 import { coastDistance, sceneryClear } from './environmentLayout'
 import { buildingClear } from './buildingNavigation'
 import { CAMPUS_TREES } from './campusLayout'
@@ -75,7 +76,7 @@ export const SECTORS: Sector[] = [
     short: 'Lanzamiento',
     x: 61,
     z: -75,
-    entry: [61, -35],
+    entry: [61, -33.8],
     color: '#c67a5f',
     title: 'El viaje empieza mucho antes del despegue.',
     description:
@@ -117,6 +118,7 @@ export const PALETTE = {
 export const COLLIDERS = [{ x: 61, z: -78.333, hx: 33.334, hz: 35.834 }]
 export function canWalk(x: number, z: number) {
   return (
+    propsClear(x, z) &&
     sceneryClear(x, z) &&
     buildingClear(x, z) &&
     !CAMPUS_TREES.some(([tx, tz]) => Math.hypot(x - tx, z - tz) < 0.7) &&

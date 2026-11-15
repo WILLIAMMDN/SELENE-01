@@ -47,8 +47,8 @@ export const ODYSSEY_SIZE = {
   padCollisionRadius: 11,
 } as const
 export const MOTION_SCALE = {
-  walk: 1.4,
-  run: 3.2,
+  walk: 2,
+  run: 5,
   cameraTarget: 1.35,
   cameraHeight: 1.65,
   zoom: 7.5,

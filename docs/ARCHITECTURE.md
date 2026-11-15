@@ -32,6 +32,8 @@ src/
     player/                Personaje, cámara de seguimiento y contratos de exploración
     controls/keyboard.ts   Teclado compartido, foco y limpieza de teclas
     characterMotion.ts     Movimiento y estados de animación existentes
+    navigation/            Índice espacial, barrido de colisiones y mobiliario compartido
+    performance/           Presupuesto de fotogramas y resolución adaptativa
     ...                    Entorno, interiores, terreno, fauna y navegación
   scene/GameWorld.tsx      Vistas 3D del simulador, reutilizando movimiento y teclado
   spacecraft/             Ensamblaje, modelos ODYSSEY, plataforma y cápsula
@@ -94,3 +96,7 @@ El bundle principal sigue necesitando una futura evaluación de carga y rendimie
 - `ui/campaign/MissionChecklist.tsx`: lista reutilizable bajo demanda, presentada dentro de los paneles existentes.
 
 El controlador protege la ejecución de acciones con las condiciones de lanzamiento y registra el informe contextual. `verifyMission` es idempotente para el mismo diseño aprobado: no elimina su vuelo ni su informe al volver a comunicaciones. La recuperación de un guardado antiguo no exige nuevos campos obligatorios.
+
+## Rendimiento y navegación
+
+Ver [PERFORMANCE.md](PERFORMANCE.md) para los límites de resolución, detalle distante, cachés, colisiones y controles de regresión. `propLayout.ts` comparte posiciones entre dibujo y colisión; al mover mobiliario, actualizar ese contrato. El seguimiento de TARS y las órdenes de animación son independientes del panel de ayuda y de los cuadernos.
