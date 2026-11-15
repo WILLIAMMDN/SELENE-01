@@ -3,6 +3,7 @@ import { coastDistance, sceneryClear } from './environmentLayout'
 import { buildingClear } from './buildingNavigation'
 import { CAMPUS_TREES } from './campusLayout'
 import { ODYSSEY_SIZE } from './physicalScale'
+import { onGroundRoute } from '../spacecraft/boardingRoute'
 import type { SectorId } from '../game/missionTypes'
 export type { SectorId } from '../game/missionTypes'
 export type ViewMode = 'walk' | 'map' | 'tour'
@@ -117,6 +118,9 @@ export const PALETTE = {
 }
 export const COLLIDERS = [{ x: 61, z: -78.333, hx: 33.334, hz: 35.834 }]
 export function canWalk(x: number, z: number) {
+  // The guarded crew-access corridor is walkable, even inside the launch-pad perimeter.
+  // The paved crew route overrides procedural terrain obstacles, never solid equipment.
+  if (onGroundRoute(x, z)) return propsClear(x, z)
   return (
     propsClear(x, z) &&
     sceneryClear(x, z) &&

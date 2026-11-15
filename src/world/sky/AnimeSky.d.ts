@@ -21,6 +21,8 @@ export class AnimeSky {
   sun: Mesh
   sunMaterial: MeshBasicMaterial
   skyMaterial: ShaderMaterial
+  starMaterial: ShaderMaterial
+  cloudMeshes: Mesh[]
   setHour(hour: number): this
   setWeather(weather: 'clear' | 'rain' | 'storm', transitionSeconds?: number): this
   update(deltaSeconds: number, camera?: Camera): void

@@ -88,33 +88,25 @@ function Asset({
       if (!platform) return
       const clip = animations.find((a) => a.name === 'SERVICIOS_RETIRADA')
       if (!clip) return
-      try {
-        const action = mixer.clipAction(clip.clone())
-        action.reset()
-        action.setLoop(T.LoopOnce, 1)
-        action.clampWhenFinished = true
-        action.time = withdrawn.current ? clip.duration : 0
-        action.timeScale = withdrawn.current ? -1 : 1
-        action.play()
-        withdrawn.current = !withdrawn.current
-      } catch (err) {
-        console.warn('Services animation error:', err)
-      }
+      const action = mixer.clipAction(clip)
+      action.reset()
+      action.setLoop(T.LoopOnce, 1)
+      action.clampWhenFinished = true
+      action.time = withdrawn.current ? clip.duration : 0
+      action.timeScale = withdrawn.current ? -1 : 1
+      action.play()
+      withdrawn.current = !withdrawn.current
     }
     const mechanism = (event: Event) => {
       if (platform) return
       const name = (event as CustomEvent<string>).detail
-      try {
-        mixer.stopAllAction()
-        if (name === 'reset') return
-        const clip = animations.find((a) => a.name === name)
-        if (clip) {
-          const action = mixer.clipAction(clip.clone()).reset().setLoop(T.LoopOnce, 1)
-          action.clampWhenFinished = true
-          action.play()
-        }
-      } catch (err) {
-        console.warn('Mechanism animation error:', err)
+      mixer.stopAllAction()
+      if (name === 'reset') return
+      const clip = animations.find((a) => a.name === name)
+      if (clip) {
+        const action = mixer.clipAction(clip).reset().setLoop(T.LoopOnce, 1)
+        action.clampWhenFinished = true
+        action.play()
       }
     }
     window.addEventListener('odyssey-ground-services', services)
@@ -122,42 +114,38 @@ function Asset({
     return () => {
       window.removeEventListener('odyssey-ground-services', services)
       window.removeEventListener('odyssey-mechanism', mechanism)
-      try {
-        mixer.stopAllAction()
-      } catch {
-        /* no-op */
-      }
+      mixer.stopAllAction()
+      // Keep actions bound through React StrictMode's effect replay.
     }
   }, [platform, animations, mixer, root])
   useFrame((_, dt) => {
-    try {
-      if (flightClock) {
-        const frame = getLaunchFrame(flightClock.current, config?.launcher ?? 'aurora')
-        if (platform && frame.time >= 0.8 && !withdrawn.current) {
-          const clip = animations.find((a) => a.name === 'SERVICIOS_RETIRADA')
-          if (clip) {
-            mixer.stopAllAction()
-            const action = mixer.clipAction(clip.clone()).reset().setLoop(T.LoopOnce, 1)
-            action.clampWhenFinished = true
-            action.play()
-            withdrawn.current = true
-          }
-        }
-        if (!platform && frame.mechanism && lastMechanism.current !== frame.mechanism) {
-          lastMechanism.current = frame.mechanism
-          const clip = animations.find((a) => a.name === frame.mechanism)
-          if (clip) {
-            mixer.stopAllAction()
-            const action = mixer.clipAction(clip.clone()).reset().setLoop(T.LoopOnce, 1)
-            action.clampWhenFinished = true
-            action.play()
-          }
+    if (flightClock) {
+      const frame = getLaunchFrame(
+        flightClock.current,
+        config?.launcher ?? 'aurora',
+        parts.includes('habitat'),
+      )
+      if (platform && frame.time >= 8 && !withdrawn.current) {
+        const clip = animations.find((a) => a.name === 'SERVICIOS_RETIRADA')
+        if (clip) {
+          const action = mixer.clipAction(clip).reset().setLoop(T.LoopOnce, 1)
+          action.clampWhenFinished = true
+          action.play()
+          withdrawn.current = true
         }
       }
-      mixer.update(Math.min(dt, 0.05))
-    } catch (err) {
-      console.warn('LaunchComplex animation update warning:', err)
+      if (!platform && frame.mechanism && lastMechanism.current !== frame.mechanism) {
+        lastMechanism.current = frame.mechanism
+        const clip = animations.find((a) => a.name === frame.mechanism)
+        if (clip) {
+          mixer.stopAllAction()
+          const action = mixer.clipAction(clip).reset().setLoop(T.LoopOnce, 1)
+          action.clampWhenFinished = true
+          action.play()
+        }
+      }
     }
+    mixer.update(Math.min(dt, flightClock ? 0.35 : 0.05))
   })
   return (
     <>
@@ -204,7 +192,7 @@ function EngineExhaust({
           </mesh>
         </group>
       ))}
-      <pointLight color="#e8a76b" intensity={28} distance={75} position={[0, -3, 0]} />
+      <pointLight color="#e8a76b" intensity={14} distance={34} position={[0, -3, 0]} />
     </group>
   )
 }
@@ -214,23 +202,23 @@ function LaunchPadDust({ clock }: { clock: LaunchClock }) {
   useFrame(() => {
     if (!puffs.current) return
     const t = clock.current
-    puffs.current.visible = t >= 5 && t < 15
+    puffs.current.visible = t >= 12 && t < 24
     puffs.current.children.forEach((child, i) => {
-      const angle = (i / 16) * Math.PI * 2
-      const radius = 6 + (t - 5) * 2.8 + (i % 3)
+      const angle = (i / 14) * Math.PI * 2
+      const radius = 5 + (t - 12) * 2.25 + (i % 3)
       child.position.set(Math.cos(angle) * radius, 0.8 + ((i + t) % 4), Math.sin(angle) * radius)
-      child.scale.setScalar(Math.max(0.1, 1.4 + (t - 5) * 0.25))
+      child.scale.setScalar(Math.max(0.1, 1.3 + (t - 12) * 0.2))
     })
   })
   return (
     <group ref={puffs} visible={false}>
-      {Array.from({ length: 16 }, (_, i) => (
+      {Array.from({ length: 14 }, (_, i) => (
         <mesh key={i}>
-          <icosahedronGeometry args={[1.8, 1]} />
+          <icosahedronGeometry args={[1.5, 1]} />
           <meshToonMaterial
             color={i % 3 === 0 ? '#dedac4' : '#a2afa3'}
             transparent
-            opacity={0.55}
+            opacity={0.5}
             depthWrite={false}
           />
         </mesh>
@@ -252,7 +240,11 @@ export default function LaunchComplex({
   const rocket = useRef<T.Group>(null)
   useFrame(() => {
     if (!rocket.current || !flightClock) return
-    const frame = getLaunchFrame(flightClock.current, config?.launcher ?? 'aurora')
+    const frame = getLaunchFrame(
+      flightClock.current,
+      config?.launcher ?? 'aurora',
+      parts.includes('habitat'),
+    )
     rocket.current.position.y = frame.altitudeMeters / LAUNCH_SITE.scale
   })
   return (

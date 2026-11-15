@@ -2,7 +2,6 @@ import { missionGuidance } from '../game/missionGuidance'
 import MissionChecklist from '../ui/campaign/MissionChecklist'
 import { loadOperationSession } from '../game/state/operationStore'
 import { blueprintKey } from '../game/campusMission'
-import { LAUNCH_MECHANISMS } from '../spacecraft/LaunchComplex'
 import { useState } from 'react'
 import {
   OBJECTIVES,
@@ -173,75 +172,22 @@ export default function MissionStation({
         <>
           <h3>04 · Preparar y autorizar</h3>
           <p>
-            ODYSSEY es tu lanzador ficticio. Puedes retirar sus brazos de servicio; la autorización
-            abre las decisiones de vuelo y operaciones del simulador.
+            ODYSSEY está preparada. Acércate al ascensor, sube a la pasarela y entra a la cabina.
+            TARS te acompañará hasta que autorices el despegue.
           </p>
           <button
-            className="secondary-world"
-            disabled={!present}
-            onClick={() => {
-              window.dispatchEvent(new CustomEvent('odyssey-ground-services'))
-              setMessage(
-                'Secuencia de retirada iniciada. Cierra este panel para observar la plataforma.',
-              )
-            }}
-          >
-            Retirar / restablecer servicios
-          </button>
-          <details>
-            <summary>Mecanismos del modelo · demostración</summary>
-            <p>
-              Reproduce cada mecanismo por separado y cierra este panel para verlo. Es una
-              demostración del archivo, sin simular el vuelo.
-            </p>
-            {LAUNCH_MECHANISMS.map(([id, label]) => (
-              <button
-                key={id}
-                className="secondary-world"
-                disabled={!present}
-                onClick={() => {
-                  window.dispatchEvent(new CustomEvent('odyssey-mechanism', { detail: id }))
-                  setMessage(label + ': demostración iniciada.')
-                }}
-              >
-                {label}
-              </button>
-            ))}
-            <button
-              className="text-button"
-              disabled={!present}
-              onClick={() =>
-                window.dispatchEvent(new CustomEvent('odyssey-mechanism', { detail: 'reset' }))
-              }
-            >
-              Restablecer lanzador
-            </button>
-          </details>
-          <button
             className="primary-world"
-            disabled={!present}
+            disabled={!present || !verified}
             onClick={() => onCampaign('launch')}
           >
             {savedFlight
               ? savedFlight.ops.status === 'running'
                 ? 'Continuar operación guardada →'
                 : 'Abrir informe del vuelo →'
-              : 'Autorizar despegue in-situ en LC-01 →'}
+              : 'Acceder a la pasarela de embarque →'}
           </button>
-          <button
-            className="secondary-world"
-            disabled={!present}
-            style={{ borderLeft: '3px solid #ba6061', fontWeight: 600 }}
-            onClick={() => {
-              window.dispatchEvent(new CustomEvent('selene-launch-cinematic'))
-            }}
-          >
-            🚀 Probar despegue cinematográfico LC-01 ◒
-          </button>
-          {!verified && !savedFlight && (
-            <small style={{ display: 'block', color: '#688c89', marginTop: 6 }}>
-              Nota: Puedes autorizar y probar la cinemática de despegue directamente en simulación.
-            </small>
+          {!verified && (
+            <p>Necesitas un objetivo aceptado y una revisión vigente en comunicaciones.</p>
           )}
         </>
       )}

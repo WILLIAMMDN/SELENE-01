@@ -20,6 +20,19 @@ import { MOTION_SCALE } from '../physicalScale'
 import { CHARACTER_KEYS, createCharacterMotion, stepCharacter } from '../characterMotion'
 import type { ViewMode } from '../worldData'
 import type { SceneProps } from './types'
+import {
+  LIFT,
+  HATCH,
+  nearSuit,
+  boardingStairHeight,
+  STAIR_TOTAL_HEIGHT,
+  CABIN,
+  DECK_HEIGHT,
+  nearLift,
+  nearHatch,
+  onCrewBridge,
+  type BoardingPhase,
+} from '../../spacecraft/boardingRoute'
 
 const upAxis = new T.Vector3(0, 1, 0),
   lookTarget = new T.Vector3(),
@@ -34,7 +47,9 @@ export default function PlayerRig({
   reduced,
   onPosition,
   onInteract,
-  cinematic = false,
+  launchPhase = 'idle',
+  boardingMotion,
+  onLaunchPhase,
 }: SceneProps) {
   const wardrobe = useWardrobe()
   const world = useWorld(),
@@ -49,8 +64,14 @@ export default function PlayerRig({
     nearBuggy(x, z) &&
     !buildingAt(x, z) &&
     [0.2, 0.4, 0.6, 0.8].every((t) => worldClear(x + (buggy.x - x) * t, z + (buggy.z - z) * t))
-  const groundHeight = (x: number, z: number) =>
-    moon ? terrainHeight(x, z) : walkingHeight(x, z, terrainHeight, world.id === 'earth')
+  const groundHeight = (x: number, z: number) => {
+    const base = moon
+      ? terrainHeight(x, z)
+      : walkingHeight(x, z, terrainHeight, world.id === 'earth')
+    return world.id === 'earth' && (launchPhase === 'access' || launchPhase === 'suiting')
+      ? base + boardingStairHeight(x, z)
+      : base
+  }
   const roomAt = (x: number, z: number) => (moon ? null : buildingAt(x, z, world.id === 'earth'))
   const stationFor = (x: number, z: number) =>
     moon ? lunarStationAt(x, z) : stationAt(x, z, world.id === 'earth')
@@ -58,6 +79,7 @@ export default function PlayerRig({
   const vehicle = useRef<T.Group>(null)
   const firstPerson = useRef(false)
   const [isFirstPerson, setIsFirstPerson] = useState(false)
+  const lastLaunchPhase = useRef<BoardingPhase>('idle')
   const exitBlocked = useRef(false)
   const player = useRef<T.Group>(null),
     moving = useRef(0),
@@ -105,14 +127,39 @@ export default function PlayerRig({
       document.removeEventListener('visibilitychange', stop)
     }
   }, [input])
-  const cinematicRef = useRef(cinematic)
-  cinematicRef.current = cinematic
   useEffect(() => {
     const releaseKeyboard = bindCharacterKeyboard({
       controls: input.current,
-      enabled: () => !paused && !cinematicRef.current && modeRef.current === 'walk' && !roberRemote.current,
+      enabled: () =>
+        !paused &&
+        modeRef.current === 'walk' &&
+        !roberRemote.current &&
+        launchPhase !== 'ascending' &&
+        launchPhase !== 'flight',
       onAction: (e) => {
-        if (cinematicRef.current) return
+        if (world.id === 'earth' && e.code === 'KeyE' && !e.repeat && onLaunchPhase) {
+          const here = location.current
+          if (launchPhase === 'suiting' && nearSuit(here.x, here.z)) {
+            e.preventDefault()
+            onLaunchPhase('access')
+            return
+          }
+          if (launchPhase === 'access' && nearLift(here.x, here.z)) {
+            e.preventDefault()
+            onLaunchPhase('ascending')
+            return
+          }
+          if (launchPhase === 'bridge' && nearHatch(here.x, here.z)) {
+            e.preventDefault()
+            onLaunchPhase('cockpit')
+            return
+          }
+          if (launchPhase === 'cockpit') {
+            e.preventDefault()
+            onLaunchPhase('flight')
+            return
+          }
+        }
         if (world.id === 'earth' && buggy.driving) {
           if (e.code === 'Space') {
             e.preventDefault()
@@ -126,12 +173,8 @@ export default function PlayerRig({
           e.preventDefault()
           if (!e.repeat) input.current.actions.push(CHARACTER_KEYS[e.code])
         } else if (e.code === 'KeyE' && !e.repeat) {
-          if (Math.hypot(location.current.x - (-14), location.current.z - 36) < 4.8) {
-            window.dispatchEvent(new CustomEvent('selene-authors-panel'))
-          } else {
-            const station = stationFor(location.current.x, location.current.z)
-            if (station) onInteract(station.sector)
-          }
+          const station = stationFor(location.current.x, location.current.z)
+          if (station) onInteract(station.sector)
         }
       },
     })
@@ -140,14 +183,14 @@ export default function PlayerRig({
       lastX = 0,
       lastY = 0
     const pointerDown = (e: PointerEvent) => {
-      if (modeRef.current !== 'walk' || cinematicRef.current) return
+      if (modeRef.current !== 'walk') return
       dragging = true
       lastX = e.clientX
       lastY = e.clientY
       canvas.setPointerCapture(e.pointerId)
     }
     const pointerMove = (e: PointerEvent) => {
-      if (!dragging || modeRef.current !== 'walk' || cinematicRef.current) return
+      if (!dragging || modeRef.current !== 'walk') return
       input.current.yaw -= (e.clientX - lastX) * 0.005
       input.current.pitch = T.MathUtils.clamp(
         input.current.pitch + (e.clientY - lastY) * 0.004,
@@ -161,7 +204,7 @@ export default function PlayerRig({
       dragging = false
     }
     const wheel = (e: WheelEvent) => {
-      if (modeRef.current !== 'walk' || firstPerson.current || cinematicRef.current) return
+      if (modeRef.current !== 'walk' || firstPerson.current) return
       e.preventDefault()
       input.current.zoom = T.MathUtils.clamp(input.current.zoom + e.deltaY * 0.006, 4, 15)
     }
@@ -178,18 +221,34 @@ export default function PlayerRig({
       canvas.removeEventListener('pointercancel', pointerUp)
       canvas.removeEventListener('wheel', wheel)
     }
-  }, [input, gl, paused, onInteract])
+  }, [input, gl, paused, onInteract, launchPhase, onLaunchPhase])
   useFrame((state, rawDelta) => {
-    if (cinematic) {
-      if (player.current) player.current.visible = false
-      return
-    }
     const delta = Math.min(rawDelta, 0.05),
       p = location.current,
       k = input.current.keys
     if (roberRemote.current) {
       k.clear()
       input.current.actions.length = 0
+    }
+    if (lastLaunchPhase.current !== launchPhase) {
+      if (launchPhase === 'ascending') {
+        p.set(LIFT.x, groundHeight(LIFT.x, LIFT.z) + STAIR_TOTAL_HEIGHT + 0.4, LIFT.z)
+        if (boardingMotion) boardingMotion.current.lift = 0
+      } else if (launchPhase === 'bridge') {
+        p.set(LIFT.x, DECK_HEIGHT + 0.4, LIFT.z)
+        if (boardingMotion) boardingMotion.current.lift = 1
+        input.current.yaw = Math.PI / 2
+      } else if (launchPhase === 'cockpit') {
+        p.set(HATCH.x, DECK_HEIGHT + 0.4, HATCH.z)
+      } else if (launchPhase === 'idle' && lastLaunchPhase.current !== 'idle') {
+        p.set(61, groundHeight(61, -35), -35)
+        if (boardingMotion) boardingMotion.current.lift = 0
+      }
+      if (launchPhase !== 'access') {
+        k.clear()
+        input.current.actions.length = 0
+      }
+      lastLaunchPhase.current = launchPhase
     }
     frames.current++
     fpsTime.current += rawDelta
@@ -235,7 +294,28 @@ export default function PlayerRig({
       input.current.keys.clear()
       motion.current = createCharacterMotion()
     }
-    if (world.id === 'earth' && buggy.driving) {
+    if (world.id === 'earth' && launchPhase === 'ascending') {
+      k.clear()
+      input.current.actions.length = 0
+      const height = boardingMotion ? Math.min(1, boardingMotion.current.lift + delta / 7) : 1
+      if (boardingMotion) boardingMotion.current.lift = height
+      p.set(
+        LIFT.x,
+        groundHeight(LIFT.x, LIFT.z) +
+          STAIR_TOTAL_HEIGHT +
+          0.4 +
+          height * (DECK_HEIGHT - STAIR_TOTAL_HEIGHT),
+        LIFT.z,
+      )
+      motion.current.speed = 0
+      motion.current.clip = 'Idle'
+      if (height >= 1) onLaunchPhase?.('bridge')
+    } else if (world.id === 'earth' && (launchPhase === 'cockpit' || launchPhase === 'flight')) {
+      k.clear()
+      input.current.actions.length = 0
+      motion.current.speed = 0
+      motion.current.clip = 'Idle'
+    } else if (world.id === 'earth' && buggy.driving) {
       input.current.actions.length = 0
       if (mode === 'walk' && !paused && !roberRemote.current)
         input.current.yaw += driveBuggy(k, delta, carClear, terrainHeight)
@@ -251,8 +331,8 @@ export default function PlayerRig({
           p,
           input.current.yaw,
           delta,
-          groundHeight,
-          canWalk,
+          launchPhase === 'bridge' ? () => DECK_HEIGHT + 0.4 : groundHeight,
+          launchPhase === 'bridge' ? onCrewBridge : canWalk,
         )
         if (player.current && result.desiredYaw !== null) {
           const difference = Math.atan2(
@@ -261,13 +341,9 @@ export default function PlayerRig({
           )
           player.current.rotation.y += difference * Math.min(1, delta * 14)
         }
-        if (result.interact) {
-          if (Math.hypot(p.x - (-14), p.z - 36) < 4.8) {
-            window.dispatchEvent(new CustomEvent('selene-authors-panel'))
-          } else {
-            const station = stationFor(p.x, p.z)
-            if (station) onInteract(station.sector)
-          }
+        if (result.interact && launchPhase !== 'bridge' && launchPhase !== 'access') {
+          const station = stationFor(p.x, p.z)
+          if (station) onInteract(station.sector)
         }
       } else {
         input.current.actions.length = 0
@@ -316,12 +392,13 @@ export default function PlayerRig({
     }
     occupant.x = p.x
     occupant.z = p.z
-    occupant.active = mode === 'walk'
+    occupant.active = mode === 'walk' && launchPhase !== 'flight' && launchPhase !== 'cockpit'
     occupant.earth = world.id === 'earth'
     const indoors = !!roomAt(p.x, p.z)
     if (player.current) {
       player.current.position.copy(p)
-      player.current.visible = !(mode === 'walk' && indoors)
+      player.current.visible =
+        launchPhase !== 'cockpit' && launchPhase !== 'flight' && !(mode === 'walk' && indoors)
       if (world.id === 'earth' && buggy.driving) {
         player.current.position.x -= Math.cos(buggy.yaw) * 0.28
         player.current.position.z += Math.sin(buggy.yaw) * 0.28
@@ -333,15 +410,23 @@ export default function PlayerRig({
       vehicle.current.position.set(buggy.x, groundHeight(buggy.x, buggy.z) + 0.025, buggy.z)
       vehicle.current.rotation.y = buggy.yaw
     }
-    if (indoors !== firstPerson.current) {
+    if (indoors !== firstPerson.current && launchPhase === 'idle') {
       input.current.pitch = indoors ? 0 : 0.14
       firstPerson.current = indoors
       setIsFirstPerson(indoors)
-      if (!indoors) {
-        camera.up.set(0, 1, 0)
-      }
     }
-    if (mode === 'walk' && roberRemote.current) {
+    if (launchPhase === 'flight') {
+      // LaunchCinematicDirector, mounted in the same Canvas, owns the camera.
+    } else if (launchPhase === 'cockpit') {
+      camera.position.set(CABIN.x, CABIN.y, CABIN.z)
+      camera.up.set(0, 1, 0)
+      camera.lookAt(CABIN.x, CABIN.y + 0.3, CABIN.z + 10)
+    } else if (launchPhase === 'ascending' || launchPhase === 'bridge') {
+      camTarget.set(p.x + 7.5, p.y + 4.1, p.z + 10)
+      camera.position.lerp(camTarget, 1 - Math.exp(-delta * 5))
+      camera.up.set(0, 1, 0)
+      camera.lookAt(p.x, p.y + 1.35, p.z)
+    } else if (mode === 'walk' && roberRemote.current) {
       const rover = roberRemote.current
       camTarget.set(0, 4.5, -8).applyAxisAngle(upAxis, rover.rotation.y).add(rover.position)
       camera.position.lerp(camTarget, 1 - Math.exp(-delta * 5))
@@ -350,10 +435,16 @@ export default function PlayerRig({
     } else if (mode === 'walk') {
       const { yaw, pitch, zoom } = input.current
       if (indoors) {
-        // Direct YXZ Euler rotation guarantees mathematically ZERO roll at any yaw and pitch
+        // Steady eye level and level horizon: camera.up ensures zero roll
         camera.position.set(p.x, p.y + (motion.current.seat ? 1.1 : 1.62), p.z)
-        camera.rotation.order = 'YXZ'
-        camera.rotation.set(-pitch, yaw, 0)
+        camera.up.set(0, 1, 0)
+        camera.lookAt(
+          lookTarget.set(
+            p.x - Math.sin(yaw) * Math.cos(pitch),
+            camera.position.y - Math.sin(pitch),
+            p.z - Math.cos(yaw) * Math.cos(pitch),
+          ),
+        )
       } else {
         const h = Math.cos(pitch) * (buggy.driving && world.id === 'earth' ? 8 : zoom)
         camTarget.set(
@@ -406,7 +497,15 @@ export default function PlayerRig({
         speed: world.id === 'earth' ? Math.abs(buggy.speed) * 3.6 : 0,
         exitBlocked: buggy.driving && exitBlocked.current,
         fps: fps.current,
-        room: roomAt(p.x, p.z),
+        room: launchPhase === 'idle' ? roomAt(p.x, p.z) : null,
+        boardingSpot:
+          launchPhase === 'suiting' && nearSuit(p.x, p.z)
+            ? 'suit'
+            : launchPhase === 'access' && nearLift(p.x, p.z)
+              ? 'lift'
+              : launchPhase === 'bridge' && nearHatch(p.x, p.z)
+                ? 'hatch'
+                : null,
       })
     }
   })
@@ -450,22 +549,24 @@ export default function PlayerRig({
           )}
         </CharacterBoundary>
       </group>
-      <TarsCompanions
-        targets={[
-          {
-            id: 'crew-1',
-            body: player,
-            motion,
-            isIndoors: () => !!roomAt(location.current.x, location.current.z),
-            isDriving: () => buggy.driving,
-          },
-        ]}
-        height={groundHeight}
-        canWalk={tarsCanWalk}
-        reduced={reduced}
-      />
+      <group visible={launchPhase === 'idle' || launchPhase === 'access'}>
+        <TarsCompanions
+          targets={[
+            {
+              id: 'crew-1',
+              body: player,
+              motion,
+              isIndoors: () => !!roomAt(location.current.x, location.current.z),
+              isDriving: () => buggy.driving,
+            },
+          ]}
+          height={groundHeight}
+          canWalk={tarsCanWalk}
+          reduced={reduced}
+        />
+      </group>
       <FirstPersonArms
-        active={mode === 'walk' && isFirstPerson}
+        active={mode === 'walk' && isFirstPerson && launchPhase === 'idle'}
         motion={motion}
         input={input}
         reduced={reduced}

@@ -182,13 +182,13 @@ export default function WorldNotebook({
             <div className="menu-grid">
               <button onClick={() => onClose()}>Continuar explorando</button>
               <button
-                style={{ background: '#ba6061', color: '#f6f6ec', fontWeight: 'bold' }}
+                className="secondary-world"
                 onClick={() => {
                   onClose()
                   window.dispatchEvent(new CustomEvent('selene-launch-cinematic'))
                 }}
               >
-                🚀 Iniciar despegue cinematográfico (LC-01)
+                Ver cinemática de lanzamiento (vista previa)
               </button>
               <button onClick={() => onPanel('journal')}>Bitácora de misión</button>
               <button onClick={() => onPanel('map')}>Mapa de {world.place}</button>

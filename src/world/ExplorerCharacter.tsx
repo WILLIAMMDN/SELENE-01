@@ -157,11 +157,8 @@ export default function ExplorerCharacter({
     window.addEventListener('selene-avatar-preview', perform)
     return () => {
       window.removeEventListener('selene-avatar-preview', perform)
-      try {
-        asset.mixer.stopAllAction()
-      } catch {
-        /* no-op */
-      }
+      asset.mixer.stopAllAction()
+      // Keep actions bound through React StrictMode's effect replay.
       const geometries = new Set<T.BufferGeometry>(),
         materials = new Set<T.Material>()
       asset.actor.traverse((n) => {
@@ -222,11 +219,7 @@ export default function ExplorerCharacter({
                 : 1,
       )
     }
-    try {
-      asset.mixer.update(dt)
-    } catch {
-      /* ignore */
-    }
+    asset.mixer.update(dt)
     if (preview.current && action.time >= action.getClip().duration) {
       preview.current = null
       phase.current = ''
