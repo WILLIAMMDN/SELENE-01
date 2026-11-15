@@ -16,6 +16,8 @@ jobs:
           cache: npm
       - name: Install
         run: npm ci --no-audit --no-fund
+      - name: TypeScript formatting
+        run: npm run format:check
       - name: Unit tests
         run: npm test
       - name: Typecheck and build

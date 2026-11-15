@@ -1,13 +1,30 @@
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest'
-import { INITIAL_DESIGN, applyOperation, evaluateDesign, missionScore, startOperations } from './missionDesign'
+import {
+  INITIAL_DESIGN,
+  applyOperation,
+  evaluateDesign,
+  missionScore,
+  startOperations,
+} from './missionDesign'
 import type { ModuleId } from '../spacecraft/assembly'
 
-const parts: ModuleId[] = ['fuselage', 'connectors', 'cabin', 'engine', 'fuelSmall', 'energy', 'rcs']
+const parts: ModuleId[] = [
+  'fuselage',
+  'connectors',
+  'cabin',
+  'engine',
+  'fuelSmall',
+  'energy',
+  'rcs',
+]
 let values: Map<string, string>
 beforeEach(() => {
   vi.resetModules()
   values = new Map()
-  const storage = { getItem: (key: string) => values.get(key) ?? null, setItem: (key: string, value: string) => values.set(key, value) }
+  const storage = {
+    getItem: (key: string) => values.get(key) ?? null,
+    setItem: (key: string, value: string) => values.set(key, value),
+  }
   vi.stubGlobal('localStorage', storage)
   vi.stubGlobal('sessionStorage', { getItem: () => null })
 })
@@ -30,7 +47,12 @@ describe('campus mission workflow', () => {
     blueprint.saveBlueprint({ config: { ...INITIAL_DESIGN }, parts })
     expect(mission.nextMissionStep().sector).toBe('control')
     expect(mission.missionVerified(INITIAL_DESIGN, parts)).toBe(false)
-    mission.recordMission({ ...startOperations(), status: 'completed', step: 3 }, 80, INITIAL_DESIGN, parts)
+    mission.recordMission(
+      { ...startOperations(), status: 'completed', step: 3 },
+      80,
+      INITIAL_DESIGN,
+      parts,
+    )
     expect(mission.getMission().result).toBeNull()
   })
   it('invalidates the review for configuration changes and restores the complete sequence', async () => {
@@ -74,11 +96,23 @@ describe('campus mission workflow', () => {
     expect(mission.verifyMission()).toBe(false)
     blueprint.saveBlueprint({ config: { ...INITIAL_DESIGN }, parts })
     expect(mission.verifyMission()).toBe(true)
-    expect(mission.missionVerified(INITIAL_DESIGN, parts.filter(id => id !== 'engine'))).toBe(false)
+    expect(
+      mission.missionVerified(
+        INITIAL_DESIGN,
+        parts.filter((id) => id !== 'engine'),
+      ),
+    ).toBe(false)
     expect(mission.missionVerified(INITIAL_DESIGN, [...parts].reverse())).toBe(true)
   })
   it('keeps station-to-station progress usable when storage throws', async () => {
-    vi.stubGlobal('localStorage', { getItem: () => { throw Error('blocked') }, setItem: () => { throw Error('blocked') } })
+    vi.stubGlobal('localStorage', {
+      getItem: () => {
+        throw Error('blocked')
+      },
+      setItem: () => {
+        throw Error('blocked')
+      },
+    })
     const { mission, blueprint } = await services()
     mission.acceptObjective('camera')
     blueprint.saveBlueprint({ config: { ...INITIAL_DESIGN }, parts })
@@ -100,7 +134,10 @@ describe('campus mission workflow', () => {
     expect(mission.nextMissionStep().sector).toBe('research')
   })
   it('loads existing save keys and safely defaults corrupted drafts', async () => {
-    values.set('selene-campus-mission-v1', JSON.stringify({ objective: 'camera', verified: null, result: null }))
+    values.set(
+      'selene-campus-mission-v1',
+      JSON.stringify({ objective: 'camera', verified: null, result: null }),
+    )
     values.set('selene-odyssey-blueprint-v1', '{invalid')
     const { mission, blueprint } = await services()
     expect(mission.getMission().objective).toBe('camera')
