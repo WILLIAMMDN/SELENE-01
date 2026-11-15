@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import GameWorld from './scene/GameWorld'
 import TarsCampaignAssistant from './robot/TarsCampaignAssistant'
 import { useMissionController, type CampaignProps } from './game/hooks/useMissionController'
@@ -6,6 +7,8 @@ import './styles.css'
 import BriefingPanel from './ui/campaign/BriefingPanel'
 import DesignPanel from './ui/campaign/DesignPanel'
 import LaunchPanel from './ui/campaign/LaunchPanel'
+import LaunchCinematicHud from './ui/campaign/LaunchCinematicHud'
+import './spacecraft/launchCinematic.css'
 import OperationsPanel from './ui/campaign/OperationsPanel'
 import ReportPanel from './ui/campaign/ReportPanel'
 import EngineeringPanel from './ui/campaign/EngineeringPanel'
@@ -19,14 +22,28 @@ export default function App(props: CampaignProps) {
     ops,
     operateReady,
     launched,
+    launching,
+    launchElapsed,
+    setLaunchElapsed,
+    finishLaunch,
     interact,
     assembly,
     config,
     exploded,
     notification,
   } = controller
+  useEffect(() => {
+    if (!launching) return
+    const handleSkip = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return
+      event.preventDefault()
+      finishLaunch()
+    }
+    window.addEventListener('keydown', handleSkip)
+    return () => window.removeEventListener('keydown', handleSkip)
+  }, [launching, finishLaunch])
   return (
-    <div className="app-shell">
+    <div className={launching ? 'app-shell cinematic-active' : 'app-shell'}>
       <header className="topbar">
         <div className="brand">
           <span className="brand-symbol">◐</span>
@@ -74,7 +91,19 @@ export default function App(props: CampaignProps) {
             parts={assembly}
             config={config}
             exploded={exploded}
+            cinematic={launching}
+            cinematicElapsed={launchElapsed}
+            onCinematicProgress={setLaunchElapsed}
+            onCinematicComplete={finishLaunch}
           />
+          {launching && (
+            <LaunchCinematicHud
+              seconds={launchElapsed}
+              config={config}
+              parts={assembly}
+              onSkip={finishLaunch}
+            />
+          )}
           <div className="exploration-story">
             <strong>La historia</strong>
             <span>
