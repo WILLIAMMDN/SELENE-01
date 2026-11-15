@@ -5,7 +5,7 @@ import { useMissionController, type CampaignProps } from './game/hooks/useMissio
 import { STAGES, TIPS } from './game/campaignContent'
 import './styles.css'
 import './campaignPaper.css'
-import './designConsole.css'
+import './designPaper.css'
 import BriefingPanel from './ui/campaign/BriefingPanel'
 import DesignPanel from './ui/campaign/DesignPanel'
 import LaunchPanel from './ui/campaign/LaunchPanel'
@@ -86,6 +86,9 @@ export default function App(props: CampaignProps) {
             {item.label}
           </button>
         ))}
+        <a className="demo-entry" href="/?demo=1">
+          ▶ Demo rápida · 15 s
+        </a>
       </nav>
       <main className="game-layout">
         <section className="world-column">

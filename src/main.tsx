@@ -11,9 +11,11 @@ import './styles.css'
 
 const App = lazy(() => import('./App'))
 const LaunchPreview = lazy(() => import('./spacecraft/LaunchPreview'))
+const DemoMission = lazy(() => import('./ui/demo/DemoMission'))
 
 const params = new URLSearchParams(window.location.search)
 const preview = params.get('preview') === 'launch'
+const demo = params.get('demo') === '1'
 const stageParam = params.get('stage')
 const isCampaign =
   params.get('campaign') === 'true' || params.get('mode') === 'campaign' || Boolean(stageParam)
@@ -48,7 +50,11 @@ function GameEntry() {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    {preview ? (
+    {demo ? (
+      <Suspense fallback={<p role="status">Preparando la demostración…</p>}>
+        <DemoMission />
+      </Suspense>
+    ) : preview ? (
       <Suspense fallback={<p role="status">Preparando la vista previa de ODYSSEY…</p>}>
         <LaunchPreview />
       </Suspense>

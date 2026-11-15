@@ -1,0 +1,84 @@
+/* The engineering desk follows SELENE's dialogue paper, ink and teal palette. */
+.app-shell.stage-design { background: #dce6dc; color: #34464c; }
+.app-shell.stage-design .game-layout { grid-template-columns: minmax(380px, 1fr) minmax(420px, 1.08fr); gap: 12px; padding: 12px; }
+.app-shell.stage-design .engineering-panel { display: none; }
+.app-shell.stage-design .world-column,
+.app-shell.stage-design .campaign-panel { min-width: 0; border: 1.5px solid #52656b; background: #f7f7ed; }
+.app-shell.stage-design .world-frame { height: 66dvh; min-height: 500px; border: 0; }
+.app-shell.stage-design .campaign-panel { max-height: 66dvh; min-height: 500px; padding: 19px 23px; scrollbar-color: #8ba4a0 #f7f7ed; }
+.app-shell.stage-design .campaign-panel h1 { font: 400 37px/1.05 'Patrick Hand', cursive; margin: 4px 0 6px; }
+.app-shell.stage-design .design-intro { padding-bottom: 11px; }
+.app-shell.stage-design .design-intro p { margin: 0 0 10px; font-size: 12px; line-height: 1.5; }
+.app-shell.stage-design .design-route { display: flex; flex-wrap: wrap; gap: 6px; }
+.app-shell.stage-design .design-route li { background: none; border: 0; }
+.app-shell.stage-design .design-route button { border: 1px solid #9cafaa; background: #eef1e7; color: #34464c; padding: 7px 10px; font: 700 12px 'Trebuchet MS', Arial, sans-serif; }
+.app-shell.stage-design .design-route button:hover { background: #dce9e3; }
+.app-shell.stage-design .design-route button[aria-pressed='true'] { background: #56878b; color: #fffdf3; border-color: #426b70; }
+.app-shell.stage-design .design-route button span { color: inherit; margin-right: 5px; }
+
+.app-shell.stage-design .design-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; margin: 11px 0; }
+.app-shell.stage-design .design-metrics > div { background: #e8eee5; border: 1px solid #b2c2b7; padding: 8px 10px; min-width: 0; }
+.app-shell.stage-design .design-metrics span { display: block; font-size: 10px; color: #527274; font-weight: 700; }
+.app-shell.stage-design .design-metrics strong { display: block; margin: 3px 0 6px; font-size: 12px; color: #2f4d51; white-space: nowrap; }
+.app-shell.stage-design .design-metrics small { font-size: 9px; font-weight: 400; }
+.app-shell.stage-design .design-metrics i { display: block; height: 4px; background: #c4d4c8; }
+.app-shell.stage-design .design-metrics i b { display: block; height: 100%; background: #56878b; }
+.app-shell.stage-design .design-metrics .is-over i b { background: #ba6061; }
+.app-shell.stage-design .design-metrics .is-over strong { color: #9e4a4d; }
+
+.app-shell.stage-design .design-brief { margin: 11px 0; padding: 10px 13px; background: #eef1e7; border: 1px solid #a9bbb0; border-left: 3px solid #56878b; box-shadow: none; }
+.app-shell.stage-design .design-question { color: #34464c; font-size: 13px; }
+.app-shell.stage-design .design-brief .design-requirement { color: #526b6a; font-size: 11px; line-height: 1.45; }
+.app-shell.stage-design .design-brief summary { color: #3d7377; font-size: 11px; }
+.app-shell.stage-design .odyssey-assembly,
+.app-shell.stage-design .design-step { background: #f7f7ed; border: 0; box-shadow: none; padding: 0; margin: 15px 0; }
+.app-shell.stage-design .design-step-heading > span { background: #dfeae3; color: #3d7377; border: 1px solid #abc3b5; }
+.app-shell.stage-design .assembly-heading > span { color: #54787a; }
+.app-shell.stage-design .assembly-parts { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; margin: 10px 0; }
+.app-shell.stage-design .assembly-parts button { min-height: 64px; background: #fafbf5; border: 1px solid #b8c8bc; color: #34464c; padding: 8px 10px; }
+.app-shell.stage-design .assembly-parts button:hover { background: #edf4eb; border-color: #56878b; }
+.app-shell.stage-design .assembly-parts button[aria-pressed='true'] { background: #e3eee9; border-color: #56878b; }
+.app-shell.stage-design .assembly-parts button:disabled { opacity: .55; }
+.app-shell.stage-design .assembly-parts strong { color: #34464c; font-size: 13px; }
+.app-shell.stage-design .assembly-parts strong + span { color: #5c7270; font-size: 11px; line-height: 1.35; }
+.app-shell.stage-design .assembly-parts b { color: #416e72; font-size: 10px; }
+.app-shell.stage-design .assembly-check { flex: none; }
+.app-shell.stage-design .assembly-facts { border-top: 1px solid #b5c5b7; padding-top: 8px; margin-top: 9px; }
+.app-shell.stage-design .assembly-facts summary { font-size: 11px; color: #437779; cursor: pointer; }
+.app-shell.stage-design .assembly-facts p { font-size: 11px; margin: 7px 0; }
+.app-shell.stage-design .option-small { background: #eef1e7; border-color: #b5c5b7; }
+.app-shell.stage-design .select-list { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.app-shell.stage-design .select-card { display: flex; flex-wrap: wrap; align-content: flex-start; gap: 6px; min-height: 140px; background: #fafbf5; border: 1px solid #b8c8bc; color: #34464c; }
+.app-shell.stage-design .select-card:has(input:checked) { background: #e3eee9; border-color: #56878b; }
+.app-shell.stage-design .select-card .instrument-glyph { display: grid; place-items: center; width: 29px; height: 29px; border: 1px solid #9eb5b0; color: #487c80; }
+.app-shell.stage-design .select-card .instrument-glyph svg { width: 20px; height: 20px; }
+.app-shell.stage-design .select-card input { margin: 7px 0 0 auto; order: 2; }
+.app-shell.stage-design .select-card > span:last-child { flex-basis: 100%; order: 3; }
+.app-shell.stage-design .select-card strong { font-size: 12px; margin-bottom: 4px; }
+.app-shell.stage-design .select-card small { font-size: 10px; }
+.app-shell.stage-design .instrument-specs { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+.app-shell.stage-design .instrument-specs b { font-size: 9px; border: 1px solid #b4c5b7; padding: 2px 4px; font-weight: 400; }
+.app-shell.stage-design .action-primary { background: #56878b; color: #fffdf3; border: 1px solid #426b70; box-shadow: 2px 3px 0 #52656b; font: 400 20px 'Patrick Hand', cursive; }
+.app-shell.stage-design .action-primary:hover { background: #416f73; }
+.app-shell.stage-design .world-overlay { background: #f7f7edeb; text-shadow: none; border: 1px solid #a9b9ad; padding: 10px 12px; }
+.app-shell.stage-design .world-help { background: #f7f7edeb; border: 1px solid #a9b9ad; color: #34464c; }
+
+.campaign-return-space .app-shell.stage-design .game-layout { grid-template-columns: minmax(0, 1fr) minmax(540px, 1.12fr); }
+.campaign-return-space .app-shell.stage-design .world-column { grid-column: 1; grid-row: 1; }
+.campaign-return-space .app-shell.stage-design .campaign-panel { grid-column: 2; grid-row: 1; max-height: 66dvh; }
+.campaign-return-space .app-shell.stage-design .engineering-panel { display: none; }
+@media (max-width: 1100px) {
+  .app-shell.stage-design .assembly-parts { grid-template-columns: 1fr; }
+  .app-shell.stage-design .select-list { grid-template-columns: 1fr; }
+  .app-shell.stage-design .select-card { min-height: 0; }
+  .app-shell.stage-design .select-card > span:last-child { flex-basis: auto; flex: 1; order: 1; }
+  .app-shell.stage-design .select-card input { order: 2; }
+}
+@media (max-width: 850px) {
+  .app-shell.stage-design .game-layout,
+  .campaign-return-space .app-shell.stage-design .game-layout { display: flex; flex-direction: column; }
+  .app-shell.stage-design .world-frame { height: 36dvh; min-height: 270px; }
+  .app-shell.stage-design .campaign-panel,
+  .campaign-return-space .app-shell.stage-design .campaign-panel { max-height: none; min-height: 0; }
+  .app-shell.stage-design .design-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
