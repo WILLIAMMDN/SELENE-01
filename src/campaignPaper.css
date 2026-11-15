@@ -176,6 +176,16 @@
 .app-shell .design-requirement { border-top: 1px solid #b4c3b4; padding-top: 9px; }
 .app-shell .design-step .select-list { grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr)); }
 .app-shell .design-step .select-card { min-height: 76px; }
+.app-shell .design-brief { background: var(--paper-deep); border: 1.5px solid #9ead9e; border-left: 4px solid var(--teal); padding: 13px 16px; margin: 15px 0; }
+.app-shell .design-question { display: block; font-size: 16px; line-height: 1.35; margin: 7px 0; }
+.app-shell .design-brief .design-requirement { border: 0; padding: 0; margin: 6px 0; font-size: 12px; }
+.app-shell .design-brief details { border-top: 1px solid #b4c3b4; margin-top: 9px; padding-top: 7px; }
+.app-shell .design-brief summary { color: #346a6f; font-size: 12px; font-weight: 700; cursor: pointer; }
+.app-shell .design-brief details p { font-size: 12px; margin: 8px 0; }
+.app-shell .design-brief details a { font-size: 12px; }
+.app-shell .design-route li { padding: 0; }
+.app-shell .design-route a { display: flex; align-items: center; gap: 6px; padding: 5px 8px; color: var(--ink); text-decoration: none; }
+.app-shell .design-route a:hover { background: #d6e7df; }
 .app-shell .odyssey-assembly { margin: 16px 0; }
 .app-shell .campaign-panel { padding-bottom: 112px; }
 .app-shell .orbi { width: auto; max-width: min(310px, calc(100vw - 28px)); }
