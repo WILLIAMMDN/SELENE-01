@@ -1,61 +1,73 @@
-# SELENE-01 — Integración narrativa en el mismo mundo
+# SELENE-01 · Eventos narrativos dentro del mundo 3D
 
-## Estado de esta rama
+## Principio central
 
-Esta rama contiene un **prototipo jugable de embarque** que conecta el
-campus Artemisa existente con la plataforma de lanzamiento, seguido por
-una cinemática que utiliza el **mismo Canvas** de Three.js.
+El jugador **no debe ver otra página, otro escenario o un video separado**
+al despegar. Tras aprobar el diseño, camina por el campus Artemisa
+en el mismo `Canvas` de `ExplorerScene` y con su mismo avatar.
 
-El propósito es que el jugador **no cambie a una escena de demostración**
-para embarcar y despegar. La configuración de ODYSSEY se toma de
-`useBlueprint` y su autorización de `missionVerified`.
+## Recorrido jugable
 
-## Experiencia prevista
+1. Laboratorio: la Dra. Vega plantea un encargo científico.
+2. Hangar: el jugador ensambla ODYSSEY, elige instrumentos y lanzador.
+3. Comunicaciones: se verifican las restricciones educativas.
+4. Plataforma: la carga útil aprobada aparece en LC-01, y deja de estar
+   duplicada en el hangar. El transporte todavía es una transición de
+   estado, no un traslado animado.
+5. El jugador camina desde el puesto LC-01 por el corredor pavimentado
+   hacia el ascensor lateral. **Se siguen aplicando colisiones de equipos**.
+6. Cerca del ascensor, `E` permite subir. La cabina sube durante siete
+   segundos, con el personaje visible y cámara de seguimiento.
+7. El jugador **camina con sus propios controles** por la pasarela
+   elevada y se acerca a la escotilla del orbitador.
+8. `E` entra en la vista de cabina. Se solicita una única confirmación:
+   «Iniciar despegue».
+9. El lanzamiento de 45 s muestra la plataforma, ignición, ascenso,
+   separación de auxiliares, cofia, etapa central y liberación de ODYSSEY.
+   La cámara cambia de plano **dentro del mismo mundo 3D**.
+10. Termina el vuelo simulado y se abre la fase existente de decisiones
+    orbitales. Omitir/Esc utiliza la misma transición persistida.
 
-1. Crear y verificar ODYSSEY en las estaciones existentes.
-2. Llegar a la plataforma LC-01 en el campus.
-3. Acceder a un recorrido peatonal señalizado junto al cohete.
-4. Pulsar `E` en el ascensor y ascender con el mismo personaje.
-5. Caminar por la pasarela elevada hasta la escotilla.
-6. Pulsar `E` para entrar a la cabina y confirmar el despegue.
-7. Ver el despegue **en el mismo campus**: retirada de servicios,
-   ignición, ascenso, etapas y liberación de ODYSSEY.
-8. Continuar con operaciones sin repetir ni duplicar la sesión.
+La cabina de mando es un componente obligatorio en ambos montajes. Por ello
+el jugador puede embarcar tanto en la versión compacta como en la versión
+con hábitat. El diálogo contextual reconoce la configuración elegida.
 
-Los elementos UI específicos del vuelo se limitan a subtítulos
-breves, cuenta regresiva (cuando corresponda) y botón para omitir.
+## Arquitectura
 
-## Archivos clave
+| Archivo | Responsabilidad |
+| --- | --- |
+| `world/WorldExperience.tsx` | Estado del embarque y transición a operaciones |
+| `world/ExplorerScene.tsx` | Único Canvas del campus y director cinemático |
+| `world/player/PlayerRig.tsx` | Avatar, colisiones, ascensor, pasarela y cabina |
+| `spacecraft/boardingRoute.ts` | Coordenadas y zonas de interacción |
+| `spacecraft/BoardingAccess.tsx` | Estructura 3D del corredor, ascensor y pasarela |
+| `spacecraft/launchTimeline.ts` | Guion temporal y diálogos TARS / Dra. Vega |
+| `spacecraft/LaunchCinematicDirector.tsx` | Encuadres y seguimiento del vehículo |
+| `spacecraft/LaunchCinematicOverlay.tsx` | Subtítulo discreto, contador y omisión |
+| `spacecraft/LaunchComplex.tsx` | Modelo de lanzamiento y clips GLB originales |
 
-- `src/world/WorldExperience.tsx`: máquina de fases de embarque y flujo.
-- `src/world/player/PlayerRig.tsx`: desplazamiento del jugador y entrada.
-- `src/world/ExplorerScene.tsx`: misma escena 3D; cámara cinematográfica.
-- `src/world/Environment.tsx`: hangar, plataforma y pasarela compartidos.
-- `src/spacecraft/boardingRoute.ts`: recorrido y zonas de interacción.
-- `src/spacecraft/BoardingAccess.tsx`: ascensor y pasarela 3D.
-- `src/spacecraft/LaunchCinematicDirector.tsx`: planos de cámara.
-- `src/spacecraft/launchTimeline.ts`: secuencia e hitos sincronizados.
-- `src/spacecraft/LaunchCinematicOverlay.tsx`: subtítulos mínimos.
+El lanzamiento incluye una altitud **ilustrativa**. ODYSSEY y los lanzadores
+AURORA-S y ATLAS-T son ficticios; esta secuencia **no reproduce un vuelo NASA**
+ni calcula una trayectoria certificada.
 
-## Pruebas y límites conocidos
+## Dirección de interfaz
 
-- `npm test`, `npm run format:check`, `npm run build`.
-- La escena principal carga en Chromium automatizado sin errores JS.
-- Las pruebas de colisiones validan el acceso terrestre a LC-01.
+- Durante la exploración se respeta el HUD existente.
+- Al ascender o cruzar la pasarela se muestra **una sola instrucción corta**.
+- En la cabina aparece únicamente «Iniciar despegue».
+- Durante el despegue solo hay subtítulos, cuenta regresiva y «Omitir».
+- No mostrar fichas de ingeniería, paneles de telemetría simulada, porcentajes
+  decorativos ni menús superpuestos al vehículo.
 
-**No está cerrada la revisión visual del embarque completo**: hay que
-comprobar cámara, escala de la pasarela, colocación de la escotilla y la
-transición de la cabina a todos los planos de vuelo en un navegador
-interactivo. El ascensor y la pasarela son geometrías funcionales
-provisionales, pendientes de pulido artístico y animaciones del personaje.
-No se ha implementado aún un interior de cabina completo con controles
-3D manipulables ni sonido final de la misión.
+## Validación y límites
 
-**AURORA-S y ATLAS-T comparten de momento el mismo modelo visual** de
-lanzador; el perfil educativo puede variar, pero no debe sugerirse una
-simulación física validada de vehículos reales. Toda altitud presentada
-es ilustrativa y los procedimientos de separación están inspirados en
-NASA, no son la cronología real de Artemis.
-
-No fusionar automáticamente a `main` sin verificar la interacción
-completa y coordinar con la otra rama de trabajo del equipo.
+- El proyecto mantiene las pruebas de misión y colisiones; existe una
+  prueba específica que recorre las coordenadas del acceso a LC-01.
+- La integración visual inicial carga el mundo con un único Canvas sin
+  errores de JavaScript y permite activar el acceso desde una misión verificada.
+- Antes de fusionar, hay que revisar el último tramo de movimiento a la
+  escotilla y las cámaras del ascenso en un navegador con aceleración 3D real.
+- El modelo no incluye todavía un interior de cabina completamente visitable
+  ni una animación física de transporte de la nave desde el hangar.
+- La infraestructura permite nuevas cinemáticas contextualizadas,
+  pero no se afirma que esas escenas adicionales ya estén implementadas.

@@ -100,3 +100,20 @@
   .selene-cutscene-dialogue { bottom: 50px; padding: 10px 12px; }
   .selene-cutscene-progress { bottom: 40px; }
 }
+
+/* Match the campus button specificity so actions remain visibly clickable. */
+.selene-world .boarding-guidance button,
+.selene-world .boarding-cockpit-prompt button {
+  margin-left: 12px;
+  padding: 6px 10px;
+  border: 1px solid #26343a;
+  background: #477e80;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+.selene-world .boarding-guidance button:focus-visible,
+.selene-world .boarding-cockpit-prompt button:focus-visible {
+  outline: 3px solid #e4a979;
+  outline-offset: 2px;
+}
