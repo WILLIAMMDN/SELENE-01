@@ -91,7 +91,8 @@ export default function AuthorsPanel({ onClose }: Props) {
         <div className="authors-section-heading">
           <h3>Integrantes del Proyecto · Créditos Oficiales</h3>
           <small>
-            Haz clic en el recuadro de foto para cargar una imagen propia o explorar la ficha técnica de cada autor.
+            Haz clic en el recuadro de foto para cargar una imagen propia o explorar la ficha
+            técnica de cada autor.
           </small>
         </div>
 
@@ -128,9 +129,23 @@ export default function AuthorsPanel({ onClose }: Props) {
                         fill="none"
                         xmlns="http://www.w3.org/2000/svg"
                       >
-                        <circle cx="50" cy="50" r="46" fill="#edf0e4" stroke="#3e5158" strokeWidth="2.5" />
+                        <circle
+                          cx="50"
+                          cy="50"
+                          r="46"
+                          fill="#edf0e4"
+                          stroke="#3e5158"
+                          strokeWidth="2.5"
+                        />
                         {/* Helmet / Head */}
-                        <circle cx="50" cy="40" r="22" fill={member.avatarColor} stroke="#3e5158" strokeWidth="2" />
+                        <circle
+                          cx="50"
+                          cy="40"
+                          r="22"
+                          fill={member.avatarColor}
+                          stroke="#3e5158"
+                          strokeWidth="2"
+                        />
                         <ellipse cx="50" cy="42" rx="15" ry="12" fill="#30434a" />
                         <ellipse cx="46" cy="38" rx="6" ry="4" fill="#79b5ac" opacity="0.6" />
                         {/* Suit Shoulders */}
@@ -140,7 +155,16 @@ export default function AuthorsPanel({ onClose }: Props) {
                           stroke="#3e5158"
                           strokeWidth="2.5"
                         />
-                        <rect x="42" y="66" width="16" height="18" rx="3" fill="#be775d" stroke="#3e5158" strokeWidth="1.5" />
+                        <rect
+                          x="42"
+                          y="66"
+                          width="16"
+                          height="18"
+                          rx="3"
+                          fill="#be775d"
+                          stroke="#3e5158"
+                          strokeWidth="1.5"
+                        />
                       </svg>
                       <span className="photo-slot-label">
                         <b>📷</b> {member.photoPlaceholderText}

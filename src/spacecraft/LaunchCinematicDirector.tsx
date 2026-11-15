@@ -93,7 +93,11 @@ export default function LaunchCinematicDirector({
       const progress = t / 3.0
       const angle = 0.85 + progress * 0.35
       const radius = 5.8 - progress * 0.6
-      cameraGoal.set(ox + Math.sin(angle) * radius, top - 0.2 + progress * 0.2, oz + Math.cos(angle) * radius)
+      cameraGoal.set(
+        ox + Math.sin(angle) * radius,
+        top - 0.2 + progress * 0.2,
+        oz + Math.cos(angle) * radius,
+      )
       lookGoal.set(ox, top - 0.8, oz)
       targetFov = 34
     } else if (t < 5.0) {
@@ -109,7 +113,11 @@ export default function LaunchCinematicDirector({
       const progress = (t - 5.0) / 3.5
       const angle = 0.72 + progress * 0.22
       const radius = 8.5
-      cameraGoal.set(ox + Math.sin(angle) * radius, oy + altitude + 1.2 + progress * 1.0, oz + Math.cos(angle) * radius)
+      cameraGoal.set(
+        ox + Math.sin(angle) * radius,
+        oy + altitude + 1.2 + progress * 1.0,
+        oz + Math.cos(angle) * radius,
+      )
       lookGoal.set(ox, oy + altitude + 2.5, oz)
       targetFov = 46
       shake = Math.min(1, (t - 5.0) / 1.2) * 0.38
@@ -117,7 +125,11 @@ export default function LaunchCinematicDirector({
       // SHOT 4: Plano lateral de ascenso y seguimiento de despegue
       currentShotId = 4
       const progress = (t - 8.5) / 6.0
-      cameraGoal.set(ox + 24 + Math.sin(t * 0.3) * 4, oy + altitude * 0.68 + 16, oz + 26 + Math.cos(t * 0.3) * 4)
+      cameraGoal.set(
+        ox + 24 + Math.sin(t * 0.3) * 4,
+        oy + altitude * 0.68 + 16,
+        oz + 26 + Math.cos(t * 0.3) * 4,
+      )
       lookGoal.set(ox, oy + altitude + 16, oz)
       targetFov = 44
       shake = Math.max(0, 0.26 - progress * 0.2)
@@ -127,7 +139,11 @@ export default function LaunchCinematicDirector({
       const progress = (t - 14.5) / 4.0
       const angle = 0.95 + progress * 0.3
       const radius = 11.5 - progress * 1.5
-      cameraGoal.set(ox + Math.sin(angle) * radius, oy + altitude + 22, oz + Math.cos(angle) * radius)
+      cameraGoal.set(
+        ox + Math.sin(angle) * radius,
+        oy + altitude + 22,
+        oz + Math.cos(angle) * radius,
+      )
       lookGoal.set(ox, oy + altitude + 20, oz)
       targetFov = 38
       shake = t >= 15.0 && t <= 15.8 ? 0.22 : 0.04
@@ -135,7 +151,11 @@ export default function LaunchCinematicDirector({
       // SHOT 6: Primer plano: separación de la etapa central
       currentShotId = 6
       const progress = (t - 18.5) / 4.0
-      cameraGoal.set(ox + 7.5 + Math.sin(progress * 0.5) * 2, oy + altitude + 34, oz - 8.0 + progress * 2)
+      cameraGoal.set(
+        ox + 7.5 + Math.sin(progress * 0.5) * 2,
+        oy + altitude + 34,
+        oz - 8.0 + progress * 2,
+      )
       lookGoal.set(ox, oy + altitude + 30, oz)
       targetFov = 42
       shake = t >= 19.0 && t <= 19.7 ? 0.18 : 0.03
@@ -145,7 +165,11 @@ export default function LaunchCinematicDirector({
       const progress = (t - 22.5) / 4.0
       const angle = 0.6 + progress * 0.45
       const radius = 5.8 - progress * 0.6
-      cameraGoal.set(ox + Math.sin(angle) * radius, oy + altitude + 54, oz + Math.cos(angle) * radius)
+      cameraGoal.set(
+        ox + Math.sin(angle) * radius,
+        oy + altitude + 54,
+        oz + Math.cos(angle) * radius,
+      )
       lookGoal.set(ox, oy + altitude + 53, oz)
       targetFov = 35
       shake = t >= 23.0 && t <= 23.6 ? 0.12 : 0
@@ -155,7 +179,11 @@ export default function LaunchCinematicDirector({
       const progress = (t - 26.5) / 3.5
       const angle = 1.2 + progress * 0.5
       const radius = 4.8 + progress * 0.8
-      cameraGoal.set(ox + Math.sin(angle) * radius, oy + altitude + 54.5, oz + Math.cos(angle) * radius)
+      cameraGoal.set(
+        ox + Math.sin(angle) * radius,
+        oy + altitude + 54.5,
+        oz + Math.cos(angle) * radius,
+      )
       lookGoal.set(ox, oy + altitude + 53.5, oz)
       targetFov = 34
     } else {

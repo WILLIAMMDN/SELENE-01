@@ -1,6 +1,14 @@
 import { buggy, buggyExit, driveBuggy, nearBuggy, outsideBuggy } from '../buggyControl'
 import BuggyModel from '../BuggyModel'
 import { lunarStationAt } from '../lunar/lunarNavigation'
+import { lunarRoomAt } from '../lunar/lunarBaseNavigation'
+import RoverLunar from '../lunar/RoverLunar'
+import {
+  canBoardLunarRover,
+  outsideLunarRover,
+  toggleLunarRover,
+  type LunarRoverMount,
+} from '../lunar/lunarRoverAccess'
 import CharacterBoundary from './CharacterBoundary'
 import { moveWithCollisions } from '../navigation/collision'
 import FirstPersonArms from './FirstPersonArms'
@@ -15,6 +23,7 @@ import { useWorld } from '../worldConfig'
 import TarsCompanions from '../../robot/TarsCompanion'
 import Astronaut from '../Astronaut'
 import { useWardrobe } from '../wardrobe'
+import { canUseWardrobe, handleWardrobeKey } from '../wardrobeStation'
 import ExplorerCharacter from '../ExplorerCharacter'
 import { MOTION_SCALE } from '../physicalScale'
 import { CHARACTER_KEYS, createCharacterMotion, stepCharacter } from '../characterMotion'
@@ -32,16 +41,25 @@ export default function PlayerRig({
   input,
   paused,
   reduced,
+  landing = false,
   onPosition,
   onInteract,
   cinematic = false,
+  onWardrobe,
 }: SceneProps) {
   const wardrobe = useWardrobe()
   const world = useWorld(),
     { sectors: SECTORS, start: START, height: terrainHeight, canWalk: worldClear } = world
   const moon = world.id === 'moon'
+  const lunarMount = useRef<LunarRoverMount>({
+    controller: null,
+    driving: false,
+    exitBlocked: false,
+  })
   const canWalk = (x: number, z: number) =>
-    worldClear(x, z) && (world.id !== 'earth' || outsideBuggy(x, z))
+    worldClear(x, z) &&
+    (world.id !== 'earth' || outsideBuggy(x, z)) &&
+    (!moon || outsideLunarRover(lunarMount.current.controller, x, z))
   const tarsCanWalk = (x: number, z: number) =>
     canWalk(x, z) && (world.id !== 'earth' || !buildingAt(x, z, true))
   const carClear = (x: number, z: number) => worldClear(x, z) && !buildingAt(x, z)
@@ -51,7 +69,8 @@ export default function PlayerRig({
     [0.2, 0.4, 0.6, 0.8].every((t) => worldClear(x + (buggy.x - x) * t, z + (buggy.z - z) * t))
   const groundHeight = (x: number, z: number) =>
     moon ? terrainHeight(x, z) : walkingHeight(x, z, terrainHeight, world.id === 'earth')
-  const roomAt = (x: number, z: number) => (moon ? null : buildingAt(x, z, world.id === 'earth'))
+  const roomAt = (x: number, z: number) =>
+    moon ? lunarRoomAt(x, z) : buildingAt(x, z, world.id === 'earth')
   const stationFor = (x: number, z: number) =>
     moon ? lunarStationAt(x, z) : stationAt(x, z, world.id === 'earth')
 
@@ -77,6 +96,8 @@ export default function PlayerRig({
     const p = travel.point ?? (s ? s.entry : START)
     buggy.driving = false
     buggy.speed = 0
+    lunarMount.current.driving = false
+    lunarMount.current.exitBlocked = false
     firstPerson.current = false
     setIsFirstPerson(false)
     location.current.set(p[0], groundHeight(...p), p[1])
@@ -94,6 +115,10 @@ export default function PlayerRig({
   useEffect(() => {
     const stop = () => {
       buggy.speed = 0
+      if (lunarMount.current.controller) {
+        lunarMount.current.controller.speed = 0
+        lunarMount.current.controller.stop()
+      }
       input.current.keys.clear()
     }
     window.addEventListener('blur', stop)
@@ -110,9 +135,32 @@ export default function PlayerRig({
   useEffect(() => {
     const releaseKeyboard = bindCharacterKeyboard({
       controls: input.current,
-      enabled: () => !paused && !cinematicRef.current && modeRef.current === 'walk' && !roberRemote.current,
+      enabled: () =>
+        !paused && !cinematicRef.current && modeRef.current === 'walk' && !roberRemote.current,
       onAction: (e) => {
         if (cinematicRef.current) return
+        if (
+          moon &&
+          (lunarMount.current.driving ||
+            canBoardLunarRover(
+              lunarMount.current.controller,
+              location.current.x,
+              location.current.z,
+            ))
+        ) {
+          if (e.code === 'KeyE' && !e.repeat) {
+            e.preventDefault()
+            input.current.actions.push('interact')
+          }
+          if (lunarMount.current.driving) {
+            if (e.code === 'Space') {
+              e.preventDefault()
+              input.current.keys.add('Space')
+            }
+            return
+          }
+          if (e.code === 'KeyE') return
+        }
         if (world.id === 'earth' && buggy.driving) {
           if (e.code === 'Space') {
             e.preventDefault()
@@ -122,11 +170,13 @@ export default function PlayerRig({
           return
         }
         if (e.code === 'Space' && roomAt(location.current.x, location.current.z)) return
+        if (handleWardrobeKey(e, location.current.x, location.current.z, world.id, onWardrobe))
+          return
         if (world.id === 'earth' && CHARACTER_KEYS[e.code]) {
           e.preventDefault()
           if (!e.repeat) input.current.actions.push(CHARACTER_KEYS[e.code])
         } else if (e.code === 'KeyE' && !e.repeat) {
-          if (Math.hypot(location.current.x - (-14), location.current.z - 36) < 4.8) {
+          if (Math.hypot(location.current.x - -14, location.current.z - 36) < 4.8) {
             window.dispatchEvent(new CustomEvent('selene-authors-panel'))
           } else {
             const station = stationFor(location.current.x, location.current.z)
@@ -178,7 +228,7 @@ export default function PlayerRig({
       canvas.removeEventListener('pointercancel', pointerUp)
       canvas.removeEventListener('wheel', wheel)
     }
-  }, [input, gl, paused, onInteract])
+  }, [input, gl, paused, onInteract, onWardrobe])
   useFrame((state, rawDelta) => {
     if (cinematic) {
       if (player.current) player.current.visible = false
@@ -235,7 +285,27 @@ export default function PlayerRig({
       input.current.keys.clear()
       motion.current = createCharacterMotion()
     }
-    if (world.id === 'earth' && buggy.driving) {
+    if (moon && mode === 'walk' && !paused && input.current.actions.includes('interact')) {
+      input.current.actions.length = 0
+      if (toggleLunarRover(lunarMount.current, p)) {
+        input.current.keys.clear()
+        motion.current = createCharacterMotion()
+        const rover = lunarMount.current.controller!
+        input.current.yaw = rover.yaw + Math.PI
+        input.current.pitch = 0.22
+      } else if (!lunarMount.current.driving) {
+        const station = stationFor(p.x, p.z)
+        if (station) onInteract(station.sector)
+      }
+    }
+    if (moon && lunarMount.current.driving && lunarMount.current.controller) {
+      const rover = lunarMount.current.controller
+      p.copy(rover.vehicle.position)
+      input.current.actions.length = 0
+      moving.current = 0
+      motion.current.speed = 0
+      motion.current.clip = 'Sit_Idle'
+    } else if (world.id === 'earth' && buggy.driving) {
       input.current.actions.length = 0
       if (mode === 'walk' && !paused && !roberRemote.current)
         input.current.yaw += driveBuggy(k, delta, carClear, terrainHeight)
@@ -262,7 +332,8 @@ export default function PlayerRig({
           player.current.rotation.y += difference * Math.min(1, delta * 14)
         }
         if (result.interact) {
-          if (Math.hypot(p.x - (-14), p.z - 36) < 4.8) {
+          if (canUseWardrobe(p.x, p.z, world.id)) onWardrobe?.()
+          else if (Math.hypot(p.x + 14, p.z - 36) < 4.8) {
             window.dispatchEvent(new CustomEvent('selene-authors-panel'))
           } else {
             const station = stationFor(p.x, p.z)
@@ -308,7 +379,7 @@ export default function PlayerRig({
         }
       }
     }
-    if (world.id !== 'earth') {
+    if (world.id !== 'earth' && !(moon && lunarMount.current.driving)) {
       motion.current.speed =
         moving.current *
         (k.has('ShiftLeft') || k.has('ShiftRight') ? MOTION_SCALE.run : MOTION_SCALE.walk)
@@ -320,6 +391,7 @@ export default function PlayerRig({
     occupant.earth = world.id === 'earth'
     const indoors = !!roomAt(p.x, p.z)
     if (player.current) {
+      if (moon) player.current.rotation.set(0, player.current.rotation.y, 0)
       player.current.position.copy(p)
       player.current.visible = !(mode === 'walk' && indoors)
       if (world.id === 'earth' && buggy.driving) {
@@ -327,6 +399,13 @@ export default function PlayerRig({
         player.current.position.z += Math.sin(buggy.yaw) * 0.28
         player.current.position.y += 0.18
         player.current.rotation.y = buggy.yaw
+      }
+      if (moon && lunarMount.current.driving && lunarMount.current.controller) {
+        const rover = lunarMount.current.controller
+        const seat = rover.vehicle.getObjectByName('Seat_L_Cushion')
+        if (seat) seat.getWorldPosition(player.current.position)
+        player.current.position.y += 0.12
+        player.current.quaternion.copy(rover.vehicle.quaternion)
       }
     }
     if (vehicle.current) {
@@ -341,13 +420,30 @@ export default function PlayerRig({
         camera.up.set(0, 1, 0)
       }
     }
-    if (mode === 'walk' && roberRemote.current) {
+    if (
+      !landing &&
+      mode === 'walk' &&
+      moon &&
+      lunarMount.current.driving &&
+      lunarMount.current.controller
+    ) {
+      const rover = lunarMount.current.controller
+      const { pitch, zoom } = input.current
+      camTarget
+        .set(0, 3 + Math.sin(pitch) * zoom, -zoom)
+        .applyAxisAngle(upAxis, rover.yaw)
+        .add(p)
+      camTarget.y = Math.max(camTarget.y, groundHeight(camTarget.x, camTarget.z) + 1.2)
+      camera.position.lerp(camTarget, 1 - Math.exp(-delta * 5))
+      camera.up.set(0, 1, 0)
+      camera.lookAt(p.x, p.y + 1.2, p.z)
+    } else if (!landing && mode === 'walk' && roberRemote.current) {
       const rover = roberRemote.current
       camTarget.set(0, 4.5, -8).applyAxisAngle(upAxis, rover.rotation.y).add(rover.position)
       camera.position.lerp(camTarget, 1 - Math.exp(-delta * 5))
       camera.up.set(0, 1, 0)
       camera.lookAt(rover.position.x, rover.position.y + 1, rover.position.z)
-    } else if (mode === 'walk') {
+    } else if (!landing && mode === 'walk') {
       const { yaw, pitch, zoom } = input.current
       if (indoors) {
         // Direct YXZ Euler rotation guarantees mathematically ZERO roll at any yaw and pitch
@@ -378,7 +474,7 @@ export default function PlayerRig({
         camera.up.set(0, 1, 0)
         camera.lookAt(lookTarget.set(p.x, p.y + MOTION_SCALE.cameraTarget, p.z))
       }
-    } else if (mode === 'tour') {
+    } else if (!landing && mode === 'tour') {
       const s = SECTORS[tourIndex],
         drift = reduced ? 0 : Math.sin(state.clock.elapsedTime * 0.12) * 3
       const tall = world.id === 'earth' && s.id === 'launch'
@@ -400,11 +496,23 @@ export default function PlayerRig({
         x: p.x,
         z: p.z,
         nearby:
-          world.id === 'earth' && buggy.driving ? null : (stationFor(p.x, p.z)?.sector ?? null),
-        vehicle:
-          world.id === 'earth' && (buggy.driving ? 'driving' : canBoard(p.x, p.z) ? 'near' : null),
-        speed: world.id === 'earth' ? Math.abs(buggy.speed) * 3.6 : 0,
-        exitBlocked: buggy.driving && exitBlocked.current,
+          (world.id === 'earth' && buggy.driving) || (moon && lunarMount.current.driving)
+            ? null
+            : (stationFor(p.x, p.z)?.sector ?? null),
+        vehicle: moon
+          ? lunarMount.current.driving
+            ? 'driving'
+            : canBoardLunarRover(lunarMount.current.controller, p.x, p.z)
+              ? 'near'
+              : null
+          : world.id === 'earth' &&
+            (buggy.driving ? 'driving' : canBoard(p.x, p.z) ? 'near' : null),
+        speed: moon
+          ? Math.abs(lunarMount.current.controller?.speed ?? 0) * 3.6
+          : world.id === 'earth'
+            ? Math.abs(buggy.speed) * 3.6
+            : 0,
+        exitBlocked: moon ? lunarMount.current.exitBlocked : buggy.driving && exitBlocked.current,
         fps: fps.current,
         room: roomAt(p.x, p.z),
       })
@@ -412,6 +520,7 @@ export default function PlayerRig({
   })
   return (
     <>
+      {moon && <RoverLunar mount={lunarMount} input={input} paused={paused || mode !== 'walk'} />}
       {world.id === 'earth' && (
         <group
           ref={vehicle}
@@ -444,6 +553,7 @@ export default function PlayerRig({
               character={wardrobe.character}
               outfit={world.id === 'earth' ? wardrobe.earth : 'eva'}
               helmet={wardrobe.helmet}
+              seatAtOrigin={moon}
             />
           ) : (
             <Astronaut moving={moving} phase={phase} />
@@ -457,7 +567,8 @@ export default function PlayerRig({
             body: player,
             motion,
             isIndoors: () => !!roomAt(location.current.x, location.current.z),
-            isDriving: () => buggy.driving,
+            isDriving: () =>
+              (world.id === 'earth' && buggy.driving) || (moon && lunarMount.current.driving),
           },
         ]}
         height={groundHeight}
@@ -470,6 +581,7 @@ export default function PlayerRig({
         input={input}
         reduced={reduced}
         outfit={world.id === 'earth' ? wardrobe.earth : 'eva'}
+        character={wardrobe.character}
       />
       {mode === 'map' && (
         <OrbitControls

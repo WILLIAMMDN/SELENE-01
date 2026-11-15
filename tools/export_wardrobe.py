@@ -4,13 +4,18 @@ blender --background --factory-startup --disable-autoexec --python tools/export_
 import bpy, json, sys, hashlib
 from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
-source = Path(sys.argv[sys.argv.index('--') + 1]).resolve()
-pilot = 'Piloto' in source.name
-out = ROOT / ('public/models/characters/pilot' if pilot else 'public/models/characters/wardrobe')
+args = sys.argv[sys.argv.index('--') + 1:]
+source = Path(args[0]).resolve()
+identity = args[1] if len(args) > 1 else ('pilot' if 'Piloto' in source.name else 'explorer')
+destinations = {'explorer': ('wardrobe', 'explorer_wardrobe.glb'),
+                'pilot': ('pilot', 'pilot.glb'), 'geologist': ('geologist', 'geologist.glb'),
+                'aurora': ('aurora', 'aurora.glb')}
+folder, filename = destinations[identity]
+out = ROOT / 'public/models/characters' / folder
 out.mkdir(parents=True, exist_ok=True)
 bpy.ops.wm.open_mainfile(filepath=str(source), load_ui=False)
 rig = bpy.data.objects['CharacterArmature']
-bpy.context.window.scene = max((s for s in bpy.data.scenes if rig.name in s.objects), key=lambda s: len(s.objects))
+bpy.context.window.scene = next(s for s in bpy.data.scenes if s.name.endswith('_Editable') and rig.name in s.objects)
 objects = [rig, *rig.children_recursive]
 for obj in objects:
     if obj.animation_data:
@@ -46,7 +51,7 @@ bpy.ops.object.select_all(action='DESELECT')
 for obj in objects:
     obj.select_set(True)
 bpy.context.view_layer.objects.active = rig
-bpy.ops.export_scene.gltf(filepath=str(out / ('pilot.glb' if pilot else 'explorer_wardrobe.glb')), export_format='GLB',
+bpy.ops.export_scene.gltf(filepath=str(out / filename), export_format='GLB',
     use_selection=True, use_active_scene=True, export_animations=True, export_animation_mode='ACTIONS',
     export_frame_range=False, export_force_sampling=True, export_bake_animation=True,
     export_extras=True, export_cameras=False, export_lights=False)

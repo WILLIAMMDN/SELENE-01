@@ -1,9 +1,18 @@
 import { roomLabel } from './buildingEntrances'
+import MissionDirection from '../ui/world/MissionDirection'
+import type { MissionGuideReport } from './navigation/missionDestination'
+import { canUseWardrobe } from './wardrobeStation'
 import VehicleDashboard from '../ui/world/VehicleDashboard'
+import LunarRoverHud from '../ui/world/LunarRoverHud'
 import WorldNotebook from '../ui/world/WorldNotebook'
 import AuthorsPanel from '../ui/world/AuthorsPanel'
 import { OBJECTIVE_NAMES, type Panel } from '../ui/world/worldUiTypes'
-import { useCampusMission, nextMissionStep, missionVerified, blueprintKey } from '../game/campusMission'
+import {
+  useCampusMission,
+  nextMissionStep,
+  missionVerified,
+  blueprintKey,
+} from '../game/campusMission'
 import { loadBlueprint, useBlueprint } from '../game/state/blueprintStore'
 import Icon from '../ui/world/Icon'
 import CampusMap from '../ui/world/CampusMap'
@@ -21,10 +30,27 @@ import '../spacecraft/launchCinematic.css'
 import { startOperations } from '../game/missionDesign'
 import { loadOperationSession, saveOperationSession } from '../game/state/operationStore'
 import type { LaunchClock } from '../spacecraft/launchTimeline'
+import { createLaunchJourney } from '../game/launchJourney'
+import { useLaunchDestination } from '../game/state/launchDestinationStore'
+import { equipForLaunch, wardrobeStore } from './wardrobe'
+
+import { worldLocation } from './worldLocation'
 
 const Campaign = lazy(() => import('../App'))
-function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
+function WorldExperience({
+  onWorld,
+  landing,
+  onLandingComplete,
+}: {
+  onWorld: (id: WorldId, withLanding?: boolean) => void
+  landing: boolean
+  onLandingComplete: () => void
+}) {
   const blueprint = useBlueprint()
+  const destinationChoice = useLaunchDestination()
+  const [launchDestination, setLaunchDestination] = useState(destinationChoice)
+  const [journey] = useState(createLaunchJourney)
+  const launchInProgress = useRef(false)
   useCampusMission()
   const world = useWorld(),
     mars = world.id === 'mars',
@@ -52,6 +78,24 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
       () => window.matchMedia('(prefers-reduced-motion: reduce)').matches,
     )
   const [visited, setVisited] = useState<SectorId[]>([])
+  const [guidance, setGuidance] = useState<MissionGuideReport | null>(null)
+  const [guideEnabled, setGuideEnabled] = useState(() => {
+    try {
+      return localStorage.getItem('selene-mission-guide-v1') !== 'off'
+    } catch {
+      return true
+    }
+  })
+  const onGuide = useCallback((report: MissionGuideReport) => setGuidance(report), [])
+  useEffect(() => {
+    try {
+      localStorage.setItem('selene-mission-guide-v1', guideEnabled ? 'on' : 'off')
+    } catch {
+      /* Keep the in-memory preference. */
+    }
+  }, [guideEnabled])
+  const activeGuide = guidance?.sector === next.sector ? guidance : null
+  const openWardrobe = useCallback(() => setPanel('wardrobe'), [])
   const input = useRef<InputState>({
     keys: new Set(),
     actions: [],
@@ -84,16 +128,6 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
     [mars, moon],
   )
   useEffect(() => {
-    if (!ready) return
-    const params = new URLSearchParams(window.location.search)
-    if (params.get('launch') === 'true' || params.get('cinematic') === 'true') {
-      launchClock.current.current = 0
-      setLaunchElapsed(0)
-      setLaunching(true)
-    }
-  }, [ready])
-
-  useEffect(() => {
     if (!ready || offworld) return
     try {
       if (localStorage.getItem('selene-arrival-story-v1')) return
@@ -123,9 +157,17 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
   useEffect(() => {
     input.current.keys.clear()
     input.current.actions.length = 0
-  }, [panel, conversation])
+  }, [panel, conversation, landing])
   useEffect(() => {
     const key = (e: KeyboardEvent) => {
+      if (landing) {
+        if (e.code === 'Escape') {
+          e.preventDefault()
+          onLandingComplete()
+        }
+        return
+      }
+      if (launching) return
       if (conversation || campaign) return
       if (e.code === 'Escape') {
         setPanel((p) => (p ? null : 'menu'))
@@ -147,7 +189,7 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
     }
     window.addEventListener('keydown', key)
     return () => window.removeEventListener('keydown', key)
-  }, [conversation, campaign])
+  }, [conversation, campaign, landing, launching, onLandingComplete])
   useEffect(() => {
     const observe = (e: Event) => {
       if (panel || conversation || mode !== 'walk' || campaign) return
@@ -216,21 +258,66 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
     setConversation(null)
   }
   const finishInSituLaunch = useCallback(() => {
+    if (!launchInProgress.current) return
+    launchInProgress.current = false
     setLaunching(false)
     const draft = loadBlueprint()
-    const next = startOperations()
-    saveOperationSession(blueprintKey(draft.config, draft.parts), next)
+    const arrival = journey.finish(
+      blueprintKey(draft.config, draft.parts),
+      missionVerified(draft.config, draft.parts),
+    )
+    if (arrival) {
+      saveOperationSession(arrival.blueprintKey, startOperations())
+      wardrobeStore.set(equipForLaunch(wardrobeStore.getSnapshot(), arrival.destination))
+      onWorld(arrival.destination, true)
+      return
+    }
     setConversation({
       speaker: 'TARS · DIRECTOR DE VUELO',
       lines: [
-        '¡ODYSSEY ha alcanzado la trayectoria translunar (TLI) nominalmente!',
-        'Separación de etapas completada y paneles solares desplegados. Telemetría Artemis nominal.',
-        'La nave ha entrado en la fase de operaciones científicas en el polo sur lunar.',
+        'La demostración de despegue ha terminado.',
+        'Autoriza una misión revisada en la plataforma para viajar al destino que elegiste en el hangar.',
       ],
-      action: 'Ver operaciones en órbita',
-      sector: 'launch',
+      action: 'Seguir explorando',
     })
-  }, [])
+  }, [journey, onWorld])
+
+  const beginInSituLaunch = useCallback(
+    (travelToDestination = false) => {
+      if (offworld || landing || launchInProgress.current) return
+      const draft = loadBlueprint()
+      if (
+        travelToDestination &&
+        !journey.begin(
+          destinationChoice,
+          blueprintKey(draft.config, draft.parts),
+          missionVerified(draft.config, draft.parts),
+        )
+      )
+        return
+      if (!travelToDestination) journey.cancel()
+      launchInProgress.current = true
+      setLaunchDestination(destinationChoice)
+      setPanel(null)
+      setConversation(null)
+      input.current.keys.clear()
+      input.current.actions.length = 0
+      launchClock.current.current = 0
+      setLaunchElapsed(0)
+      setLaunching(true)
+    },
+    [offworld, landing, journey, destinationChoice],
+  )
+
+  const previewStarted = useRef(false)
+  useEffect(() => {
+    if (!ready || offworld || previewStarted.current) return
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('launch') === 'true' || params.get('cinematic') === 'true') {
+      previewStarted.current = true
+      beginInSituLaunch()
+    }
+  }, [ready, offworld, beginInSituLaunch])
 
   useEffect(() => {
     if (!launching) return
@@ -246,15 +333,11 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
 
   useEffect(() => {
     const launchReplay = () => {
-      setPanel(null)
-      setConversation(null)
-      launchClock.current.current = 0
-      setLaunchElapsed(0)
-      setLaunching(true)
+      beginInSituLaunch()
     }
     window.addEventListener('selene-launch-cinematic', launchReplay)
     return () => window.removeEventListener('selene-launch-cinematic', launchReplay)
-  }, [])
+  }, [beginInSituLaunch])
 
   const openCampaign = (id: SectorId) => {
     if (offworld || position.nearby !== id) return
@@ -263,11 +346,7 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
       if (!missionVerified(draft.config, draft.parts)) return
       const saved = loadOperationSession(blueprintKey(draft.config, draft.parts))
       if (!saved) {
-        setPanel(null)
-        setConversation(null)
-        launchClock.current.current = 0
-        setLaunchElapsed(0)
-        setLaunching(true)
+        beginInSituLaunch(true)
         return
       }
     }
@@ -296,6 +375,7 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
               campus
               launchAccess={campaignStage === 'launch'}
               onReturnToCampus={returnToCampus}
+              onLaunchComplete={(destination) => onWorld(destination, true)}
             />
           </Suspense>
         </div>
@@ -303,7 +383,7 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
     )
   return (
     <main
-      className={`selene-world clean-world ${offworld ? 'mars-world' : 'earth-world'} ${position.vehicle === 'driving' ? 'is-driving' : ''}`}
+      className={`selene-world clean-world ${offworld ? 'mars-world' : 'earth-world'} ${moon ? 'moon-world' : ''} ${position.vehicle === 'driving' ? 'is-driving' : ''} ${landing ? 'is-landing' : ''} ${launching ? 'is-launching' : ''}`}
     >
       <div className="world-viewport">
         <ExplorerScene
@@ -311,10 +391,15 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
           tourIndex={tourIndex}
           travel={travel}
           input={input}
-          paused={!!panel || !!conversation || launching}
+          paused={!!panel || !!conversation || landing || launching}
+          landing={landing}
+          onLandingComplete={onLandingComplete}
           reduced={reduced}
           onPosition={onPosition}
           onInteract={onInteract}
+          onWardrobe={openWardrobe}
+          guideSector={!offworld && guideEnabled ? next.sector : undefined}
+          onGuide={onGuide}
           quality={quality}
           onReady={onReady}
           cinematic={launching}
@@ -329,8 +414,14 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
           seconds={launchElapsed}
           config={blueprint.config}
           parts={blueprint.parts}
+          destination={launchDestination}
           onSkip={finishInSituLaunch}
         />
+      )}
+      {landing && (
+        <button className="lunar-landing-skip" onClick={onLandingComplete}>
+          Omitir llegada <kbd>Esc</kbd>
+        </button>
       )}
       {!ready && (
         <div className="world-loading">
@@ -338,38 +429,35 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
           <h1>Bienvenida a {world.place}.</h1>
         </div>
       )}
-      {!launching && !conversation && !panel && !(mode === 'walk' && position.room) && (
-        <button className="quest-slip" onClick={() => setPanel('journal')}>
-          <span>{offworld ? (moon ? 'LUNA' : 'ARES') : `MISIÓN ${next.number} / 05`}</span>
-          <strong>{offworld ? 'Explora el paisaje' : objectiveNames[next.sector]}</strong>
-          <small>
-            {offworld
-              ? 'El encargo lunar comienza en la Tierra'
-              : `${destination.short} · ${Math.round(Math.hypot(position.x - destination.entry[0], position.z - destination.entry[1]))} m`}{' '}
-            <b
-              style={{
-                display: 'inline-block',
-                transform: `rotate(${Math.round(
-                  -Math.atan2(
-                    Math.sin(
-                      Math.atan2(destination.entry[0] - position.x, destination.entry[1] - position.z) -
-                        Math.atan2(-Math.sin(input.current.yaw), -Math.cos(input.current.yaw)),
-                    ),
-                    Math.cos(
-                      Math.atan2(destination.entry[0] - position.x, destination.entry[1] - position.z) -
-                        Math.atan2(-Math.sin(input.current.yaw), -Math.cos(input.current.yaw)),
-                    ),
-                  ) *
-                    (180 / Math.PI),
-                )}deg)`,
-                transition: 'transform 0.12s ease',
-              }}
-            >
-              ▲
-            </b>
-          </small>
-        </button>
-      )}
+      {!launching &&
+        !offworld &&
+        !conversation &&
+        !panel &&
+        (!(mode === 'walk' && position.room) || (!offworld && guideEnabled)) && (
+          <button
+            className={`quest-slip${position.room ? ' is-interior-guide' : ''}`}
+            onClick={() => setPanel('journal')}
+          >
+            <span>{offworld ? (moon ? 'LUNA' : 'ARES') : `MISIÓN ${next.number} / 05`}</span>
+            <strong>{offworld ? 'Explora el paisaje' : objectiveNames[next.sector]}</strong>
+            <small>
+              <span>
+                {offworld
+                  ? 'El encargo lunar comienza en la Tierra'
+                  : guideEnabled && mode === 'walk' && activeGuide
+                    ? activeGuide.arrived
+                      ? activeGuide.hint
+                      : `${activeGuide.hint} · ${Math.round(activeGuide.distance)} m`
+                    : `${destination.short} · ${Math.round(Math.hypot(position.x - destination.entry[0], position.z - destination.entry[1]))} m`}
+              </span>
+              {!offworld && guideEnabled && mode === 'walk' ? (
+                <MissionDirection report={activeGuide} />
+              ) : (
+                <b>↗</b>
+              )}
+            </small>
+          </button>
+        )}
       {!launching && (
         <button
           className="paper-icon menu-toggle"
@@ -416,34 +504,82 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
       )}
       {miniMap && !launching && !panel && !conversation && (
         <aside className="small-map">
-          <CampusMap position={position} visited={visited} />
+          <CampusMap
+            position={position}
+            visited={visited}
+            active={!offworld && guideEnabled ? next.sector : undefined}
+          />
         </aside>
       )}
-      {!launching && mode === 'walk' && nearby && !position.vehicle && !panel && !conversation && (
-        <button className="station-prompt" onClick={() => onInteract(nearby.id)}>
-          <kbd>E</kbd> {nearby.id === 'research' ? 'Hablar con la Dra. Vega' : 'Usar estación'}{' '}
-          <span>▶</span>
-        </button>
-      )}
-      {!launching && mode === 'walk' && position.vehicle === 'driving' && !panel && !conversation && (
-        <VehicleDashboard
-          exitBlocked={position.exitBlocked}
-          onExit={() => input.current.actions.push('interact')}
-        />
-      )}
-      {!launching && mode === 'walk' && position.vehicle === 'near' && !panel && !conversation && (
-        <div className="vehicle-controls">
-          <button className="station-prompt" onClick={() => input.current.actions.push('interact')}>
-            <kbd>E</kbd> Conducir buggy <span>▶</span>
+      {!launching &&
+        mode === 'walk' &&
+        !nearby &&
+        !position.vehicle &&
+        !panel &&
+        !conversation &&
+        Math.hypot(position.x - -14, position.z - 36) < 4.8 && (
+          <button className="station-prompt" onClick={() => setPanel('authors')}>
+            <kbd>E</kbd> Ver Equipo Creador & Créditos <span>👥</span>
           </button>
-        </div>
-      )}
-      {!launching && mode === 'walk' && !nearby && !position.vehicle && !panel && !conversation && Math.hypot(position.x - (-14), position.z - 36) < 4.8 && (
-        <button className="station-prompt" onClick={() => setPanel('authors')}>
-          <kbd>E</kbd> Ver Equipo Creador & Créditos <span>👥</span>
-        </button>
-      )}
-      {!launching && mode === 'walk' && position.room && !panel && !conversation && (
+        )}
+      {mode === 'walk' &&
+        !position.vehicle &&
+        !panel &&
+        !conversation &&
+        canUseWardrobe(position.x, position.z, world.id) && (
+          <button className="station-prompt" onClick={() => setPanel('wardrobe')}>
+            <kbd>E</kbd> Cambiar de ropa <span>▶</span>
+          </button>
+        )}
+      {mode === 'walk' &&
+        nearby &&
+        !position.vehicle &&
+        !panel &&
+        !conversation &&
+        !canUseWardrobe(position.x, position.z, world.id) && (
+          <button className="station-prompt" onClick={() => onInteract(nearby.id)}>
+            <kbd>E</kbd> {nearby.id === 'research' ? 'Hablar con la Dra. Vega' : 'Usar estación'}{' '}
+            <span>▶</span>
+          </button>
+        )}
+      {mode === 'walk' &&
+        position.vehicle === 'driving' &&
+        !panel &&
+        !conversation &&
+        (moon ? (
+          <LunarRoverHud
+            speed={position.speed ?? 0}
+            exitBlocked={position.exitBlocked}
+            onExit={() => input.current.actions.push('interact')}
+          />
+        ) : (
+          <VehicleDashboard
+            exitBlocked={position.exitBlocked}
+            onExit={() => input.current.actions.push('interact')}
+          />
+        ))}
+      {mode === 'walk' &&
+        position.vehicle === 'near' &&
+        !panel &&
+        !conversation &&
+        (moon ? (
+          <button
+            className="lunar-rover-prompt"
+            onClick={() => input.current.actions.push('interact')}
+          >
+            <kbd>E</kbd> Subir al rover
+          </button>
+        ) : (
+          <div className="vehicle-controls">
+            <button
+              className="station-prompt"
+              onClick={() => input.current.actions.push('interact')}
+            >
+              <kbd>E</kbd> Conducir buggy <span>▶</span>
+            </button>
+          </div>
+        ))}
+      {mode === 'walk' && position.room && !panel && !conversation && (
         <div className="interior-caption">
           {roomLabel(position.room)} <small>Primera persona · arrastra para mirar</small>
         </div>
@@ -568,10 +704,16 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
           setReduced={setReduced}
           miniMap={miniMap}
           setMiniMap={setMiniMap}
+          guideEnabled={guideEnabled}
+          setGuideEnabled={setGuideEnabled}
           onClose={() => setPanel(null)}
           onPanel={setPanel}
           onMode={chooseMode}
           onWorld={onWorld}
+          onLanding={() => {
+            chooseMode('walk')
+            onWorld('moon', true)
+          }}
           onVisit={visit}
           onCampaign={openCampaign}
           onConversation={setConversation}
@@ -586,7 +728,7 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
   )
 }
 
-export default function Worlds() {
+export default function Worlds({ arrivalOnMount = false }: { arrivalOnMount?: boolean } = {}) {
   const [id, setId] = useState<WorldId>(
     () =>
       (['earth', 'mars', 'moon'].includes(
@@ -595,15 +737,21 @@ export default function Worlds() {
         ? new URLSearchParams(window.location.search).get('world')
         : 'earth') as WorldId,
   )
-  const change = (next: WorldId) => {
+  const [landing, setLanding] = useState(arrivalOnMount && id === 'moon')
+  const finishLanding = useCallback(() => setLanding(false), [])
+  const change = (next: WorldId, withLanding = false) => {
+    setLanding(next === 'moon' && withLanding)
     setId(next)
-    const url = new URL(window.location.href)
-    url.searchParams.set('world', next)
-    window.history.replaceState(null, '', url)
+    window.history.replaceState(null, '', worldLocation(window.location.href, next))
   }
   return (
     <WorldContext.Provider value={WORLDS[id]}>
-      <WorldExperience key={id} onWorld={change} />
+      <WorldExperience
+        key={id}
+        onWorld={change}
+        landing={landing}
+        onLandingComplete={finishLanding}
+      />
     </WorldContext.Provider>
   )
 }

@@ -24,6 +24,7 @@ export default function App(props: CampaignProps) {
     launched,
     launching,
     launchElapsed,
+    launchDestination,
     setLaunchElapsed,
     finishLaunch,
     interact,
@@ -101,6 +102,7 @@ export default function App(props: CampaignProps) {
               seconds={launchElapsed}
               config={config}
               parts={assembly}
+              destination={launchDestination}
               onSkip={finishLaunch}
             />
           )}

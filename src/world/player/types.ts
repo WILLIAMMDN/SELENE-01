@@ -1,6 +1,7 @@
 import type { MutableRefObject } from 'react'
 import type { CharacterControls } from '../characterMotion'
 import type { SectorId, ViewMode } from '../worldData'
+import type { MissionGuideReport } from '../navigation/missionDestination'
 export type Travel = { id: SectorId | 'start'; serial: number; point?: [number, number] }
 export type InputState = CharacterControls & { yaw: number; pitch: number; zoom: number }
 export type PositionReport = {
@@ -20,7 +21,12 @@ export type SceneProps = {
   input: MutableRefObject<InputState>
   paused: boolean
   reduced: boolean
+  landing?: boolean
+  onLandingComplete?: () => void
   onPosition: (p: PositionReport) => void
   onInteract: (id: SectorId) => void
   cinematic?: boolean
+  onWardrobe?: () => void
+  guideSector?: SectorId
+  onGuide?: (report: MissionGuideReport) => void
 }

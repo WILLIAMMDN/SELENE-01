@@ -1,4 +1,6 @@
 import LunarEnvironment from './lunar/LunarEnvironment'
+import LunarLanding from './lunar/LunarLanding'
+import MissionGuide from './MissionGuide'
 import CampusSky from './sky/CampusSky'
 import AdaptiveResolution from './performance/AdaptiveResolution'
 import { Canvas } from '@react-three/fiber'
@@ -13,8 +15,6 @@ import { LAUNCH_SITE } from '../spacecraft/LaunchComplex'
 import { useBlueprint } from '../game/state/blueprintStore'
 import { Stars } from '@react-three/drei'
 import type { LaunchClock } from '../spacecraft/launchTimeline'
-import MissionNavigationGuide from './navigation/MissionNavigationGuide'
-import { nextMissionStep, useCampusMission } from '../game/campusMission'
 export type { Travel, InputState, PositionReport } from './player/types'
 
 class SceneBoundary extends Component<
@@ -60,13 +60,16 @@ export default memo(function ExplorerScene(
     mars = world.id === 'mars',
     moon = world.id === 'moon'
   const { config, parts } = useBlueprint()
-  useCampusMission()
-  const next = nextMissionStep()
 
   return (
     <SceneBoundary onFailure={props.onReady}>
       <Canvas
-        camera={{ position: [0, 2.7, 44.5], fov: 50, near: 0.15, far: props.cinematic ? 5000 : 650 }}
+        camera={{
+          position: [0, 2.7, 44.5],
+          fov: 50,
+          near: 0.15,
+          far: props.cinematic ? 5000 : 650,
+        }}
         dpr={props.quality === 'light' ? 1 : [1, 1.5]}
         shadows={props.quality === 'standard' ? 'percentage' : false}
         gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
@@ -108,6 +111,7 @@ export default memo(function ExplorerScene(
             <LunarEnvironment
               paused={props.paused || props.mode !== 'walk'}
               reduced={props.reduced}
+              landing={props.landing}
             />
           ) : mars ? (
             <MarsEnvironment
@@ -122,13 +126,6 @@ export default memo(function ExplorerScene(
             />
           )}
           <PlayerRig {...props} cinematic={props.cinematic} />
-          {!mars && !moon && !props.cinematic && next.sector && (
-            <MissionNavigationGuide
-              targetSector={next.sector}
-              reduced={props.reduced}
-              indoor={props.mode !== 'walk'}
-            />
-          )}
           {props.cinematic && props.launchClock && (
             <LaunchCinematicDirector
               clock={props.launchClock.current}
@@ -141,6 +138,17 @@ export default memo(function ExplorerScene(
           )}
           {props.cinematic && (props.launchElapsed ?? 0) >= 18 && (
             <Stars radius={2800} depth={100} count={800} factor={4} saturation={0} fade speed={0} />
+          )}
+          {moon && props.landing && props.onLandingComplete && (
+            <LunarLanding onComplete={props.onLandingComplete} />
+          )}
+          {!mars && !moon && props.guideSector && (
+            <MissionGuide
+              sector={props.guideSector}
+              enabled={!props.paused && !props.cinematic && props.mode === 'walk'}
+              reduced={props.reduced}
+              onUpdate={props.onGuide}
+            />
           )}
           <SceneReady onReady={props.onReady} />
           <AdaptiveResolution enabled={props.quality === 'standard'} />

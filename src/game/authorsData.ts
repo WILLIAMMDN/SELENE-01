@@ -40,7 +40,8 @@ export const SELENE_AUTHORS_DATA: ProjectCredits = {
         'Motor de locomoción y cinemática',
         'Integración de naves y física de lanzamiento',
       ],
-      quote: 'Diseñar el futuro espacial empieza por hacerlo comprensible y emocionante en la pantalla.',
+      quote:
+        'Diseñar el futuro espacial empieza por hacerlo comprensible y emocionante en la pantalla.',
       avatarColor: '#ba6061',
       photoPlaceholderText: 'FOTO / AVATAR 01',
     },
@@ -54,7 +55,8 @@ export const SELENE_AUTHORS_DATA: ProjectCredits = {
         'Plataforma y lanzador LC-01',
         'Paleta visual y entintado de bordes',
       ],
-      quote: 'Cada silueta y textura en papel busca transmitir la calidez de un cuaderno de bocetos de exploración.',
+      quote:
+        'Cada silueta y textura en papel busca transmitir la calidez de un cuaderno de bocetos de exploración.',
       avatarColor: '#56878b',
       photoPlaceholderText: 'FOTO / AVATAR 02',
     },
@@ -68,7 +70,8 @@ export const SELENE_AUTHORS_DATA: ProjectCredits = {
         'Sistemas de iluminación y cielo dinámico',
         'Gestión de memoria y adaptabilidad 60 FPS',
       ],
-      quote: 'El espacio profundo cobra vida cuando la precisión técnica se sincroniza con el encuadre cinematográfico.',
+      quote:
+        'El espacio profundo cobra vida cuando la precisión técnica se sincroniza con el encuadre cinematográfico.',
       avatarColor: '#eedc82',
       photoPlaceholderText: 'FOTO / AVATAR 03',
     },
@@ -82,7 +85,8 @@ export const SELENE_AUTHORS_DATA: ProjectCredits = {
         'Validación de masa y trayectorias lunares',
         'Diálogos interactivos y bitácora de viaje',
       ],
-      quote: 'Cada objetivo del juego refleja preguntas científicas reales que la humanidad se hace sobre el polo sur lunar.',
+      quote:
+        'Cada objetivo del juego refleja preguntas científicas reales que la humanidad se hace sobre el polo sur lunar.',
       avatarColor: '#7ca38b',
       photoPlaceholderText: 'FOTO / AVATAR 04',
     },
@@ -96,7 +100,8 @@ export const SELENE_AUTHORS_DATA: ProjectCredits = {
         'Buggy terrestre de alta velocidad',
         'Autómata TARS y seguimiento inteligente',
       ],
-      quote: 'Conducir sobre el regolito lunar requiere respetar tanto la gravedad como la tracción en el terreno.',
+      quote:
+        'Conducir sobre el regolito lunar requiere respetar tanto la gravedad como la tracción en el terreno.',
       avatarColor: '#be775d',
       photoPlaceholderText: 'FOTO / AVATAR 05',
     },
@@ -110,7 +115,8 @@ export const SELENE_AUTHORS_DATA: ProjectCredits = {
         'Cuaderno de bitácora y cartografía',
         'Guía de navegación por chevrons y accesibilidad',
       ],
-      quote: 'La mejor interfaz espacial es la que parece dibujada a mano por la propia tripulación.',
+      quote:
+        'La mejor interfaz espacial es la que parece dibujada a mano por la propia tripulación.',
       avatarColor: '#4f888c',
       photoPlaceholderText: 'FOTO / AVATAR 06',
     },

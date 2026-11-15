@@ -47,11 +47,11 @@ export default function MissionNavigationGuide({
     // Inner highlight chevron
     const sInner = new T.Shape()
     sInner.moveTo(0, -0.52)
-    sInner.lineTo(-0.34, 0.20)
-    sInner.lineTo(-0.20, 0.20)
-    sInner.lineTo(0, -0.10)
-    sInner.lineTo(0.20, 0.20)
-    sInner.lineTo(0.34, 0.20)
+    sInner.lineTo(-0.34, 0.2)
+    sInner.lineTo(-0.2, 0.2)
+    sInner.lineTo(0, -0.1)
+    sInner.lineTo(0.2, 0.2)
+    sInner.lineTo(0.34, 0.2)
     sInner.closePath()
 
     return {

@@ -40,7 +40,9 @@ export function getLaunchFrame(seconds: number, launcher: LauncherId): LaunchFra
   const velocityKmh =
     time < 8
       ? 0
-      : Math.round(Math.min(28000, Math.pow(Math.max(0, time - 8), 1.95) * (launcher === 'atlas' ? 82 : 74)))
+      : Math.round(
+          Math.min(28000, Math.pow(Math.max(0, time - 8), 1.95) * (launcher === 'atlas' ? 82 : 74)),
+        )
   const maxQKpa =
     time < 7
       ? 0
@@ -59,33 +61,39 @@ export function getLaunchFrame(seconds: number, launcher: LauncherId): LaunchFra
   const exhaust = time < 5 || time > 29 ? 0 : Math.min(1, (time - 5) / 1.5) * (time > 25 ? 0.35 : 1)
   let beat: LaunchBeat = 'countdown'
   let title = 'Secuencia Terminal e Ignición (T-5s)'
-  let narration = 'TARS: Sistema de supresión de sonido por diluvio activo. Presurización criogénica LH2/LOX nominal.'
+  let narration =
+    'TARS: Sistema de supresión de sonido por diluvio activo. Presurización criogénica LH2/LOX nominal.'
   let mechanism: string | null = null
 
   if (time >= 30) {
     beat = 'orbital'
     title = 'Inyección Translunar (TLI) Confirmada'
-    narration = 'TARS: Telemetría de inserción orbital validada. ODYSSEY inicia operaciones rumbo al polo sur lunar.'
+    narration =
+      'TARS: Telemetría de inserción orbital validada. ODYSSEY inicia operaciones rumbo al polo sur lunar.'
     mechanism = 'ODYSSEY_RELEASE'
   } else if (time >= 27) {
     beat = 'release'
     title = 'Liberación de ODYSSEY (Payload Jettison)'
-    narration = 'TARS: ¡Desacople exitoso! ODYSSEY vuela de forma autónoma. Despliegue de paneles fotovoltaicos.'
+    narration =
+      'TARS: ¡Desacople exitoso! ODYSSEY vuela de forma autónoma. Despliegue de paneles fotovoltaicos.'
     mechanism = 'ODYSSEY_RELEASE'
   } else if (time >= 23) {
     beat = 'fairing'
     title = 'Eyección de la Cofia Protectora'
-    narration = 'TARS: Separación de cofia nominal. La nave ODYSSEY queda expuesta a la radiación solar en el espacio.'
+    narration =
+      'TARS: Separación de cofia nominal. La nave ODYSSEY queda expuesta a la radiación solar en el espacio.'
     mechanism = 'FAIRING_JETTISON'
   } else if (time >= 19) {
     beat = 'core'
     title = 'Separación de Etapa Central (MECO)'
-    narration = 'TARS: Apagado y separación de etapa central confirmado. La atmósfera se disipa; rumbo a inserción lunar.'
+    narration =
+      'TARS: Apagado y separación de etapa central confirmado. La atmósfera se disipa; rumbo a inserción lunar.'
     mechanism = 'CORE_STAGE_SEPARATION'
   } else if (time >= 15) {
     beat = 'boosters'
     title = 'Separación de Propulsores Auxiliares (SRB)'
-    narration = 'TARS: Separación de propulsores sólidos completada. Trayectoria de ascenso en régimen nominal.'
+    narration =
+      'TARS: Separación de propulsores sólidos completada. Trayectoria de ascenso en régimen nominal.'
     mechanism = 'BOOSTERS_SEPARATION'
   } else if (time >= 8.5) {
     beat = 'ascent'
@@ -97,7 +105,8 @@ export function getLaunchFrame(seconds: number, launcher: LauncherId): LaunchFra
   } else if (time >= 5) {
     beat = 'ignition'
     title = 'Ignición de Motores Principales'
-    narration = 'TARS: ¡Ignición de etapa central! Cuatro motores en régimen nominal. Cuenta terminal de despegue.'
+    narration =
+      'TARS: ¡Ignición de etapa central! Cuatro motores en régimen nominal. Cuenta terminal de despegue.'
   }
 
   return {

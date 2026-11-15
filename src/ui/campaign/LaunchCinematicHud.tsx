@@ -3,22 +3,26 @@ import { LAUNCHERS } from '../../game/missionDesign'
 import type { ModuleId } from '../../spacecraft/assembly'
 import { getLaunchFrame, LAUNCH_DURATION } from '../../spacecraft/launchTimeline'
 import { getCameraShot } from '../../spacecraft/LaunchCinematicDirector'
+import { LAUNCH_DESTINATIONS, type LaunchDestination } from '../../game/launchJourney'
 
 export default function LaunchCinematicHud({
   seconds,
   config,
   parts,
+  destination,
   onSkip,
 }: {
   seconds: number
   config: DesignConfig
   parts: ModuleId[]
+  destination: LaunchDestination
   onSkip: () => void
 }) {
   const frame = getLaunchFrame(seconds, config.launcher)
   const cameraShot = getCameraShot(seconds)
   const launcherName = LAUNCHERS.find((item) => item.id === config.launcher)?.name ?? 'Lanzador'
   const moduleName = parts.includes('habitat') ? 'ODYSSEY · CON HÁBITAT' : 'ODYSSEY · COMPACTA'
+  const target = LAUNCH_DESTINATIONS.find((item) => item.id === destination)!
   return (
     <div className="launch-film" role="region" aria-label="Cinemática interactiva de lanzamiento">
       <div className="launch-film-letterbox-top" aria-hidden="true" />
@@ -42,6 +46,7 @@ export default function LaunchCinematicHud({
         <span>LANZAMIENTO SIMULADO</span>
         <strong>{launcherName}</strong>
         <span>{moduleName}</span>
+        <span>DESTINO · {target.name.toUpperCase()}</span>
         <small>Modelo escénico común · rendimiento hipotético</small>
       </div>
       {frame.countdown !== null && (
@@ -52,9 +57,15 @@ export default function LaunchCinematicHud({
       )}
       <div className="launch-film-footer">
         <div className="launch-film-subtitles" aria-live="off">
-          <span className="launch-sub-kicker">TARS · DIRECTOR DE VUELO DE MISIÓN (NASA / ARTEMIS)</span>
+          <span className="launch-sub-kicker">
+            TARS · DIRECTOR DE VUELO DE MISIÓN (NASA / ARTEMIS)
+          </span>
           <strong>{frame.title}</strong>
-          <p>{frame.narration}</p>
+          <p>
+            {frame.beat === 'orbital'
+              ? `TARS: Trayectoria de salida confirmada. Preparando llegada a ${target.place}.`
+              : frame.narration}
+          </p>
         </div>
         <div className="launch-film-telemetry-grid">
           <div className="telemetry-pill">
@@ -85,7 +96,8 @@ export default function LaunchCinematicHud({
           <div style={{ width: `${(seconds / LAUNCH_DURATION) * 100}%` }} />
         </div>
         <span className="launch-film-disclaimer">
-          Telemetría y perfiles de vuelo ilustrativos basados en especificaciones del Sistema de Lanzamiento Espacial (SLS) y Programa Artemis de NASA.
+          Telemetría y perfiles de vuelo ilustrativos basados en especificaciones del Sistema de
+          Lanzamiento Espacial (SLS) y Programa Artemis de NASA.
         </span>
       </div>
     </div>
