@@ -1,132 +1,33 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useFrame, useThree } from '@react-three/fiber'
+import { useFrame } from '@react-three/fiber'
 import { Html } from '@react-three/drei'
 import * as T from 'three'
 import { toon } from '../ArtKit'
 import type { Conversation } from '../../game/narrative/conversations'
 
-export type LunarResource = {
-  id: string
-  number: string
-  name: string
-  tool: string
-  science: string
-  color: string
-  position: [number, number]
-  action: string
-}
-
-export const LUNAR_RESOURCES: LunarResource[] = [
-  {
-    id: 'hielo',
-    number: '01',
-    name: 'Hielo de agua',
-    tool: 'Pico criogénico',
-    science:
-      'Depósitos de hielo en trampas frías de cráteres polares. Esencial para soporte vital humano y electrólisis en hidrógeno y oxígeno líquidos como propelente.',
-    color: '#38bdf8',
-    position: [28, 70],
-    action: 'Extraer hielo',
-  },
-  {
-    id: 'regolito',
-    number: '02',
-    name: 'Regolito lunar',
-    tool: 'Pala de muestreo',
-    science:
-      'Materia prima de silicatos y óxidos metálicos. Base para sinterizado por microondas y fabricación aditiva de bloques de hábitat y escudos antirradiación.',
-    color: '#e2e8f0',
-    position: [10, 52],
-    action: 'Recoger regolito',
-  },
-  {
-    id: 'helio',
-    number: '03',
-    name: 'Helio-3',
-    tool: 'Sonda y espectrómetro',
-    science:
-      'Isótopo implantado por el viento solar en el regolito. Recurso estratégico para futuros reactores de fusión nuclear limpia y generación de energía de alta densidad.',
-    color: '#4ade80',
-    position: [-12, 68],
-    action: 'Detectar Helio-3',
-  },
-  {
-    id: 'titanio',
-    number: '04',
-    name: 'Titanio (Ilmenita)',
-    tool: 'Martillo geológico',
-    science:
-      'Mineral ilmenita (FeTiO3) en basaltos lunares. Fuente de aleaciones ultraligeras para estructuras espaciales y extracción piroclástica de oxígeno.',
-    color: '#a78bfa',
-    position: [-34, 52],
-    action: 'Muestrear ilmenita',
-  },
-  {
-    id: 'hierro',
-    number: '05',
-    name: 'Hierro nativo',
-    tool: 'Martillo geológico',
-    science:
-      'Granos metálicos de hierro puro en el regolito. Fundición in-situ para componentes estructurales, conductores y herramientas mecánicas sin transporte terrestre.',
-    color: '#fb923c',
-    position: [-56, 72],
-    action: 'Fracturar mena',
-  },
-  {
-    id: 'roca',
-    number: '06',
-    name: 'Muestra de roca',
-    tool: 'Pinza y contenedor sellado',
-    science:
-      'Brecha anortosítica de las tierras altas polares. Sellada al vacío para análisis petrológico y cronología de impactos en laboratorios de la Tierra.',
-    color: '#facc15',
-    position: [-74, 64],
-    action: 'Embalar muestra',
-  },
-]
+import {
+  LUNAR_GEOLOGIST,
+  LUNAR_RESOURCES,
+  LUNAR_RESOURCE_COUNT,
+  type LunarResource,
+} from './lunarResources'
+import { collectLunarResource, useLunarSamples } from './lunarMissionProgress'
+import LunarSamplingTools from './LunarSamplingTools'
+import { samplingEvents } from './lunarSampling'
+import type { LunarSession } from './lunarRoverControl'
 
 type Props = {
+  lunar: LunarSession
   heightAt: (x: number, z: number) => number
   paused: boolean
   onConversation: (conv: Conversation) => void
 }
 
-const STORAGE_KEY = 'selene_lunar_resources_collected_v1'
-
-export default function LunarResourcesMission({ heightAt, paused, onConversation }: Props) {
-  const [collected, setCollected] = useState<string[]>(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY)
-      return raw ? JSON.parse(raw) : []
-    } catch {
-      return []
-    }
-  })
-
+export default function LunarResourcesMission({ heightAt, paused, onConversation, lunar }: Props) {
+  const collected = useLunarSamples()
   const [nearbyStation, setNearbyStation] = useState<LunarResource | null>(null)
   const [nearGeologist, setNearGeologist] = useState(false)
-  const { camera } = useThree()
-
-  // Posición de la Geóloga secundaria (Dra. Elena Silva)
-  const geologistPos: [number, number] = [46, 64]
-  const geologistY = heightAt(geologistPos[0], geologistPos[1])
-
-  // Guardar progreso
-  const markCollected = (id: string) => {
-    setCollected((prev) => {
-      if (prev.includes(id)) return prev
-      const updated = [...prev, id]
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
-        window.dispatchEvent(
-          new CustomEvent('selene-lunar-resource-collected', { detail: updated }),
-        )
-      } catch {
-        /* ignore */
-      }
-      return updated
-    })
-  }
+  const geologistY = heightAt(...LUNAR_GEOLOGIST)
 
   // Animación del personaje secundario realizando actividades de prospección
   const geologistRef = useRef<T.Group>(null)
@@ -135,7 +36,7 @@ export default function LunarResourcesMission({ heightAt, paused, onConversation
   const toolScannerRef = useRef<T.Group>(null)
   const holoBeamRef = useRef<T.Mesh>(null)
 
-  useFrame(({ clock }) => {
+  useFrame(({ clock }, delta) => {
     if (paused) return
     const t = clock.getElapsedTime()
 
@@ -157,97 +58,101 @@ export default function LunarResourcesMission({ heightAt, paused, onConversation
     }
     if (holoBeamRef.current) {
       holoBeamRef.current.scale.y = 0.8 + Math.sin(t * 4) * 0.25
-      ;(holoBeamRef.current.material as T.MeshBasicMaterial).opacity =
-        0.35 + Math.sin(t * 6) * 0.2
+      ;(holoBeamRef.current.material as T.MeshBasicMaterial).opacity = 0.35 + Math.sin(t * 6) * 0.2
     }
 
-    // Proximidad al jugador estimada vía distancia a la cámara
-    const camPos = camera.position
-    const distGeol = Math.hypot(camPos.x - geologistPos[0], camPos.z - geologistPos[1])
-    setNearGeologist(distGeol < 14)
-
-    let closest: LunarResource | null = null
-    let minDist = 14 // Cómoda distancia de interacción en terreno abierto
-    for (const res of LUNAR_RESOURCES) {
-      const d = Math.hypot(camPos.x - res.position[0], camPos.z - res.position[1])
-      if (d < minDist) {
-        minDist = d
-        closest = res
+    const action = lunar.sampling
+    if (action) {
+      if (!action.approaching) {
+        const before = action.elapsed
+        action.elapsed += Math.min(delta, 0.05)
+        const events = samplingEvents(action.resource.id, before, action.elapsed)
+        if (events.record && !action.replay) collectLunarResource(action.resource.id)
+        if (events.finished) {
+          lunar.sampling = undefined
+          showSample(action.resource, action.replay)
+        }
       }
+      return
     }
-    setNearbyStation(closest)
+    const target = findInteraction()
+    setNearbyStation(typeof target === 'object' ? target : null)
+    setNearGeologist(target === 'geologist')
   })
 
-  // Diálogo con la Geóloga estilo Imagen 3
-  const talkToGeologist = () => {
-    const total = collected.length
-    if (total === 0) {
-      onConversation({
-        speaker: 'DRA. ELENA SILVA · GEÓLOGA',
-        lines: [
-          '¡Qué bueno que llegaste! Estamos ejecutando la prospección geológica del programa Artemisa en la base ODYSSEY.',
-          'Necesitamos recolectar muestras de los 6 recursos clave: Hielo de agua, Regolito, Helio-3, Titanio, Hierro y Muestra de roca.',
-          'Sigue el sendero señalizado hacia el oeste. Puedes ir a pie con la gravedad lunar o conducir el Rover Lunar para avanzar rápido.',
-        ],
-        action: '¡Entendido, vamos!',
-      })
-    } else if (total < 6) {
-      onConversation({
-        speaker: 'DRA. ELENA SILVA · GEÓLOGA',
-        lines: [
-          `Excelente avance: ya llevamos ${total} de 6 recursos prospectados.`,
-          'Revisa las estaciones restantes a lo largo del sendero. Cada recurso incluye datos espectrales certificados por NASA.',
-          'Cuando tengas las 6 muestras, las prepararemos en el contenedor de retorno de la cápsula L01.',
-        ],
-        action: 'Seguir prospectando',
-      })
-    } else {
-      onConversation({
-        speaker: 'DRA. ELENA SILVA · GEÓLOGA',
-        lines: [
-          '¡Misión de prospección cumplida con honores! Los 6 recursos del polo sur lunar han sido caracterizados.',
-          'El hielo para soporte vital, el regolito para construcción, el He-3 para investigación energética y la muestra de roca sellada para retorno a la Tierra.',
-          'El equipo científico de la misión espacial SELENE-01 te agradece este extraordinario trabajo.',
-        ],
-        action: '¡Misión completada!',
-      })
-    }
+  const findInteraction = () => {
+    const player = lunar.position
+    if (paused || lunar.boarded || !player) return null
+    const nearest = LUNAR_RESOURCES.find(
+      ({ position: [x, z] }) => Math.hypot(player.x - x, player.z - z) < 3.2,
+    )
+    if (nearest) return nearest
+    return Math.hypot(player.x - LUNAR_GEOLOGIST[0], player.z - LUNAR_GEOLOGIST[1]) < 4
+      ? ('geologist' as const)
+      : null
   }
 
-  // Interactuar con estación de recurso
-  const sampleStation = (res: LunarResource) => {
-    markCollected(res.id)
+  const talkToGeologist = () => {
+    if (findInteraction() !== 'geologist') return
+    const total = collected.length
     onConversation({
-      speaker: `ESTACIÓN ${res.number} · ${res.name.toUpperCase()}`,
-      lines: [
-        `Has utilizado: ${res.tool.toUpperCase()}. Muestra de ${res.name} recolectada con éxito.`,
-        res.science,
-        `Progreso de la misión: ${Math.min(6, collected.includes(res.id) ? collected.length : collected.length + 1)} / 6 recursos lunares.`,
-      ],
-      action: 'Registrar muestra',
+      speaker: 'DRA. ELENA SILVA · GEÓLOGA',
+      lines:
+        total < LUNAR_RESOURCE_COUNT
+          ? [
+              '¿Qué recursos podrían abastecer una base en el polo sur lunar? Vamos a comparar seis registros de campo en la simulación.',
+              'Sigue las balizas hacia el oeste. Usa el rover para cubrir distancia, bájate junto a la estación y pulsa E a pie para tomar una muestra o una lectura.',
+              `Registros de campo: ${total} de ${LUNAR_RESOURCE_COUNT}. Usa la bitácora para encontrar la siguiente estación.`,
+            ]
+          : [
+              'Los seis registros ya están en la bitácora. Compara qué podría aprovecharse en la base y qué necesitaría más análisis.',
+              'Puedes conservar la roca en el archivo o preparar su manifiesto en la explanada de la cápsula L01.',
+            ],
+      action: 'Volver al campo',
     })
   }
 
-  // Teclado para interactuar con tecla E cuando está cerca
-  useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      if (paused || e.code !== 'KeyE' || e.repeat) return
-      if (
-        (e.target as HTMLElement)?.closest?.('input,textarea,select,[contenteditable="true"]')
-      )
-        return
-
-      if (nearbyStation) {
-        e.preventDefault()
-        sampleStation(nearbyStation)
-      } else if (nearGeologist) {
-        e.preventDefault()
-        talkToGeologist()
-      }
+  const sampleStation = (res: LunarResource) => {
+    if (lunar.sampling || findInteraction() !== res) return
+    lunar.sampling = {
+      resource: res,
+      elapsed: 0,
+      approaching: true,
+      replay: collected.includes(res.id),
     }
-    window.addEventListener('keydown', handleKey)
-    return () => window.removeEventListener('keydown', handleKey)
-  }, [paused, nearbyStation, nearGeologist, collected])
+    setNearbyStation(null)
+  }
+
+  const showSample = (res: LunarResource, previous: boolean) => {
+    const total = collected.length + Number(!collected.includes(res.id) && !previous)
+    onConversation({
+      speaker: `ESTACIÓN ${res.number} · ${res.name.toUpperCase()}`,
+      lines: [
+        previous
+          ? 'Este registro ya figura en tu bitácora.'
+          : res.id === 'helio'
+            ? `Lectura simulada registrada con ${res.tool.toLowerCase()}.`
+            : `Muestra ${res.number} registrada con ${res.tool.toLowerCase()}.`,
+        res.science,
+        `Registros de campo: ${total} de ${LUNAR_RESOURCE_COUNT}.`,
+      ],
+      action: 'Volver al campo',
+    })
+  }
+
+  useEffect(() => {
+    lunar.interact = () => {
+      if (lunar.sampling) return true
+      const target = findInteraction()
+      if (!target) return false
+      if (target === 'geologist') talkToGeologist()
+      else sampleStation(target)
+      return true
+    }
+    return () => {
+      lunar.interact = undefined
+    }
+  })
 
   // Material Toon cel-shaded para los elementos
   const toonCream = useMemo(() => toon('#fdfdf6').gradientMap, [])
@@ -255,12 +160,13 @@ export default function LunarResourcesMission({ heightAt, paused, onConversation
 
   return (
     <group name="LunarResourcesMission">
+      <LunarSamplingTools lunar={lunar} />
       {/* ============================================================ */}
       {/* PERSONAJE SECUNDARIO: DRA. ELENA SILVA (GEÓLOGA ARTEMISA) */}
       {/* ============================================================ */}
       <group
         ref={geologistRef}
-        position={[geologistPos[0], geologistY, geologistPos[1]]}
+        position={[LUNAR_GEOLOGIST[0], geologistY, LUNAR_GEOLOGIST[1]]}
         rotation={[0, 0.4, 0]}
       >
         {/* Cuerpo del traje EVA */}
@@ -367,8 +273,8 @@ export default function LunarResourcesMission({ heightAt, paused, onConversation
         </mesh>
 
         {/* Cartel flotante anime sobre el personaje */}
-        {!paused && (
-          <Html position={[0, 2.05, 0]} center distanceFactor={20}>
+        {!paused && nearGeologist && (
+          <Html position={[0, 2.05, 0]} center distanceFactor={12}>
             <div
               style={{
                 display: 'flex',
@@ -392,7 +298,7 @@ export default function LunarResourcesMission({ heightAt, paused, onConversation
                   whiteSpace: 'nowrap',
                 }}
               >
-                DRA. ELENA SILVA · GEÓLOGA ARTEMISA
+                DRA. ELENA SILVA · GEÓLOGA
               </div>
               {nearGeologist && (
                 <button
@@ -426,7 +332,6 @@ export default function LunarResourcesMission({ heightAt, paused, onConversation
                     E
                   </kbd>
                   <span>Hablar sobre prospección</span>
-                  <span style={{ color: '#ba6061', fontWeight: 900 }}>▶</span>
                 </button>
               )}
             </div>
@@ -475,8 +380,8 @@ export default function LunarResourcesMission({ heightAt, paused, onConversation
             </mesh>
 
             {/* Rótulo e interacción estilo anime */}
-            {!paused && (
-              <Html position={[0, 1.6, 0]} center distanceFactor={22}>
+            {!paused && isCurrentTarget && (
+              <Html position={[0, 1.6, 0]} center distanceFactor={12}>
                 <div
                   style={{
                     display: 'flex',
@@ -505,7 +410,7 @@ export default function LunarResourcesMission({ heightAt, paused, onConversation
                     <span>{res.number}</span>
                     <span>·</span>
                     <span>{res.name.toUpperCase()}</span>
-                    {isCollected && <span style={{ color: '#4ade80' }}>✓</span>}
+                    {isCollected && <span>Registrado</span>}
                   </div>
 
                   {isCurrentTarget && (
@@ -540,9 +445,8 @@ export default function LunarResourcesMission({ heightAt, paused, onConversation
                         E
                       </kbd>
                       <span>
-                        {isCollected ? 'Revisar datos' : `${res.action} (${res.tool})`}
+                        {isCollected ? 'Repetir demostración' : `${res.action} (${res.tool})`}
                       </span>
-                      <span style={{ color: '#ba6061', fontWeight: 900 }}>▶</span>
                     </button>
                   )}
                 </div>

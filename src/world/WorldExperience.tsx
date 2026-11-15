@@ -1,4 +1,7 @@
 import { roomLabel } from './buildingEntrances'
+import { analyzeLunarIce, useLunarFieldwork, useLunarSamples } from './lunar/lunarMissionProgress'
+import type { LunarWorkstationId } from './lunar/lunarFieldwork'
+import { LUNAR_LOW_RESERVE } from './lunar/lunarPhysics'
 import VehicleDashboard from '../ui/world/VehicleDashboard'
 import WorldNotebook from '../ui/world/WorldNotebook'
 import { OBJECTIVE_NAMES, type Panel } from '../ui/world/worldUiTypes'
@@ -109,6 +112,11 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
     const key = (e: KeyboardEvent) => {
       if (conversation || campaign) return
       if (e.code === 'Escape') {
+        if (moon && mode === 'walk' && position.vehicle === 'driving' && !panel) {
+          e.preventDefault()
+          if (!e.repeat) input.current.actions.push('interact')
+          return
+        }
         setPanel((p) => (p ? null : 'menu'))
         return
       }
@@ -128,7 +136,7 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
     }
     window.addEventListener('keydown', key)
     return () => window.removeEventListener('keydown', key)
-  }, [conversation, campaign])
+  }, [conversation, campaign, moon, mode, position.vehicle, panel])
   useEffect(() => {
     const observe = (e: Event) => {
       if (panel || conversation || mode !== 'walk' || campaign) return
@@ -187,6 +195,36 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
     window.addEventListener('selene-dialogue', onDialogue)
     return () => window.removeEventListener('selene-dialogue', onDialogue)
   }, [panel, campaign])
+  const lunarSamples = useLunarSamples()
+  const lunarFieldwork = useLunarFieldwork()
+  useEffect(() => {
+    const useStation = (event: Event) => {
+      if (!moon || panel || conversation || campaign || mode !== 'walk') return
+      const { detail } = event as CustomEvent<LunarWorkstationId>
+      if (detail === 'storage') {
+        setPanel('lunar-inventory')
+      } else if (detail === 'lab') {
+        const hasIce = lunarSamples.includes('hielo')
+        const analyzed = analyzeLunarIce()
+        setConversation({
+          speaker: 'LAB-L01 · MESA DE ANÁLISIS',
+          lines: hasIce
+            ? [
+                analyzed
+                  ? 'Resultado guardado. La lectura simulada de H₂O es compatible con la muestra de hielo de la estación 01.'
+                  : 'El resultado de la muestra 01 ya está en la bitácora.',
+                'Despliega PWR-L01 si la prueba de energía sigue pendiente. Después envía el resultado desde la bitácora con J.',
+              ]
+            : [
+                'Recoge primero una muestra de hielo en la estación 01 y tráela de vuelta a esta mesa.',
+              ],
+          action: 'Volver al laboratorio',
+        })
+      }
+    }
+    window.addEventListener('selene-lunar-workstation', useStation)
+    return () => window.removeEventListener('selene-lunar-workstation', useStation)
+  }, [moon, panel, conversation, campaign, mode, lunarSamples])
   const chooseMode = (m: ViewMode) => {
     setMode(m)
     setPanel(null)
@@ -211,6 +249,8 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
     setTravel((t) => ({ id: t.id, point: [position.x, position.z], serial: t.serial + 1 }))
     setCampaign(false)
   }
+  const lifeSupport = moon && mode === 'walk' ? position.eva : undefined
+  const hatch = moon && mode === 'walk' ? position.hatch : undefined
   const nearby = SECTORS.find((s) => s.id === position.nearby),
     tour = SECTORS[tourIndex]
   const objectiveNames = OBJECTIVE_NAMES
@@ -234,7 +274,7 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
     )
   return (
     <main
-      className={`selene-world clean-world ${offworld ? 'mars-world' : 'earth-world'} ${position.vehicle === 'driving' ? 'is-driving' : ''}`}
+      className={`selene-world clean-world ${offworld ? 'mars-world' : 'earth-world'} ${!moon && position.vehicle === 'driving' ? 'is-driving' : ''}`}
     >
       <div className="world-viewport">
         <ExplorerScene
@@ -258,11 +298,25 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
       )}
       {!conversation && !panel && !(mode === 'walk' && position.room) && (
         <button className="quest-slip" onClick={() => setPanel('journal')}>
-          <span>{moon ? 'MISIÓN ARTEMISA · POLO SUR' : offworld ? 'ARES' : `MISIÓN ${next.number} / 05`}</span>
-          <strong>{moon ? 'Prospección de recursos' : offworld ? 'Explora el paisaje' : objectiveNames[next.sector]}</strong>
+          <span>
+            {moon ? 'MISIÓN ARTEMISA · POLO SUR' : offworld ? 'ARES' : `MISIÓN ${next.number} / 05`}
+          </span>
+          <strong>
+            {moon
+              ? 'Prospección de recursos'
+              : offworld
+                ? 'Explora el paisaje'
+                : objectiveNames[next.sector]}
+          </strong>
           <small>
             {moon
-              ? 'Dra. Silva y 6 estaciones en el sendero'
+              ? lunarFieldwork.steps.includes('iceSent')
+                ? 'Resultado de hielo transmitido'
+                : lunarFieldwork.steps.includes('iceAnalyzed')
+                  ? 'Transmite el resultado desde la bitácora'
+                  : lunarSamples.includes('hielo')
+                    ? 'Lleva la muestra a LAB-L01'
+                    : 'Recoge hielo en la estación 01'
               : offworld
                 ? 'El encargo lunar comienza en la Tierra'
                 : `${destination.short} · ${Math.round(Math.hypot(position.x - destination.entry[0], position.z - destination.entry[1]))} m`}{' '}
@@ -317,28 +371,112 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
           <CampusMap position={position} visited={visited} />
         </aside>
       )}
-      {mode === 'walk' && nearby && !position.vehicle && !panel && !conversation && (
-        <button className="station-prompt" onClick={() => onInteract(nearby.id)}>
-          <kbd>E</kbd> {nearby.id === 'research' ? 'Hablar con la Dra. Vega' : 'Usar estación'}{' '}
-          <span>▶</span>
+      {lifeSupport && !panel && !conversation && (
+        <aside className="lunar-eva-hud" aria-label="Soporte vital lunar">
+          <div className="lunar-eva-head">
+            <label htmlFor="lunar-oxygen">Oxígeno del traje</label>
+            <strong>{Math.ceil(lifeSupport.oxygen * 100)} %</strong>
+          </div>
+          <progress
+            id="lunar-oxygen"
+            value={lifeSupport.oxygen}
+            max={1}
+            className={lifeSupport.oxygen <= LUNAR_LOW_RESERVE ? 'reserve-low' : ''}
+          />
+          <div className="lunar-eva-secondary">
+            <span>Batería {Math.ceil(lifeSupport.battery * 100)} %</span>
+            <span>Carga térmica y de CO₂ {lifeSupport.workload > 0.6 ? 'alta' : 'normal'}</span>
+          </div>
+          <small>
+            {lifeSupport.recovered
+              ? 'Rescate simulado · regreso a HAB-L01'
+              : lifeSupport.sealed
+                ? 'Cabina presurizada · recarga'
+                : position.room
+                  ? 'Cierra las escotillas para presurizar'
+                  : 'EVA · traje presurizado'}
+          </small>
+          {!lifeSupport.sealed &&
+            Math.min(lifeSupport.oxygen, lifeSupport.battery) <= LUNAR_LOW_RESERVE && (
+              <small className="lunar-reserve-warning" role="status">
+                Reserva baja. Regresa a la base.
+              </small>
+            )}
+        </aside>
+      )}
+      {moon && mode === 'walk' && position.workstation && !panel && !conversation && (
+        <button
+          className="station-prompt lunar-hatch-prompt"
+          type="button"
+          onClick={() => input.current.actions.push('workstation')}
+        >
+          <kbd>E</kbd> {position.workstation.name}
         </button>
       )}
-      {mode === 'walk' && position.vehicle === 'driving' && !panel && !conversation && (
-        <VehicleDashboard
-          exitBlocked={position.exitBlocked}
-          onExit={() => input.current.actions.push('interact')}
-        />
+      {hatch && !position.workstation && !panel && !conversation && (
+        <button
+          className="station-prompt lunar-hatch-prompt"
+          type="button"
+          disabled={hatch.moving || hatch.blocked}
+          onClick={() => input.current.actions.push('hatch')}
+        >
+          <kbd>E</kbd>{' '}
+          {hatch.moving
+            ? 'Escotilla en movimiento'
+            : hatch.blocked
+              ? 'Despeja el umbral'
+              : `${hatch.open ? 'Cerrar' : 'Abrir'} escotilla ${hatch.label}`}
+        </button>
       )}
+      {mode === 'walk' &&
+        nearby &&
+        !hatch &&
+        !position.workstation &&
+        !position.vehicle &&
+        !panel &&
+        !conversation && (
+          <button className="station-prompt" onClick={() => onInteract(nearby.id)}>
+            <kbd>E</kbd>{' '}
+            {!moon && nearby.id === 'research' ? 'Hablar con la Dra. Vega' : 'Usar estación'}{' '}
+            <span>▶</span>
+          </button>
+        )}
+      {mode === 'walk' &&
+        position.vehicle === 'driving' &&
+        !panel &&
+        !conversation &&
+        (moon ? (
+          <aside className="lunar-rover-strip" aria-label="Controles del rover lunar">
+            <span>{Math.round(position.speed ?? 0)} km/h</span>
+            <button onClick={() => input.current.actions.push('interact')}>
+              <kbd>E / Esc</kbd> Bajar
+            </button>
+            {position.exitBlocked && <small role="status">Busca terreno libre para bajar.</small>}
+          </aside>
+        ) : (
+          <VehicleDashboard
+            exitBlocked={position.exitBlocked}
+            onExit={() => input.current.actions.push('interact')}
+          />
+        ))}
       {mode === 'walk' && position.vehicle === 'near' && !panel && !conversation && (
         <div className="vehicle-controls">
           <button className="station-prompt" onClick={() => input.current.actions.push('interact')}>
-            <kbd>E</kbd> Conducir buggy <span>▶</span>
+            <kbd>E</kbd>{' '}
+            {moon ? (
+              'Subir al rover'
+            ) : (
+              <>
+                Conducir buggy <span>▶</span>
+              </>
+            )}
           </button>
         </div>
       )}
       {mode === 'walk' && position.room && !panel && !conversation && (
         <div className="interior-caption">
-          {roomLabel(position.room)} <small>Primera persona · arrastra para mirar</small>
+          {moon ? position.room : roomLabel(position.room)}{' '}
+          <small>Primera persona · arrastra para mirar</small>
         </div>
       )}
       {mode !== 'walk' && !panel && !conversation && (

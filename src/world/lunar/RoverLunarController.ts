@@ -13,6 +13,7 @@ const approach = (a: number, b: number, step: number) => a + T.MathUtils.clamp(b
 export class RoverLunarController {
   readonly vehicle = new T.Group()
   readonly effects = new T.Group()
+  readonly driverSeat: T.Object3D
   readonly dust: T.Points<T.BufferGeometry, T.ShaderMaterial>
   speed = 0
   yaw = 0
@@ -57,6 +58,7 @@ export class RoverLunarController {
     this.spawn.copy(options.position ?? new T.Vector3())
     this.vehicle.name = 'RoverLunar_Controlled'
     this.vehicle.add(model)
+    this.driverSeat = model.getObjectByName('Seat_L_Cushion') ?? this.vehicle
     model.traverse(node => {
       if ((node as T.Mesh).isMesh) { node.castShadow = true; node.receiveShadow = true }
     })

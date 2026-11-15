@@ -126,7 +126,9 @@ export default function ExplorerCharacter({
       }
       actions[clip.name] = action
     }
-    return { root, actor, mixer, actions }
+    const grip = actor.getObjectByName('FistL')
+    const arm = [actor.getObjectByName('LowerArmL'), actor.getObjectByName('UpperArmL')]
+    return { root, actor, mixer, actions, grip, arm }
   }, [scene, animations])
   useEffect(() => {
     asset.actor.traverse((n) => {
@@ -173,27 +175,36 @@ export default function ExplorerCharacter({
       phase.current = ''
     }
   }, [asset])
+  const handPosition = useRef(new T.Vector3())
+  const jointPosition = useRef(new T.Vector3())
+  const handDirection = useRef(new T.Vector3())
+  const targetDirection = useRef(new T.Vector3())
+  const worldRotation = useRef(new T.Quaternion())
+  const localCorrection = useRef(new T.Quaternion())
+  const parentRotation = useRef(new T.Quaternion())
   useFrame((_, rawDelta) => {
     if (paused) return
     const dt = Math.min(rawDelta, 0.05),
       state = motion.current
     if (state.speed > 0.08 || state.phase !== 'ground') preview.current = null
+    const sampling = state.samplingPose
     const seated = ['Sit_Down', 'Sit_Idle', 'Stand_Up'].includes(state.clip)
-    const name =
-      preview.current ??
-      (seated
-        ? 'SitDown'
-        : state.clip === 'Wave' && asset.actions.Saludar
-          ? 'Saludar'
-          : state.clip === 'Interact' || state.clip === 'Pick_Up' || state.clip === 'Use_Panel'
-            ? 'PickUp'
-            : state.speed > 2.5
-              ? 'Run'
-              : state.speed > 0.08
-                ? 'Walk'
-                : 'Idle')
-    const action = asset.actions[name] ?? asset.actions.Idle,
-      key = seated ? state.clip : (preview.current ?? name)
+    const name = sampling
+      ? 'PickUp'
+      : (preview.current ??
+        (seated
+          ? 'SitDown'
+          : state.clip === 'Wave' && asset.actions.Saludar
+            ? 'Saludar'
+            : state.clip === 'Interact' || state.clip === 'Pick_Up' || state.clip === 'Use_Panel'
+              ? 'PickUp'
+              : state.speed > 2.5
+                ? 'Run'
+                : state.speed > 0.08
+                  ? 'Walk'
+                  : 'Idle'))
+    const action = asset.actions[name] ?? asset.actions.Idle
+    const key = sampling ? 'lunar-sampling' : seated ? state.clip : (preview.current ?? name)
     if (action && (active.current !== action || phase.current !== key)) {
       active.current?.fadeOut(0.15)
       action.reset().fadeIn(0.15).play()
@@ -205,7 +216,12 @@ export default function ExplorerCharacter({
       active.current = action
       phase.current = key
     }
-    if (action) {
+    if (action && sampling) {
+      action.paused = true
+      const dip = sampling.crouch
+      action.time =
+        (sampling.progress < 0.52 ? 0.47 * dip : 1 - 0.53 * dip) * action.getClip().duration
+    } else if (action) {
       action.paused = state.clip === 'Sit_Idle' || (reduced && name === 'Idle')
       action.setEffectiveTimeScale(
         state.clip === 'Stand_Up'
@@ -220,6 +236,25 @@ export default function ExplorerCharacter({
       )
     }
     asset.mixer.update(dt)
+    if (sampling && asset.grip) {
+      // Guide the existing elbow and upper arm towards the same authored grip as the prop.
+      for (let pass = 0; pass < 4; pass++) {
+        for (const joint of asset.arm) {
+          if (!joint?.parent) continue
+          asset.grip.getWorldPosition(handPosition.current)
+          joint.getWorldPosition(jointPosition.current)
+          handDirection.current.copy(handPosition.current).sub(jointPosition.current).normalize()
+          targetDirection.current.copy(sampling.pose.grip).sub(jointPosition.current).normalize()
+          if (handDirection.current.lengthSq() < 0.1 || targetDirection.current.lengthSq() < 0.1)
+            continue
+          joint.getWorldQuaternion(worldRotation.current)
+          joint.parent.getWorldQuaternion(parentRotation.current)
+          localCorrection.current.setFromUnitVectors(handDirection.current, targetDirection.current)
+          const corrected = worldRotation.current.premultiply(localCorrection.current)
+          joint.quaternion.copy(parentRotation.current.invert().multiply(corrected))
+        }
+      }
+    }
     if (preview.current && action.time >= action.getClip().duration) {
       preview.current = null
       phase.current = ''

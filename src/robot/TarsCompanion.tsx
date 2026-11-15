@@ -32,6 +32,7 @@ export type CrewTarget = {
   motion?: RefObject<CharacterMotion>
   isIndoors?: () => boolean
   isDriving?: () => boolean
+  isCinematic?: () => boolean
 }
 
 // Fallback used only while loading or if a replacement asset cannot be displayed.
@@ -225,6 +226,7 @@ function Follower({
     const player = target.body.current,
       body = ref.current
     if (!player || !body) return
+    body.visible = !(target.isCinematic?.() ?? false)
     const delta = Math.min(rawDelta, 0.05),
       p = player.position,
       a = player.rotation.y

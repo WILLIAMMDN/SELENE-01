@@ -8,10 +8,14 @@ export type PositionReport = {
   z: number
   nearby: SectorId | null
   vehicle?: false | null | 'near' | 'driving'
+  rover?: { x: number; z: number; distance: number }
   speed?: number
   exitBlocked?: boolean
   fps: number
   room?: string | null
+  workstation?: { name: string }
+  eva?: { oxygen: number; battery: number; workload: number; sealed: boolean; recovered: boolean }
+  hatch?: { label: string; open: boolean; moving: boolean; blocked: boolean }
 }
 export type SceneProps = {
   mode: ViewMode

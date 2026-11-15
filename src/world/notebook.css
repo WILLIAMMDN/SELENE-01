@@ -54,3 +54,73 @@
 .clean-world.is-driving .paper-dock{bottom:440px}
 @media(max-width:700px){.vehicle-dashboard{right:12px;bottom:75px;width:215px;padding:10px 12px;transform:none}.dash-dial{width:115px;height:115px}.clean-world.is-driving .paper-dock{display:none}}
 
+
+/* Lunar vehicle controls remain fixed-size and clear of the follow camera. */
+.lunar-rover-strip {
+  position: absolute;
+  z-index: 10;
+  bottom: max(18px, env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: max-content;
+  max-width: calc(100% - 32px);
+  padding: 4px 5px 4px 10px;
+  background: #f8f9ed;
+  color: #26343a;
+  border: 1px solid #52656b;
+  border-radius: 4px;
+  font: 600 12px/1.25 system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+.clean-world .lunar-rover-strip button {
+  min-height: 34px;
+  padding: 4px 8px;
+  border-radius: 3px;
+  background: #26343a;
+  color: #f8f9ed;
+}
+.lunar-rover-strip kbd { margin-right: 4px; }
+.lunar-rover-strip small { max-width: 135px; font-size: 11px; }
+@media (pointer: coarse) {
+  .lunar-rover-strip { bottom: max(9px, env(safe-area-inset-bottom)); }
+  .lunar-rover-strip kbd { display: none; }
+  .clean-world .lunar-rover-strip button { min-height: 44px; }
+}
+
+.lunar-mission-summary { padding: 12px 14px; border: 1px solid #9eaca0; background: #e9efdf; }
+.lunar-mission-summary progress { display: block; width: 100%; margin: 8px 0; accent-color: #457d80; }
+.clean-world .lunar-mission-summary p { margin: 0; }
+.clean-world .lunar-journal-container button:disabled { opacity: .58; cursor: default; }
+.lunar-design-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 12px; }
+.lunar-design-options > div { min-width: 0; }
+
+.lunar-eva-hud {
+  position: absolute;
+  z-index: 4;
+  top: 98px;
+  right: 28px;
+  width: min(242px, calc(100vw - 36px));
+  padding: 9px 11px;
+  border: 1px solid #52656b;
+  border-radius: 4px;
+  color: #26343a;
+  background: #f8f9ed;
+  font: 600 12px/1.35 system-ui, sans-serif;
+  pointer-events: none;
+}
+.lunar-eva-head, .lunar-eva-secondary { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 3px 8px; }
+.lunar-eva-hud progress { display: block; width: 100%; height: 10px; margin: 6px 0; accent-color: #457d80; }
+.lunar-eva-hud progress.reserve-low { accent-color: #a34137; }
+.lunar-eva-hud small, .lunar-eva-secondary { font-size: 11px; }
+.lunar-eva-hud small { display: block; margin-top: 3px; }
+.lunar-reserve-warning { color: #943831; }
+.clean-world .lunar-hatch-prompt { z-index: 6; white-space: normal; font-size: 19px; }
+.clean-world .lunar-hatch-prompt:disabled { opacity: .85; cursor: default; }
+@media (max-width: 700px) {
+  .lunar-eva-hud { top: 116px; right: 18px; width: min(214px, calc(100vw - 36px)); }
+}
+
+.lunar-field-actions { display: flex; flex-wrap: wrap; gap: 8px; }

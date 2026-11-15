@@ -19,6 +19,7 @@ import type { PositionReport, Travel } from '../../world/ExplorerScene'
 import type { SectorId, ViewMode } from '../../world/worldData'
 import CampusMap from './CampusMap'
 import { OBJECTIVE_NAMES, type Panel } from './worldUiTypes'
+import LunarInventory from './LunarInventory'
 import LunarMissionJournal from './LunarMissionJournal'
 
 type Props = {
@@ -206,9 +207,11 @@ export default function WorldNotebook({
             <small>Una aventura de diseño de misiones. Partida local.</small>
           </>
         )}
+        {moon && panel === 'lunar-inventory' && <LunarInventory />}
         {panel === 'journal' &&
           (moon ? (
             <LunarMissionJournal
+              position={position}
               onClose={onClose}
               onPanel={onPanel}
               onConversation={onConversation}
@@ -366,19 +369,32 @@ export default function WorldNotebook({
               <dd>Mantener para correr</dd>
               <dt>Espacio</dt>
               <dd>Saltar en exteriores</dd>
-              <dt>Ctrl</dt>
-              <dd>Sentarse junto a un banco</dd>
-              <dt>E</dt>
-              <dd>Conversar, usar una estación o subir y bajar del buggy</dd>
-              <dt>Buggy</dt>
-              <dd>W/↑: acelerar · S/↓: frenar y retroceder · A/D o ←/→: girar · Espacio: frenar</dd>
+              {moon ? (
+                <>
+                  <dt>E</dt>
+                  <dd>Abrir o cerrar escotillas, muestrear y subir o bajar del rover</dd>
+                  <dt>Rover</dt>
+                  <dd>W/↑ acelerar · S/↓ retroceder · A/D girar · Espacio frenar</dd>
+                  <dt>Soporte vital</dt>
+                  <dd>Regresa a un módulo y cierra las escotillas exteriores para recargar oxígeno y batería.</dd>
+                </>
+              ) : (
+                <>
+                  <dt>Ctrl</dt>
+                  <dd>Sentarse junto a un banco</dd>
+                  <dt>E</dt>
+                  <dd>Conversar, usar una estación o subir y bajar del buggy</dd>
+                  <dt>Buggy</dt>
+                  <dd>W/↑: acelerar · S/↓: frenar y retroceder · A/D o ←/→: girar · Espacio: frenar</dd>
+                </>
+              )}
               <dt>Interiores</dt>
               <dd>
                 Primera persona automática; arrastra para mirar. Al salir vuelve la cámara exterior.
               </dd>
             </dl>
             <button className="secondary-world" onClick={() => onVisit('start')}>
-              Volver a la entrada del campus
+              {moon ? 'Volver a la explanada de ODYSSEY' : 'Volver a la entrada del campus'}
             </button>
           </>
         )}

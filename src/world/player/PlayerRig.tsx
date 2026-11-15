@@ -1,6 +1,23 @@
 import { buggy, buggyExit, driveBuggy, nearBuggy, outsideBuggy } from '../buggyControl'
 import BuggyModel from '../BuggyModel'
-import { lunarStationAt } from '../lunar/lunarNavigation'
+import {
+  canBoardLunarRover,
+  lunarRoverExit,
+  outsideLunarRover,
+  type LunarSession,
+} from '../lunar/lunarRoverControl'
+import { completeLunarOperation, LUNAR_TRAVERSE_DISTANCE } from '../lunar/lunarMissionProgress'
+import { lunarWorkstationAt } from '../lunar/lunarFieldwork'
+import { createSamplingPose, SAMPLING, sampleLunarPose } from '../lunar/lunarSampling'
+import { lunarPedestrianClear, lunarStationAt, lunarWalkingHeight } from '../lunar/lunarNavigation'
+import {
+  clearLunarDoors,
+  LUNAR_HAB_CHECKPOINT,
+  lunarCabinSealed,
+  lunarDeckAt,
+  lunarDoorSweepClear,
+  nearbyLunarDoor,
+} from '../lunar/lunarInteriorNavigation'
 import CharacterBoundary from './CharacterBoundary'
 import { moveWithCollisions } from '../navigation/collision'
 import FirstPersonArms from './FirstPersonArms'
@@ -19,7 +36,11 @@ import ExplorerCharacter from '../ExplorerCharacter'
 import { MOTION_SCALE } from '../physicalScale'
 import { CHARACTER_KEYS, createCharacterMotion, stepCharacter } from '../characterMotion'
 import {
+  freshLunarSuit,
+  LUNAR_INDOOR_SPEED,
   LUNAR_GRAVITY,
+  lunarVelocity,
+  stepLunarSuit,
   LUNAR_JUMP_SPEED,
   LUNAR_WALK_SPEED,
   LUNAR_RUN_SPEED,
@@ -42,13 +63,22 @@ export default function PlayerRig({
   reduced,
   onPosition,
   onInteract,
-}: SceneProps) {
+  lunar,
+}: SceneProps & { lunar: LunarSession }) {
   const wardrobe = useWardrobe()
   const world = useWorld(),
     { sectors: SECTORS, start: START, height: terrainHeight, canWalk: worldClear } = world
   const moon = world.id === 'moon'
-  const canWalk = (x: number, z: number) =>
-    worldClear(x, z) && (world.id !== 'earth' || outsideBuggy(x, z))
+  const canWalk = (x: number, z: number) => {
+    const rover = lunar.rover
+    return (
+      (moon
+        ? lunarPedestrianClear(x, z) && clearLunarDoors(lunar.doors, x, z)
+        : worldClear(x, z)) &&
+      (world.id !== 'earth' || outsideBuggy(x, z)) &&
+      (!moon || !rover || outsideLunarRover({ x, z }, rover.vehicle.position, rover.yaw))
+    )
+  }
   const tarsCanWalk = (x: number, z: number) =>
     canWalk(x, z) && (world.id !== 'earth' || !buildingAt(x, z, true))
   const carClear = (x: number, z: number) => worldClear(x, z) && !buildingAt(x, z)
@@ -57,8 +87,9 @@ export default function PlayerRig({
     !buildingAt(x, z) &&
     [0.2, 0.4, 0.6, 0.8].every((t) => worldClear(x + (buggy.x - x) * t, z + (buggy.z - z) * t))
   const groundHeight = (x: number, z: number) =>
-    moon ? terrainHeight(x, z) : walkingHeight(x, z, terrainHeight, world.id === 'earth')
-  const roomAt = (x: number, z: number) => (moon ? null : buildingAt(x, z, world.id === 'earth'))
+    moon ? lunarWalkingHeight(x, z) : walkingHeight(x, z, terrainHeight, world.id === 'earth')
+  const roomAt = (x: number, z: number) =>
+    moon ? (lunarDeckAt(x, z)?.room ?? null) : buildingAt(x, z, world.id === 'earth')
   const stationFor = (x: number, z: number) =>
     moon ? lunarStationAt(x, z) : stationAt(x, z, world.id === 'earth')
 
@@ -87,16 +118,36 @@ export default function PlayerRig({
   modeRef.current = mode
   const location = useRef(new T.Vector3(START[0], 0, START[1]))
   const lastMode = useRef<ViewMode>('walk')
+  const seated = useRef(false)
+  const samplingPose = useRef(createSamplingPose())
+  const suit = useRef(freshLunarSuit())
+  const recovered = useRef(false)
+  const lunarDrift = useRef(new T.Vector2())
+  const traverseStart = useRef(0)
+  if (moon) lunar.position = location.current
   useEffect(() => {
     const s = SECTORS.find((s) => s.id === travel.id)
     const p = travel.point ?? (s ? s.entry : START)
     buggy.driving = false
     buggy.speed = 0
+    lunar.boarded = false
+    lunar.sampling = undefined
+    lunarDrift.current.set(0, 0)
+    exitBlocked.current = false
+    const rover = lunar.rover
+    if (rover) {
+      rover.stop()
+      rover.speed = 0
+    }
     firstPerson.current = false
     setIsFirstPerson(false)
     location.current.set(p[0], groundHeight(...p), p[1])
     if (world.id === 'earth' && !outsideBuggy(p[0], p[1])) {
       const exit = buggyExit(worldClear)
+      if (exit) location.current.set(exit.x, groundHeight(exit.x, exit.z), exit.z)
+    }
+    if (moon && rover && !outsideLunarRover(location.current, rover.vehicle.position, rover.yaw)) {
+      const exit = lunarRoverExit(rover.vehicle.position, rover.yaw, worldClear)
       if (exit) location.current.set(exit.x, groundHeight(exit.x, exit.z), exit.z)
     }
     input.current.keys.clear()
@@ -126,6 +177,45 @@ export default function PlayerRig({
       controls: input.current,
       enabled: () => !paused && modeRef.current === 'walk' && !roberRemote.current,
       onAction: (e) => {
+        if (moon && lunar.boarded) {
+          if (e.code === 'Space') {
+            e.preventDefault()
+            input.current.keys.add('Space')
+          } else if (e.code === 'KeyE' && !e.repeat) {
+            e.preventDefault()
+            input.current.actions.push('interact')
+          } else if (e.code === 'KeyR' && !e.repeat) {
+            lunar.rover?.reset()
+            traverseStart.current = 0
+            exitBlocked.current = false
+          }
+          return
+        }
+        if (moon && lunar.sampling) return
+        if (moon && e.code === 'KeyE' && !e.repeat) {
+          const { x, z } = location.current
+          if (lunarWorkstationAt(x, z)) {
+            e.preventDefault()
+            input.current.actions.push('workstation')
+            return
+          }
+          const door = nearbyLunarDoor(lunar.doors, x, z)
+          if (door) {
+            e.preventDefault()
+            input.current.actions.push('hatch')
+            return
+          }
+          if (lunar.interact?.()) {
+            e.preventDefault()
+            return
+          }
+          const rover = lunar.rover
+          if (rover && canBoardLunarRover(location.current, rover.vehicle.position, worldClear)) {
+            e.preventDefault()
+            input.current.actions.push('interact')
+            return
+          }
+        }
         if (world.id === 'earth' && buggy.driving) {
           if (e.code === 'Space') {
             e.preventDefault()
@@ -221,6 +311,70 @@ export default function PlayerRig({
       }
       lastMode.current = mode
     }
+    const rover = moon ? lunar.rover : undefined
+    const sampling = moon ? lunar.sampling : undefined
+    motion.current.samplingPose = undefined
+    if (
+      moon &&
+      mode === 'walk' &&
+      !paused &&
+      !lunar.boarded &&
+      input.current.actions.includes('workstation')
+    ) {
+      input.current.actions.length = 0
+      const station = lunarWorkstationAt(p.x, p.z)
+      if (station)
+        window.dispatchEvent(new CustomEvent('selene-lunar-workstation', { detail: station.id }))
+    }
+    if (
+      moon &&
+      mode === 'walk' &&
+      !paused &&
+      !lunar.boarded &&
+      input.current.actions.includes('hatch')
+    ) {
+      input.current.actions.splice(input.current.actions.indexOf('hatch'), 1)
+      const door = nearbyLunarDoor(lunar.doors, p.x, p.z)
+      const state = door && lunar.doors.get(door.id)
+      if (
+        door &&
+        state &&
+        state.progress === Number(state.open) &&
+        lunarDoorSweepClear(door, p.x, p.z)
+      ) {
+        state.open = !state.open
+        report.current = 1
+      }
+    }
+    if (rover && mode === 'walk' && !paused && input.current.actions.includes('interact')) {
+      input.current.actions.length = 0
+      if (lunar.boarded) {
+        rover.stop()
+        rover.speed = 0
+        const exit = lunarRoverExit(rover.vehicle.position, rover.yaw, worldClear)
+        exitBlocked.current = !exit
+        if (exit) {
+          lunar.boarded = false
+          p.set(exit.x, groundHeight(exit.x, exit.z), exit.z)
+          input.current.yaw = rover.yaw + Math.PI
+          if (rover.distance - traverseStart.current >= LUNAR_TRAVERSE_DISTANCE)
+            completeLunarOperation('traverse')
+        }
+      } else if (
+        lunarJump.current.phase === 'ground' &&
+        canBoardLunarRover(p, rover.vehicle.position, worldClear)
+      ) {
+        lunar.boarded = true
+        lunarDrift.current.set(0, 0)
+        traverseStart.current = rover.distance
+        exitBlocked.current = false
+        lunarJump.current = { phase: 'ground', timer: 0, airY: 0, verticalSpeed: 0 }
+      }
+      report.current = 1
+      k.clear()
+    }
+    const lunarDriving = !!rover && lunar.boarded
+    seated.current = lunarDriving
     if (
       world.id === 'earth' &&
       mode === 'walk' &&
@@ -247,7 +401,69 @@ export default function PlayerRig({
       input.current.keys.clear()
       motion.current = createCharacterMotion()
     }
-    if (world.id === 'earth' && buggy.driving) {
+    if (sampling) {
+      k.clear()
+      input.current.actions.length = 0
+      lunarDrift.current.set(0, 0)
+      moving.current = 0
+      motion.current.speed = 0
+      motion.current.clip = 'Idle'
+      const [x, z] = sampling.resource.position
+      const dx = x - p.x,
+        dz = z - p.z
+      const distance = Math.hypot(dx, dz)
+      if (!paused && mode === 'walk') {
+        if (player.current) player.current.rotation.y = Math.atan2(dx, dz)
+        if (sampling.approaching) {
+          const step = Math.min(1.38 * delta, Math.max(0, distance - 1.57))
+          const beforeX = p.x,
+            beforeZ = p.z
+          if (step > 0)
+            moveWithCollisions(p, (dx / distance) * step, (dz / distance) * step, canWalk)
+          p.y = groundHeight(p.x, p.z)
+          const moved = Math.hypot(p.x - beforeX, p.z - beforeZ)
+          if (moved > 0.0001) {
+            moving.current = 1
+            motion.current.speed = 1.38
+            phase.current += delta * 4.5
+          } else if (distance <= 2.08) {
+            sampling.approaching = false
+          } else {
+            lunar.sampling = undefined
+            window.dispatchEvent(
+              new CustomEvent('selene-dialogue', {
+                detail: {
+                  speaker: sampling.resource.name,
+                  lines: [
+                    'El acceso está bloqueado. Rodea el obstáculo y vuelve a acercarte al depósito.',
+                  ],
+                  action: 'Volver al campo',
+                },
+              }),
+            )
+          }
+        }
+        if (!sampling.approaching) {
+          const profile = SAMPLING[sampling.resource.id]
+          const t = sampling.elapsed
+          const crouch = Math.min(
+            1,
+            Math.max(0, t / profile.contact),
+            Math.max(0, (profile.end - t) / 0.43),
+          )
+          motion.current.samplingPose = {
+            pose: sampleLunarPose(samplingPose.current, sampling, p),
+            progress: t / profile.end,
+            crouch,
+          }
+        }
+      }
+    } else if (lunarDriving) {
+      p.copy(rover.vehicle.position)
+      moving.current = 0
+      motion.current.speed = 0
+      motion.current.clip = 'Sit_Idle'
+    } else if (world.id === 'earth' && buggy.driving) {
       input.current.actions.length = 0
       if (mode === 'walk' && !paused && !roberRemote.current)
         input.current.yaw += driveBuggy(k, delta, carClear, terrainHeight)
@@ -305,45 +521,74 @@ export default function PlayerRig({
       }
       moving.current = Math.hypot(dx, dz) > 0 ? 1 : 0
 
-      // --- Movimiento horizontal (luna y marte) ---
-      if (moving.current) {
-        const length = Math.hypot(dx, dz)
-        // En la Luna usamos velocidades ajustadas al traje EVA (NASA Apollo)
-        const isRunning = k.has('ShiftLeft') || k.has('ShiftRight')
-        const speed = moon
-          ? isRunning
+      const isRunning = k.has('ShiftLeft') || k.has('ShiftRight')
+      const indoors = moon && !!roomAt(p.x, p.z)
+      const speed = moon
+        ? indoors
+          ? LUNAR_INDOOR_SPEED
+          : isRunning
             ? LUNAR_RUN_SPEED
             : LUNAR_WALK_SPEED
-          : isRunning
-            ? MOTION_SCALE.run
-            : MOTION_SCALE.walk
-        const distance = speed * delta
-        dx /= length
-        dz /= length
-        const yaw = input.current.yaw,
-          wx = dx * Math.cos(yaw) + dz * Math.sin(yaw),
-          wz = -dx * Math.sin(yaw) + dz * Math.cos(yaw)
-        moveWithCollisions(p, wx * distance, wz * distance, canWalk)
-
-        // Actualiza Y solo si no estamos en el aire (lo maneja el salto lunar)
-        if (!moon || lunarJump.current.phase === 'ground') {
-          p.y = groundHeight(p.x, p.z)
+        : isRunning
+          ? MOTION_SCALE.run
+          : MOTION_SCALE.walk
+      const length = Math.hypot(dx, dz) || 1
+      const yaw = input.current.yaw
+      const wx = (dx * Math.cos(yaw) + dz * Math.sin(yaw)) / length
+      const wz = (-dx * Math.sin(yaw) + dz * Math.cos(yaw)) / length
+      const velocity = lunarDrift.current
+      const lj = lunarJump.current
+      if (moon) {
+        if (paused || mode !== 'walk') velocity.set(0, 0)
+        else {
+          const speedFactor = lj.phase === 'land' ? 0.42 : lj.phase === 'takeoff' ? 0.65 : 1
+          velocity.x = lunarVelocity(
+            velocity.x,
+            wx * speed * speedFactor,
+            delta,
+            lj.phase === 'air',
+          )
+          velocity.y = lunarVelocity(
+            velocity.y,
+            wz * speed * speedFactor,
+            delta,
+            lj.phase === 'air',
+          )
         }
-        phase.current += delta * (isRunning ? 9 : 5.5)
+        // Steps are swept in small increments; a wall or floor edge cannot be skipped.
+        const beforeX = p.x,
+          beforeZ = p.z
+        moveWithCollisions(p, velocity.x * delta, velocity.y * delta, (x, z) => {
+          if (!canWalk(x, z)) return false
+          const rise = groundHeight(x, z) - groundHeight(p.x, p.z)
+          return rise <= 0.18 && (rise >= -0.22 || (!lunarDeckAt(p.x, p.z) && !lunarDeckAt(x, z)))
+        })
+        if (p.x === beforeX) velocity.x = 0
+        if (p.z === beforeZ) velocity.y = 0
+        moving.current = velocity.length() > 0.04 ? 1 : 0
+      } else if (moving.current) {
+        moveWithCollisions(p, wx * speed * delta, wz * speed * delta, canWalk)
+        p.y = groundHeight(p.x, p.z)
+      }
+      if (moving.current) {
+        phase.current += delta * (moon ? (isRunning && !indoors ? 7.2 : 4.5) : isRunning ? 9 : 5.5)
         if (player.current) {
-          const desired = Math.atan2(wx, wz),
-            difference = Math.atan2(
-              Math.sin(desired - player.current.rotation.y),
-              Math.cos(desired - player.current.rotation.y),
-            )
+          const desired = moon ? Math.atan2(velocity.x, velocity.y) : Math.atan2(wx, wz)
+          const difference = Math.atan2(
+            Math.sin(desired - player.current.rotation.y),
+            Math.cos(desired - player.current.rotation.y),
+          )
           player.current.rotation.y += difference * Math.min(1, delta * 14)
         }
       }
 
-      // --- Física del salto lunar (g = 1.62 m/s², NASA Moon Facts) ---
-      if (moon) {
-        const lj = lunarJump.current
+      // Jump follows the lunar ballistic trajectory. Inside, the suit stays on the deck.
+      if (moon && !paused && mode === 'walk') {
         const ground = groundHeight(p.x, p.z)
+        if (indoors || lunarDeckAt(p.x, p.z)) {
+          lj.phase = 'ground'
+          p.y = ground
+        }
 
         if (lj.phase === 'takeoff' || lj.phase === 'land') {
           lj.timer -= delta
@@ -374,32 +619,66 @@ export default function PlayerRig({
         }
 
         // Animación: Jump_Air durante el vuelo, Jump_Land al caer
-        if (lj.phase === 'air') {
+        if (lj.phase === 'takeoff') {
+          motion.current.clip = 'Jump_Start'
+        } else if (lj.phase === 'air') {
           motion.current.clip = 'Jump_Air'
         } else if (lj.phase === 'land') {
           motion.current.clip = 'Jump_Land'
         }
       }
     }
-    if (world.id !== 'earth') {
+    if (world.id !== 'earth' && !lunarDriving && !sampling) {
       const isRunning = k.has('ShiftLeft') || k.has('ShiftRight')
-      motion.current.speed =
-        moving.current * (moon ? (isRunning ? LUNAR_RUN_SPEED : LUNAR_WALK_SPEED) : isRunning ? MOTION_SCALE.run : MOTION_SCALE.walk)
-      // No sobreescribir el clip si el salto lunar ya lo fijó (Jump_Air / Jump_Land)
-      const lj = lunarJump.current
-      if (!moon || (lj.phase !== 'air' && lj.phase !== 'land')) {
-        motion.current.clip = motion.current.speed > 2.5 ? 'Run' : moving.current ? 'Walk' : 'Idle'
+      motion.current.speed = moon
+        ? lunarDrift.current.length()
+        : moving.current * (isRunning ? MOTION_SCALE.run : MOTION_SCALE.walk)
+      if (!moon || lunarJump.current.phase === 'ground') {
+        motion.current.clip =
+          motion.current.speed > (moon ? 2.3 : 2.5) ? 'Run' : moving.current ? 'Walk' : 'Idle'
+      }
+    }
+    if (moon && mode === 'walk' && !paused) {
+      const sealed = !lunarDriving && !!roomAt(p.x, p.z) && lunarCabinSealed(lunar.doors)
+      const effort = lunarDriving
+        ? 0.12
+        : Math.min(
+            1,
+            (lunarDrift.current.length() / LUNAR_RUN_SPEED) * 0.85 +
+              (lunarJump.current.phase !== 'ground' ? 0.3 : 0),
+          )
+      if (stepLunarSuit(suit.current, delta, effort, sealed)) {
+        recovered.current = true
+        lunar.boarded = false
+        lunar.sampling = undefined
+        rover?.stop()
+        if (rover) rover.speed = 0
+        for (const state of lunar.doors.values()) state.open = false
+        const [x, z] = LUNAR_HAB_CHECKPOINT
+        p.set(x, lunarWalkingHeight(x, z), z)
+        suit.current = { oxygen: 0.35, battery: 0.35, workload: 0 }
+        k.clear()
+        lunarDrift.current.set(0, 0)
+        lunarJump.current = { phase: 'ground', timer: 0, airY: 0, verticalSpeed: 0 }
+        report.current = 1
+      } else if (recovered.current && suit.current.oxygen >= 0.98 && suit.current.battery >= 0.98) {
+        recovered.current = false
       }
     }
     occupant.x = p.x
     occupant.z = p.z
-    occupant.active = mode === 'walk'
+    occupant.active = mode === 'walk' && !lunarDriving
     occupant.earth = world.id === 'earth'
     const indoors = !!roomAt(p.x, p.z)
     if (player.current) {
       player.current.position.copy(p)
       player.current.visible = !(mode === 'walk' && indoors)
-      if (world.id === 'earth' && buggy.driving) {
+      if (lunarDriving) {
+        rover.driverSeat.getWorldPosition(player.current.position)
+        // Sit_Idle pone la cadera por encima del origen del modelo.
+        player.current.position.y -= 0.57
+        player.current.rotation.y = rover.yaw
+      } else if (world.id === 'earth' && buggy.driving) {
         player.current.position.x -= Math.cos(buggy.yaw) * 0.28
         player.current.position.z += Math.sin(buggy.yaw) * 0.28
         player.current.position.y += 0.18
@@ -415,12 +694,24 @@ export default function PlayerRig({
       firstPerson.current = indoors
       setIsFirstPerson(indoors)
     }
-    if (mode === 'walk' && roberRemote.current) {
-      const rover = roberRemote.current
-      camTarget.set(0, 4.5, -8).applyAxisAngle(upAxis, rover.rotation.y).add(rover.position)
+    const cameraVehicle = lunarDriving ? rover.vehicle : roberRemote.current
+    if (mode === 'walk' && sampling && !sampling.approaching && !reduced) {
+      const [x, z] = sampling.resource.position
+      const facing = Math.atan2(x - p.x, z - p.z)
+      camTarget.set(3.5, 2.12, 0.84).applyAxisAngle(upAxis, facing).add(p)
+      camera.position.lerp(camTarget, 1 - Math.exp(-delta * 16))
+      camera.up.set(0, 1, 0)
+      camera.lookAt(lookTarget.set(p.x + (x - p.x) * 0.52, p.y + 0.92, p.z + (z - p.z) * 0.52))
+    } else if (mode === 'walk' && cameraVehicle) {
+      const yaw = lunarDriving ? rover.yaw : cameraVehicle.rotation.y
+      camTarget.set(0, 4.5, -8).applyAxisAngle(upAxis, yaw).add(cameraVehicle.position)
       camera.position.lerp(camTarget, 1 - Math.exp(-delta * 5))
       camera.up.set(0, 1, 0)
-      camera.lookAt(rover.position.x, rover.position.y + 1, rover.position.z)
+      camera.lookAt(
+        cameraVehicle.position.x,
+        cameraVehicle.position.y + 1,
+        cameraVehicle.position.z,
+      )
     } else if (mode === 'walk') {
       const { yaw, pitch, zoom } = input.current
       if (indoors) {
@@ -448,7 +739,7 @@ export default function PlayerRig({
           const t = i / 12
           const x = T.MathUtils.lerp(p.x, camTarget.x, t),
             z = T.MathUtils.lerp(p.z, camTarget.z, t)
-          if (!worldClear(x, z)) {
+          if (!worldClear(x, z) || (moon && !clearLunarDoors(lunar.doors, x, z))) {
             camTarget.lerpVectors(p, camTarget, Math.max(0.12, (i - 1) / 12))
             camTarget.y = Math.max(camTarget.y, p.y + 2.1)
             break
@@ -476,17 +767,49 @@ export default function PlayerRig({
     report.current += delta
     if (report.current > 0.16) {
       report.current = 0
+      const door = moon && !lunarDriving ? nearbyLunarDoor(lunar.doors, p.x, p.z) : undefined
+      const hatch = door && lunar.doors.get(door.id)
       onPosition({
+        eva: moon
+          ? {
+              oxygen: suit.current.oxygen,
+              battery: suit.current.battery,
+              workload: suit.current.workload,
+              sealed: indoors && lunarCabinSealed(lunar.doors),
+              recovered: recovered.current,
+            }
+          : undefined,
+        hatch:
+          door && hatch
+            ? {
+                label: door.label,
+                open: hatch.open,
+                moving: hatch.progress !== Number(hatch.open),
+                blocked: !lunarDoorSweepClear(door, p.x, p.z),
+              }
+            : undefined,
         x: p.x,
         z: p.z,
         nearby:
-          world.id === 'earth' && buggy.driving ? null : (stationFor(p.x, p.z)?.sector ?? null),
-        vehicle:
-          world.id === 'earth' && (buggy.driving ? 'driving' : canBoard(p.x, p.z) ? 'near' : null),
-        speed: world.id === 'earth' ? Math.abs(buggy.speed) * 3.6 : 0,
-        exitBlocked: buggy.driving && exitBlocked.current,
+          lunarDriving || (world.id === 'earth' && buggy.driving)
+            ? null
+            : (stationFor(p.x, p.z)?.sector ?? null),
+        vehicle: rover
+          ? lunarDriving
+            ? 'driving'
+            : canBoardLunarRover(p, rover.vehicle.position, worldClear)
+              ? 'near'
+              : null
+          : world.id === 'earth' &&
+            (buggy.driving ? 'driving' : canBoard(p.x, p.z) ? 'near' : null),
+        rover: rover
+          ? { x: rover.vehicle.position.x, z: rover.vehicle.position.z, distance: rover.distance }
+          : undefined,
+        speed: Math.abs(rover?.speed ?? (world.id === 'earth' ? buggy.speed : 0)) * 3.6,
+        exitBlocked: (lunarDriving || buggy.driving) && exitBlocked.current,
         fps: fps.current,
         room: roomAt(p.x, p.z),
+        workstation: moon && !lunarDriving && !sampling ? lunarWorkstationAt(p.x, p.z) : undefined,
       })
     }
   })
@@ -512,7 +835,7 @@ export default function PlayerRig({
                 paused={paused || mode !== 'walk'}
               />
             ) : (
-              <Astronaut moving={moving} phase={phase} />
+              <Astronaut moving={moving} phase={phase} seated={seated} motion={motion} />
             )
           }
         >
@@ -526,7 +849,7 @@ export default function PlayerRig({
               helmet={wardrobe.helmet}
             />
           ) : (
-            <Astronaut moving={moving} phase={phase} />
+            <Astronaut moving={moving} phase={phase} seated={seated} motion={motion} />
           )}
         </CharacterBoundary>
       </group>
@@ -537,7 +860,8 @@ export default function PlayerRig({
             body: player,
             motion,
             isIndoors: () => !!roomAt(location.current.x, location.current.z),
-            isDriving: () => buggy.driving,
+            isDriving: () => buggy.driving || lunar.boarded,
+            isCinematic: () => moon && !reduced && !!lunar.sampling && !lunar.sampling.approaching,
           },
         ]}
         height={groundHeight}

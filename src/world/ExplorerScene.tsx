@@ -1,8 +1,10 @@
+import { lunarDoors } from './lunar/lunarInteriorNavigation'
+import type { LunarSession } from './lunar/lunarRoverControl'
 import LunarEnvironment from './lunar/LunarEnvironment'
 import CampusSky from './sky/CampusSky'
 import AdaptiveResolution from './performance/AdaptiveResolution'
 import { Canvas } from '@react-three/fiber'
-import { Component, memo, Suspense, useEffect, type ReactNode } from 'react'
+import { Component, memo, Suspense, useEffect, useRef, type ReactNode } from 'react'
 import Environment from './Environment'
 import MarsEnvironment from './MarsEnvironment'
 import { useWorld } from './worldConfig'
@@ -42,6 +44,14 @@ export default memo(function ExplorerScene(
   const world = useWorld(),
     mars = world.id === 'mars',
     moon = world.id === 'moon'
+  const lunarRef = useRef<LunarSession | null>(null)
+  if (!lunarRef.current) {
+    lunarRef.current = {
+      boarded: false,
+      doors: new Map(lunarDoors.map(({ id }) => [id, { progress: 0, open: false }])),
+    }
+  }
+  const lunar = lunarRef.current
   return (
     <SceneBoundary onFailure={props.onReady}>
       <Canvas
@@ -82,6 +92,8 @@ export default memo(function ExplorerScene(
         <Suspense fallback={null}>
           {moon ? (
             <LunarEnvironment
+              lunar={lunar}
+              input={props.input}
               paused={props.paused || props.mode !== 'walk'}
               reduced={props.reduced}
             />
@@ -93,7 +105,7 @@ export default memo(function ExplorerScene(
           ) : (
             <Environment reduced={props.reduced} paused={props.paused || props.mode !== 'walk'} />
           )}
-          <PlayerRig {...props} />
+          <PlayerRig {...props} lunar={lunar} />
           <SceneReady onReady={props.onReady} />
           <AdaptiveResolution enabled={props.quality === 'standard'} />
         </Suspense>

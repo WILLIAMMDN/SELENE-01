@@ -5,22 +5,26 @@ import { clone } from 'three/addons/utils/SkeletonUtils.js'
 import * as T from 'three'
 import { Sign, toon } from '../ArtKit'
 import OdysseyLander from '../../spacecraft/OdysseyLander'
-import { LUNAR_LANDER, LUNAR_SECTORS, lunarTerrainHeight, lunarCanWalk } from './lunarNavigation'
+import { LUNAR_LANDER, LUNAR_SECTORS, lunarTerrainHeight } from './lunarNavigation'
+import LunarInteriors from './LunarInteriors'
+import { lunarInteriorInstances } from './lunarInteriorNavigation'
 import RoverLunar from './RoverLunar'
 import LunarResourcesMission from './LunarResourcesMission'
-import { roberRemote } from '../roberControl'
+import { completeLunarOperation } from './lunarMissionProgress'
+import type { LunarSession } from './lunarRoverControl'
+import type { SceneProps } from '../player/types'
 
 export default function LunarEnvironment({
   paused,
   reduced,
-}: {
-  paused: boolean
-  reduced: boolean
-}) {
+  lunar,
+  input,
+}: Pick<SceneProps, 'paused' | 'reduced' | 'input'> & { lunar: LunarSession }) {
   const { scene, animations } = useGLTF(`${import.meta.env.BASE_URL}models/lunar/lunar_base.glb`)
   const asset = useMemo(() => {
     const root = clone(scene),
       materials = new Map<T.Material, T.Material>()
+    for (const { id } of lunarInteriorInstances) root.getObjectByName(id)?.removeFromParent()
     root.traverse((n) => {
       if (!(n instanceof T.Mesh)) return
       const convert = (source: T.Material) => {
@@ -48,6 +52,7 @@ export default function LunarEnvironment({
       const open = (event as CustomEvent<boolean>).detail
       const clip = animations.find((a) => a.name === 'PWR_L01_DESPLIEGUE')
       if (!clip) return
+      if (open) completeLunarOperation('power')
       asset.mixer.stopAllAction()
       const action = asset.mixer.clipAction(clip).reset().setLoop(T.LoopOnce, 1)
       action.clampWhenFinished = true
@@ -79,29 +84,23 @@ export default function LunarEnvironment({
   return (
     <>
       <primitive object={asset.root} dispose={null} />
+      <LunarInteriors lunar={lunar} paused={paused} reduced={reduced} />
       <OdysseyLander
         x={LUNAR_LANDER.x}
         z={LUNAR_LANDER.z}
         height={lunarTerrainHeight}
         paused={paused}
       />
-      <RoverLunar
-        position={[53, 0, 63]}
-        heightAt={lunarTerrainHeight}
-        canMove={(pos) => lunarCanWalk(pos.x, pos.z)}
-        paused={paused}
-        onControlChange={(vehicle) => {
-          roberRemote.current = vehicle
-        }}
-      />
+      <RoverLunar lunar={lunar} input={input} paused={paused} />
       <LunarResourcesMission
+        lunar={lunar}
         heightAt={lunarTerrainHeight}
         paused={paused}
         onConversation={(conv) => {
           window.dispatchEvent(new CustomEvent('selene-dialogue', { detail: conv }))
         }}
       />
-      {LUNAR_SECTORS.map((s) => (
+      {LUNAR_SECTORS.filter(({ id }) => id !== 'research' && id !== 'hangar').map((s) => (
         <Sign
           key={s.id}
           text={`${s.number} / ${s.short.toUpperCase()}`}

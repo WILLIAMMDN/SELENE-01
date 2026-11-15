@@ -1,62 +1,40 @@
-/**
- * Física de la superficie lunar según datos NASA.
- *
- * Fuentes:
- *   - Gravedad superficial: https://science.nasa.gov/moon/facts/
- *     La gravedad en la Luna es 1.62 m/s² (≈ 1/6 de la terrestre).
- *   - Velocidad de escape lunar: 2 380 m/s (referencia contextual).
- *   - Comparación Tierra/Luna: NASA Moon Fact Sheet,
- *     https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html
- *
- * Notas de implementación:
- *   El personaje lleva un traje EVA presurizado; la velocidad de caminar
- *   se reduce un 15 % respecto a la Tierra para representar la inercia
- *   del traje, tal como documentan los informes de las misiones Apollo
- *   (Apollo 11 Mission Report, NASA TM X-58073).
- *   El salto usa la ecuación cinemática estándar bajo gravedad lunar:
- *     h = v₀² / (2 · g_moon)
- *   lo que produce alturas ~6× mayores que en la Tierra con el mismo
- *   impulso; se aplica un factor de amortiguación del traje del 10 %.
+/** NASA Glenn, Moon: https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/moon/
+ * The acceleration is NASA's mean lunar surface value. Movement and suit rates
+ * below are authored for an educational game, in metres and local game seconds.
  */
-
-/** Gravedad superficial lunar en m/s² (NASA Moon Facts). */
 export const LUNAR_GRAVITY = 1.62
+export const LUNAR_JUMP_SPEED = 1.65
+export const LUNAR_WALK_SPEED = 1.65
+export const LUNAR_RUN_SPEED = 3.05
+export const LUNAR_INDOOR_SPEED = 1.3
+export const LUNAR_TAKEOFF_TIME = 0.18
+export const LUNAR_LAND_TIME = 0.34
+export const LUNAR_EVA_TIME = 18 * 60
+export const LUNAR_LOW_RESERVE = 0.2
 
-/**
- * Velocidad vertical inicial del salto en m/s bajo gravedad lunar.
- * Base terrestre: 4.4 m/s → altura ≈ 0.99 m
- * Con g_moon = 1.62 m/s² y factor de traje EVA (0.90):
- *   v₀_moon = √(2 · 0.99 · 1.62) · (1/0.90) ≈ 2.0 m/s
- * Resultado: altura de salto ≈ 1.24 m (astronauta con traje en la Luna).
- */
-export const LUNAR_JUMP_SPEED = 2.0
+export function lunarVelocity(current: number, target: number, dt: number, airborne: boolean) {
+  const acceleration = airborne ? 0.85 : target === 0 ? 5.6 : 3.4
+  const limit = acceleration * dt
+  return current + Math.max(-limit, Math.min(limit, target - current))
+}
 
-/**
- * Velocidad de caminar en m/s con traje EVA en la Luna.
- * Se mantiene igual que en Tierra (MOTION_SCALE.walk = 2 m/s) ya que
- * la reducción por inercia del traje se compensa con la menor fatiga
- * en baja gravedad (observaciones misiones Apollo).
- */
-export const LUNAR_WALK_SPEED = 2.0
+export type LunarSuit = { oxygen: number; battery: number; workload: number }
+export const freshLunarSuit = (): LunarSuit => ({ oxygen: 1, battery: 1, workload: 0 })
 
-/**
- * Velocidad de carrera con traje EVA en la Luna en m/s.
- * Los astronautas Apollo alcanzaban ~1.4–1.8 m/s en la superficie;
- * se usa 3.6 m/s como valor de juego equilibrado y educativo.
- * (Apollo Lunar Surface Journal, NASA SP-4214)
+/** PLSS functions from NASA's Artemis spacesuit reference. Rates are gameplay parameters.
+ * Workload is a nominal cooling/CO₂-removal demand indicator, not a medical model.
  */
-export const LUNAR_RUN_SPEED = 3.6
-
-/**
- * Tiempo de fase de despegue del salto en segundos.
- * Ligeramente más largo que en Tierra para representar la carga
- * dinámica del traje presurizado al impulsarse.
- */
-export const LUNAR_TAKEOFF_TIME = 0.25
-
-/**
- * Tiempo de fase de aterrizaje en segundos.
- * Más largo que en Tierra: el astronauta desciende más lento
- * y necesita más tiempo para recuperar el equilibrio en baja g.
- */
-export const LUNAR_LAND_TIME = 0.5
+export function stepLunarSuit(suit: LunarSuit, dt: number, effort: number, sealed: boolean) {
+  suit.workload += (effort - suit.workload) * (1 - Math.exp(-dt * 1.2))
+  if (sealed) {
+    suit.oxygen = Math.min(1, suit.oxygen + dt / 13)
+    suit.battery = Math.min(1, suit.battery + dt / 18)
+  } else {
+    suit.oxygen = Math.max(0, suit.oxygen - (dt * (1 + suit.workload * 0.65)) / LUNAR_EVA_TIME)
+    suit.battery = Math.max(
+      0,
+      suit.battery - (dt * (1 + suit.workload * 0.5)) / (LUNAR_EVA_TIME * 1.4),
+    )
+  }
+  return suit.oxygen === 0 || suit.battery === 0
+}

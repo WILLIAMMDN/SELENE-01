@@ -1,3 +1,5 @@
+import { lunarDeckAt, lunarExteriorObjects } from './lunarInteriorNavigation'
+import { LUNAR_RESOURCES, LUNAR_GEOLOGIST } from './lunarResources'
 import layout from './lunarLayout.json'
 import { createCollisionGrid } from '../navigation/collision'
 import { landingPadHeight } from '../environmentLayout'
@@ -24,10 +26,19 @@ export function lunarHeight(x: number, z: number) {
 }
 const clear = createCollisionGrid([
   ...layout.colliders,
+  ...lunarExteriorObjects,
+  ...LUNAR_RESOURCES.map(({ position: [x, z] }) => ({ x, z, hx: 1.12, hz: 1.12 })),
+  { x: LUNAR_GEOLOGIST[0], z: LUNAR_GEOLOGIST[1], hx: 0.4, hz: 0.45 },
   { x: LUNAR_LANDER.x, z: LUNAR_LANDER.z, hx: 2.6, hz: 2.6 },
 ])
 export function lunarCanWalk(x: number, z: number) {
   return Math.abs(x) < 148 && Math.abs(z) < 148 && clear(x, z)
+}
+export function lunarWalkingHeight(x: number, z: number) {
+  return lunarDeckAt(x, z)?.height ?? lunarHeight(x, z)
+}
+export function lunarPedestrianClear(x: number, z: number) {
+  return !!lunarDeckAt(x, z) || lunarCanWalk(x, z)
 }
 export const LUNAR_SECTORS: Sector[] = [
   {
@@ -37,12 +48,12 @@ export const LUNAR_SECTORS: Sector[] = [
     short: 'Laboratorio',
     x: 52.73,
     z: 83.44,
-    entry: [53, 89],
+    entry: [56.58, 85.78],
     color: '#7d9298',
     title: 'Preguntas desde la superficie.',
     description: 'El módulo LAB-L01 forma parte de la base ODYSSEY.',
     detail:
-      'Recorre su exterior y los corredores que lo conectan al hábitat. La misión orbital se prepara en la Tierra.',
+      'Entra por la escotilla exterior o por el corredor del hábitat. El laboratorio alberga mesas de análisis y un puesto de recepción de muestras.',
     chapter: 'LABORATORIO',
   },
   {
@@ -52,12 +63,12 @@ export const LUNAR_SECTORS: Sector[] = [
     short: 'Base lunar',
     x: 63,
     z: 78,
-    entry: [63, 71],
+    entry: [63.52, 83.05],
     color: '#b5987c',
     title: 'Un lugar al que volver.',
     description: 'Hábitat HAB-L01, almacén STO-L01 y corredores de la base.',
     detail:
-      'Módulos originales colocados según el archivo del proyecto. Exploración exterior; no hay campaña de construcción ni interiores recorribles.',
+      'Acércate a la escotilla del hábitat y pulsa E. Los corredores interiores enlazan el almacén y el laboratorio.',
     chapter: 'BASE ODYSSEY',
   },
   {
