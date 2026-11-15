@@ -1,6 +1,7 @@
 import AdaptiveResolution from '../world/performance/AdaptiveResolution'
 import { bindCharacterKeyboard } from '../world/controls/keyboard'
 import LaunchComplex from '../spacecraft/LaunchComplex'
+import LaunchCinematicDirector from '../spacecraft/LaunchCinematicDirector'
 import { walkingHeight, stationAt, occupant, buildingAt } from '../world/buildingNavigation'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { Edges, OrbitControls, Stars } from '@react-three/drei'
@@ -128,8 +129,19 @@ function ShipStage({
   parts,
   config,
   exploded = false,
-}: { mode: 'workshop' | 'launch' | 'orbit' } & ShipProps) {
+  cinematic = false,
+  elapsed = 0,
+  onCinematicProgress,
+  onCinematicComplete,
+}: {
+  mode: 'workshop' | 'launch' | 'orbit'
+  cinematic?: boolean
+  elapsed?: number
+  onCinematicProgress?: (seconds: number) => void
+  onCinematicComplete?: () => void
+} & ShipProps) {
   const { camera } = useThree()
+  const clock = useRef(0)
   const focus =
     mode === 'launch'
       ? 42
@@ -176,11 +188,24 @@ function ShipStage({
         </>
       )}
       {mode === 'launch' ? (
-        <LaunchComplex parts={parts} config={config} />
+        <LaunchComplex parts={parts} config={config} flightClock={cinematic ? clock : undefined} />
       ) : (
         <OdysseyShip parts={parts} config={config} exploded={mode === 'workshop' && exploded} />
       )}
+      {mode === 'launch' && cinematic && elapsed >=22 && (
+        <Stars radius={2800} depth={100} count={700} factor={4} saturation={0} fade speed={0} />
+      )}
+      {mode === 'launch' && cinematic && onCinematicProgress && onCinematicComplete && (
+        <LaunchCinematicDirector
+          clock={clock}
+          launcher={config.launcher}
+          habitat={parts.includes('habitat')}
+          onElapsed={onCinematicProgress}
+          onComplete={onCinematicComplete}
+        />
+      )}
       <OrbitControls
+        enabled={!cinematic}
         makeDefault
         target={[0, focus, 0]}
         minDistance={12}
@@ -196,12 +221,20 @@ export default function GameWorld({
   parts = COMPLETE_ASSEMBLY,
   config,
   exploded = false,
+  cinematic = false,
+  cinematicElapsed = 0,
+  onCinematicProgress,
+  onCinematicComplete,
 }: {
   mode: 'campus' | 'workshop' | 'launch' | 'orbit'
   onInteract: (id: Station) => void
   parts?: ModuleId[]
   config: DesignConfig
   exploded?: boolean
+  cinematic?: boolean
+  cinematicElapsed?: number
+  onCinematicProgress?: (seconds: number) => void
+  onCinematicComplete?: () => void
 }) {
   const controls = useRef<CharacterControls>({ keys: new Set(), actions: [] })
   const label =
@@ -215,19 +248,29 @@ export default function GameWorld({
   return (
     <div className="world-frame" aria-label="Mundo 3D de SELENE-01">
       <Canvas
-        camera={{ position: [8, 9, 20], fov: 48, near: 0.1, far: 400 }}
+        camera={{ position: [8, 9, 20], fov: 48, near: 0.1, far: 4000 }}
         shadows
         dpr={[1, 1.6]}
       >
         {mode === 'campus' ? (
           <Campus onInteract={onInteract} controls={controls} />
         ) : (
-          <ShipStage key={mode} mode={mode} parts={parts} config={config} exploded={exploded} />
+          <ShipStage
+            key={mode}
+            mode={mode}
+            parts={parts}
+            config={config}
+            exploded={exploded}
+            cinematic={cinematic}
+            elapsed={cinematicElapsed}
+            onCinematicProgress={onCinematicProgress}
+            onCinematicComplete={onCinematicComplete}
+          />
         )}
         <AdaptiveResolution maximum={1.6} />
       </Canvas>
       {mode === 'campus' && <CharacterActions controls={controls} />}
-      <div className="world-overlay">
+      {!cinematic && <div className="world-overlay">
         <span className="eyebrow">
           {mode === 'campus'
             ? 'ACADEMIA SELENE · CAMPUS ARTEMISA'
@@ -236,12 +279,12 @@ export default function GameWorld({
               : 'HANGAR ODYSSEY · DISEÑO MODULAR'}
         </span>
         <strong>{label}</strong>
-      </div>
-      <div className="world-help">
+      </div>}
+      {!cinematic && <div className="world-help">
         {mode === 'campus'
           ? 'WASD: caminar · Shift: correr · Espacio: saltar · Ctrl: sentarse · E: interactuar'
           : 'Arrastra para girar la nave · Rueda para acercar'}
-      </div>
+      </div>}
     </div>
   )
 }
