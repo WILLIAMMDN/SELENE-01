@@ -1,99 +1,416 @@
-import { LANDER_ACTIONS } from '../spacecraft/OdysseyLander'
-import MissionStation from './MissionStation'
+import WorldNotebook from '../ui/world/WorldNotebook'
+import { OBJECTIVE_NAMES, type Panel } from '../ui/world/worldUiTypes'
 import { useCampusMission, nextMissionStep, missionVerified } from '../game/campusMission'
-import { loadBlueprint } from '../spacecraft/blueprint'
-import { CAMPUS_ROADS, CAMPUS_BUILDINGS } from './campusLayout'
+import { loadBlueprint, useBlueprint } from '../game/state/blueprintStore'
+import Icon from '../ui/world/Icon'
+import CampusMap from '../ui/world/CampusMap'
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import ExplorerScene, { type InputState, type PositionReport, type Travel } from './ExplorerScene'
 import { type SectorId, type ViewMode } from './worldData'
 import './world.css'
 import './notebook.css'
-import TarsAssistant from '../robot/TarsAssistant'
-import ScaleReference from './ScaleReference'
-import StoryDialogue, { ARRIVAL, stationConversation, type Conversation } from './StoryDialogue'
+import StoryDialogue from '../ui/world/StoryDialogue'
+import { ARRIVAL, stationConversation, type Conversation } from '../game/narrative/conversations'
 import { MOTION_SCALE } from './physicalScale'
 import { WorldContext, WORLDS, useWorld, type WorldId } from './worldConfig'
 
-const Campaign=lazy(()=>import('../App'))
-type Panel='lander'|'menu'|'journal'|'controls'|'tars'|'map'|'scale'|'settings'|SectorId|null
-function Icon({name,size=19}:{name:string;size?:number}){const paths:Record<string,React.ReactNode>={
-  compass:<><circle cx="12" cy="12" r="9"/><path d="m16 8-2.5 5.5L8 16l2.5-5.5Z"/></>,map:<><path d="m3 5 6-2 6 2 6-2v16l-6 2-6-2-6 2Z"/><path d="M9 3v16M15 5v16"/></>,play:<path d="m8 4 12 8-12 8Z"/>,arrow:<path d="M4 12h16m-6-6 6 6-6 6"/>,close:<path d="m6 6 12 12M6 18 18 6"/>,expand:<path d="M9 3H3v6m12-6h6v6M3 15v6h6m12-6v6h-6"/>,settings:<><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="2"/><circle cx="15" cy="17" r="2"/></>,moon:<path d="M20 15.5A9 9 0 0 1 8.5 4 9 9 0 1 0 20 15.5Z"/>,check:<path d="m5 12 4 4L19 6"/>,home:<><path d="m3 10 9-7 9 7M5 9v12h14V9"/><path d="M9 21v-8h6v8"/></>,robot:<><rect x="4" y="7" width="16" height="13" rx="5"/><path d="M12 3v4M1 11v5m22-5v5M8 12h1m6 0h1M9 16h6"/></>}
-return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name]??paths.compass}</svg>}
-function CampusMap({position,large=false,visited,onSelect}:{position:PositionReport;large?:boolean;visited:SectorId[];onSelect?:(id:SectorId)=>void}){
-  const world=useWorld(),SECTORS=world.sectors,factor=240/world.size
-  const tx=(x:number)=>150+x*factor,tz=(z:number)=>150+z*factor
-  return <svg className={large?'campus-map large':'campus-map'} viewBox="0 0 300 300" role="img" aria-label={`Mapa de ${world.place}, ${world.size} por ${world.size} metros. Cinco destinos conectados.`}>
-    <defs><pattern id={large?'gridLarge':'gridSmall'} width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20 0H0V20" fill="none" stroke="#a7b2a0" strokeWidth=".5"/></pattern></defs>
-    <rect x="0" y="0" width="300" height="300" fill={world.mapColor} rx="12"/><rect x="30" y="30" width="240" height="240" fill={`url(#${large?'gridLarge':'gridSmall'})`} stroke="#7f9783" strokeDasharray="3 4"/>
-    {world.id==='earth'&&<><ellipse cx={tx(-97)} cy={tz(10)} rx={18*factor} ry={40*factor} fill="#74b5b1" stroke="#4b8783" strokeWidth="1"/><text x={tx(-97)} y={tz(10)} textAnchor="middle" fontSize="7" fill="#315c64">COSTA</text></>}
-    {CAMPUS_ROADS.map((road,i)=><polyline key={i} points={road.points.map(([x,z])=>`${tx(x)},${tz(z)}`).join(' ')} fill="none" stroke="#f9f1d9" strokeWidth={road.width*factor} strokeLinejoin="round" strokeLinecap="round"/>)}
-    {CAMPUS_BUILDINGS.map(b=><rect key={b.id} x={tx(b.x-b.width/2)} y={tz(b.z-b.depth/2)} width={b.width*factor} height={b.depth*factor} fill="#8daba1" stroke="#526e68" strokeWidth=".5"/>)}
-    {world.id==='earth'&&<rect x={tx(27.667)} y={tz(-114.167)} width={66.666*factor} height={71.668*factor} rx="2" fill="#b9b9a6" stroke="#526e68" strokeDasharray="2 2"/>}
-    {SECTORS.map(s=><g key={s.id} onClick={()=>onSelect?.(s.id)} className={onSelect?'map-destination':''} role={onSelect?'button':undefined} tabIndex={onSelect?0:undefined} aria-label={onSelect?`Ver ${s.name}`:undefined} onKeyDown={e=>{if((e.key==='Enter'||e.key===' ')&&onSelect){e.preventDefault();onSelect(s.id)}}}>
-      <rect x={tx(s.x)-9} y={tz(s.z)-7} width="18" height="14" rx="3" fill={s.color} stroke="#26343a" strokeWidth="1"/>
-      <circle cx={tx(s.entry[0])} cy={tz(s.entry[1])} r={large?8:6} fill={visited.includes(s.id)?'#457d80':'#f5efdf'} stroke="#26343a"/>
-      <text x={tx(s.entry[0])} y={tz(s.entry[1])+2.5} textAnchor="middle" fontSize={large?7:6} fill={visited.includes(s.id)?'#fff':'#26343a'} fontFamily="monospace">{s.number}</text>
-    </g>)}
-    <g><circle cx={tx(world.id==='earth'?87:61)} cy={tz(world.id==='earth'?-13:-57)} r={6*factor} fill="#e5dac1" stroke="#586e69"/><text x={tx(world.id==='earth'?87:61)} y={tz(world.id==='earth'?-13:-57)+2} textAnchor="middle" fontSize="6" fill="#405c60">L01</text></g>
-    <circle cx={tx(position.x)} cy={tz(position.z)} r="7" fill="#f7ead4" stroke="#c67a5f" strokeWidth="2"/><circle cx={tx(position.x)} cy={tz(position.z)} r="2.5" fill="#c67a5f"/>
-    <text x="280" y="24" fontSize="10" fill="#457d80" textAnchor="middle">N</text><path d="m280 31-4 8h8Z" fill="#457d80"/>
-    <path d="M42 274h50m-50-3v6m50-6v6" stroke="#457d80"/><text x="66" y="288" fontSize="8" fill="#457d80" textAnchor="middle">{Math.round(50/factor)} m</text>
-  </svg>
-}
-function WorldExperience({onWorld}:{onWorld:(id:WorldId)=>void}){
- const mission=useCampusMission(),world=useWorld(),mars=world.id==='mars',SECTORS=world.sectors
- const next=nextMissionStep(),destination=SECTORS.find(s=>s.id===next.sector)!
- const [mode,setMode]=useState<ViewMode>('walk'),[panel,setPanel]=useState<Panel>(null),[conversation,setConversation]=useState<Conversation|null>(null),[ready,setReady]=useState(false)
- const [tourIndex,setTourIndex]=useState(0),[tourPlaying,setTourPlaying]=useState(true),[miniMap,setMiniMap]=useState(false)
- const [campaign,setCampaign]=useState(false),[campaignStage,setCampaignStage]=useState<'briefing'|'design'|'launch'>('briefing')
- const [position,setPosition]=useState<PositionReport>({x:0,z:37,nearby:null,fps:0}),[travel,setTravel]=useState<Travel>({id:'start',serial:0})
- const [quality,setQuality]=useState<'standard'|'light'>('standard'),[reduced,setReduced]=useState(()=>window.matchMedia('(prefers-reduced-motion: reduce)').matches)
- const [visited,setVisited]=useState<SectorId[]>([])
- const input=useRef<InputState>({keys:new Set(),actions:[],yaw:0,pitch:.14,zoom:MOTION_SCALE.zoom}),dialog=useRef<HTMLDivElement>(null)
- const onPosition=useCallback((p:PositionReport)=>setPosition(p),[]),onReady=useCallback(()=>setReady(true),[])
- const onInteract=useCallback((id:SectorId)=>{setPanel(null);setConversation(mars?{speaker:'TARS · ARES',lines:['Ares es nuestro terreno de exploración. La primera misión de diseño comienza en Artemisa, en la Tierra.'],action:'Ver estación',sector:id}:stationConversation(id))},[mars])
- useEffect(()=>{if(!ready||mars)return;try{if(localStorage.getItem('selene-arrival-story-v1'))return}catch{/* Show the introduction once per mount. */}setConversation(ARRIVAL)},[ready,mars])
- const closeConversation=()=>{if(conversation===ARRIVAL)try{localStorage.setItem('selene-arrival-story-v1','seen')}catch{/* Continue. */}setConversation(null)}
- useEffect(()=>{if(position.nearby)setVisited(v=>v.includes(position.nearby!)?v:[...v,position.nearby!])},[position.nearby])
- useEffect(()=>{if(mode!=='tour'||!tourPlaying||panel||conversation||reduced)return;const timer=window.setInterval(()=>setTourIndex(i=>(i+1)%5),11000);return()=>clearInterval(timer)},[mode,tourPlaying,panel,conversation,reduced])
- useEffect(()=>{input.current.keys.clear();input.current.actions.length=0;if(!panel)return;const previous=document.activeElement as HTMLElement;dialog.current?.focus();return()=>previous?.focus()},[panel,conversation])
- useEffect(()=>{const key=(e:KeyboardEvent)=>{if(conversation||campaign)return;if(e.code==='Escape'){setPanel(p=>p?null:'menu');return}if(e.target instanceof HTMLElement&&e.target.closest('input,select,textarea,button,[contenteditable]'))return;if(e.code==='KeyM'){e.preventDefault();setPanel(p=>p==='map'?null:'map')}if(e.code==='KeyJ'){e.preventDefault();setPanel(p=>p==='journal'?null:'journal')}};window.addEventListener('keydown',key);return()=>window.removeEventListener('keydown',key)},[conversation,campaign])
- useEffect(()=>{const observe=(e:Event)=>{if(panel||conversation||mode!=='walk'||campaign)return;const data=(e as CustomEvent<{name:string}>).detail;setConversation({speaker:'TARS · CUADERNO DE CAMPO',lines:[`${data.name}. Podemos observar sus movimientos desde el sendero. Esta costa forma parte del campus ficticio de Artemisa.`,'Una pausa para mirar también es parte de explorar. Cuando quieras, retomamos nuestro encargo lunar.'],action:'Seguir explorando'})};window.addEventListener('selene-wildlife-observe',observe);return()=>window.removeEventListener('selene-wildlife-observe',observe)},[panel,conversation,mode,campaign])
- useEffect(()=>{const open=()=>{if(panel||conversation||campaign)return;setConversation({speaker:'TARS · DESCENSO L01',kind:'lander',lines:[mars?'Esta es la cápsula L01: aquí se representa la llegada a la superficie. Su etapa superior puede separarse para el ascenso.':'Este módulo de entrenamiento nos permite estudiar otra etapa del viaje: llegar a una superficie y separar después la cápsula de ascenso.','El encargo lunar actual es orbital. Estas animaciones muestran los mecanismos del modelo; no calculan una trayectoria real de aterrizaje.'],action:'Explorar la cápsula'})};window.addEventListener('selene-lander-panel',open);return()=>window.removeEventListener('selene-lander-panel',open)},[panel,conversation,campaign,mars])
- const chooseMode=(m:ViewMode)=>{setMode(m);setPanel(null);input.current.keys.clear()}
- const visit=(id:Travel['id'])=>{setTravel(t=>({id,serial:t.serial+1}));setMode('walk');setPanel(null);setConversation(null)}
- const openCampaign=(id:SectorId)=>{if(mars||position.nearby!==id)return;const draft=loadBlueprint();if(id==='launch'&&!missionVerified(draft.config,draft.parts))return;setCampaignStage(id==='hangar'?'design':'launch');setCampaign(true);setPanel(null);input.current.keys.clear()}
- const returnToCampus=()=>{setTravel(t=>({id:t.id,point:[position.x,position.z],serial:t.serial+1}));setCampaign(false)}
- const active=SECTORS.find(s=>s.id===panel),nearby=SECTORS.find(s=>s.id===position.nearby),tour=SECTORS[tourIndex]
- const objectiveNames:Record<SectorId,string>={research:'Habla con la Dra. Vega',hangar:'Construye tu nave',control:'Revisa los recursos',launch:'Prepara el lanzamiento',observatory:'Comparte los resultados'}
- if(campaign)return <><button className="return-world" onClick={returnToCampus}>← Volver al campus</button><div className="campaign-return-space"><Suspense fallback={<p>Preparando la mesa…</p>}><Campaign initialStage={campaignStage} campus launchAccess={campaignStage==='launch'} onReturnToCampus={returnToCampus}/></Suspense></div></>
- return <main className={`selene-world clean-world ${mars?'mars-world':'earth-world'}`}>
-  <div className="world-viewport"><ExplorerScene mode={mode} tourIndex={tourIndex} travel={travel} input={input} paused={!!panel||!!conversation} reduced={reduced} onPosition={onPosition} onInteract={onInteract} quality={quality} onReady={onReady}/></div>
-  {!ready&&<div className="world-loading"><span className="orbit-mark">◒</span><h1>Bienvenida a {world.place}.</h1></div>}
-  {!conversation&&!panel&&<button className="quest-slip" onClick={()=>setPanel('journal')}><span>{mars?'ARES':`MISIÓN ${next.number} / 05`}</span><strong>{mars?'Explora el paisaje':objectiveNames[next.sector]}</strong><small>{mars?'El encargo lunar comienza en la Tierra':`${destination.short} · ${Math.round(Math.hypot(position.x-destination.entry[0],position.z-destination.entry[1]))} m`} <b>↗</b></small></button>}
-  <button className="paper-icon menu-toggle" aria-label="Abrir menú" title="Menú · Esc" onClick={()=>{closeConversation();setPanel('menu')}}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 6h12M9 12h12M9 18h12"/><path d="M3 5h2v2H3zm0 6h2v2H3zm0 6h2v2H3z"/></svg></button>
-  {!panel&&!conversation&&<nav className="paper-dock" aria-label="Herramientas"><button className="paper-icon" title="Mapa · M" aria-label="Abrir mapa" onClick={()=>setPanel('map')}><Icon name="map" size={27}/></button><button className="paper-icon" title="Bitácora · J" aria-label="Abrir bitácora" onClick={()=>setPanel('journal')}><Icon name="compass" size={27}/></button><button className="paper-icon" title="Hablar con TARS" aria-label="Consultar a TARS" onClick={()=>setPanel('tars')}><Icon name="robot" size={28}/></button></nav>}
-  {miniMap&&!panel&&!conversation&&<aside className="small-map"><CampusMap position={position} visited={visited}/></aside>}
-  {mode==='walk'&&nearby&&!panel&&!conversation&&<button className="station-prompt" onClick={()=>onInteract(nearby.id)}><kbd>E</kbd> {nearby.id==='research'?'Hablar con la Dra. Vega':'Usar estación'} <span>▶</span></button>}
-  {mode!=='walk'&&!panel&&!conversation&&<div className="view-controls"><button onClick={()=>chooseMode('walk')}>← Volver a caminar</button>{mode==='tour'&&<><span>{tour.name}</span><button disabled={reduced} onClick={()=>setTourPlaying(v=>!v)}>{tourPlaying?'Pausar':'Continuar'}</button><button onClick={()=>setTourIndex(i=>(i+1)%5)}>→</button></>}</div>}
-  {!panel&&!conversation&&mode==='walk'&&<><div className="touch-movement" aria-label="Movimiento táctil">{[{key:'KeyW',label:'↑'},{key:'KeyA',label:'←'},{key:'KeyS',label:'↓'},{key:'KeyD',label:'→'}].map(b=><button key={b.key} aria-label={`Mover ${b.label}`} onPointerDown={e=>{e.preventDefault();e.currentTarget.setPointerCapture(e.pointerId);input.current.keys.add(b.key)}} onPointerUp={()=>input.current.keys.delete(b.key)} onPointerCancel={()=>input.current.keys.delete(b.key)} onLostPointerCapture={()=>input.current.keys.delete(b.key)}>{b.label}</button>)}</div><div className="touch-actions"><button aria-label="Correr, mantener pulsado" onPointerDown={e=>{e.preventDefault();e.currentTarget.setPointerCapture(e.pointerId);input.current.keys.add('ShiftLeft')}} onPointerUp={()=>input.current.keys.delete('ShiftLeft')} onPointerCancel={()=>input.current.keys.delete('ShiftLeft')} onLostPointerCapture={()=>input.current.keys.delete('ShiftLeft')}>Correr</button>{!mars&&<button onClick={()=>{if(!position.room)input.current.actions.push('jump')}}>Saltar</button>}</div><button className="controls-hint" onClick={()=>setPanel('controls')}>? Controles</button></>}
-  {conversation&&<StoryDialogue conversation={conversation} onClose={closeConversation} onFinish={()=>{const sector=conversation.sector,kind=conversation.kind;closeConversation();if(kind==='lander')setPanel('lander');else if(sector)setPanel(sector)}}/>}
-  {panel&&<div className={`notebook-layer ${active?'station-layer':''}`} onClick={()=>setPanel(null)}><section className={`world-dialog paper-panel ${panel==='map'?'map-dialog':''}`} role="dialog" aria-modal="true" aria-labelledby="dialog-title" tabIndex={-1} ref={dialog} onClick={e=>e.stopPropagation()} onKeyDown={e=>{if(e.key!=='Tab')return;const nodes=dialog.current?.querySelectorAll<HTMLElement>('button:not(:disabled),select,input,a[href],summary');if(!nodes?.length)return;const first=nodes[0],last=nodes[nodes.length-1];if(e.shiftKey&&(document.activeElement===first||document.activeElement===dialog.current)){e.preventDefault();last.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}}}><button className="dialog-close" aria-label="Cerrar" onClick={()=>setPanel(null)}>×</button>
-   {panel==='lander'&&<><span className="paper-kicker">ODYSSEY / L01</span><h2 id="dialog-title">Llegar. Explorar. Regresar.</h2><p>Selecciona una secuencia para verla en la escena. Puedes alejar la cámara con la rueda.</p><div className="menu-grid">{LANDER_ACTIONS.map(([id,label])=><button key={id} onClick={()=>{window.dispatchEvent(new CustomEvent('odyssey-lander-action',{detail:id}));setPanel(null)}}>{label}</button>)}<button onClick={()=>{window.dispatchEvent(new CustomEvent('odyssey-lander-action',{detail:'reset'}));setPanel(null)}}>Restablecer cápsula</button></div><small>Modelo ficticio del usuario · altura 5 m · animaciones originales. La campaña orbital mantiene su propia progresión.</small></>}
-   {panel==='menu'&&<><span className="paper-kicker">SELENE—01</span><h2 id="dialog-title">Tu aventura.</h2><div className="menu-grid"><button onClick={()=>setPanel(null)}>Continuar explorando</button><button onClick={()=>setPanel('journal')}>Bitácora de misión</button><button onClick={()=>setPanel('map')}>Mapa de Artemisa</button><button onClick={()=>chooseMode('map')}>Vista aérea</button><button onClick={()=>chooseMode('tour')}>Recorrido del campus</button><button onClick={()=>setPanel('controls')}>Controles</button><button onClick={()=>setPanel('settings')}>Opciones</button><button onClick={()=>setPanel('scale')}>El mundo y sus fuentes</button></div><div className="menu-worlds"><button aria-pressed={!mars} onClick={()=>onWorld('earth')}>Tierra</button><button aria-pressed={mars} onClick={()=>onWorld('mars')}>Marte</button></div><small>Una aventura de diseño de misiones. Partida local.</small></>}
-   {panel==='journal'&&<><span className="paper-kicker">BITÁCORA DE LA TRIPULACIÓN</span><h2 id="dialog-title">Una pregunta. Una misión.</h2><p>Tu encargo: diseñar ODYSSEY, enviarla a estudiar el polo sur lunar y recuperar información que permita responder a tu pregunta.</p><ol className="quest-list">{(['research','hangar','control','launch','observatory'] as SectorId[]).map((id,i)=><li key={id} className={next.sector===id?'current':''}><button onClick={()=>setPanel(id)}><span>{i+1}</span><strong>{objectiveNames[id]}</strong>{next.sector===id&&<small>Ahora</small>}</button></li>)}</ol>{mission.result&&<p>Último vuelo: {mission.result.score} puntos · {mission.result.delivered} GB recuperados.</p>}<button className="primary-world" onClick={()=>{setPanel(null);setConversation(stationConversation(next.sector))}}>TARS, explícame el siguiente paso</button><details><summary>Por qué importan tus decisiones</summary><p>Instrumentos, masa, energía, presupuesto, comunicaciones, órbita y duración compiten por recursos. Un diseño compatible debe responder a su objetivo y devolver datos. Puedes rediseñar después de cada vuelo.</p><p>Los parámetros son educativos. Juegas individualmente; los cuatro cuadernos de TARS no son multijugador en línea.</p></details></>}
-   {panel==='tars'&&<TarsAssistant position={position} onVisit={visit}/>}
-   {panel==='map'&&<><span className="paper-kicker">{world.place.toUpperCase()}</span><h2 id="dialog-title">Elige tu camino.</h2><div className="map-layout"><CampusMap large position={position} visited={visited} onSelect={id=>setPanel(id)}/><div className="map-sector-list">{SECTORS.map(s=><button key={s.id} onClick={()=>setPanel(s.id)}><span style={{background:s.color}}>{s.number}</span><div><strong>{s.name}</strong><small>{Math.round(Math.hypot(position.x-s.entry[0],position.z-s.entry[1]))} m</small></div></button>)}</div></div>{!mars&&<button className="secondary-world" onClick={()=>{setTravel(t=>({id:'start',point:[-72,18],serial:t.serial+1}));setMode('walk');setPanel(null)}}>Visitar el sendero de la costa →</button>}<button className="secondary-world" onClick={()=>{setTravel(t=>({id:'start',point:mars?[61,-49]:[87,-5],serial:t.serial+1}));setMode('walk');setPanel(null)}}>Visitar la cápsula L01 →</button><small>Las actividades se realizan dentro de las estaciones. La costa de fauna está al oeste del campus.</small></>}
-   {panel==='controls'&&<><h2 id="dialog-title">Muévete a tu ritmo.</h2><p>WASD o flechas: caminar · Shift: correr · Espacio: saltar · Arrastra: mirar · Rueda: acercar · E: interactuar · M: mapa · J: bitácora · Esc: menú.</p><dl className="control-list"><dt>Shift</dt><dd>Mantener para correr</dd><dt>Espacio</dt><dd>Saltar en exteriores</dd><dt>Ctrl</dt><dd>Sentarse junto a un banco</dd><dt>E</dt><dd>Conversar o usar una estación</dd></dl><button className="secondary-world" onClick={()=>visit('start')}>Volver a la entrada del campus</button></>}
-   {panel==='settings'&&<><h2 id="dialog-title">A tu gusto.</h2><label className="world-setting">Calidad<select value={quality} onChange={e=>setQuality(e.target.value as typeof quality)}><option value="standard">Estándar · sombras y detalle</option><option value="light">Ligera</option></select></label><label className="world-setting check-setting"><input type="checkbox" checked={reduced} onChange={e=>setReduced(e.target.checked)}/>Reducir movimiento ambiental</label><label className="world-setting check-setting"><input type="checkbox" checked={miniMap} onChange={e=>setMiniMap(e.target.checked)}/>Mostrar minimapa mientras camino</label><button className="secondary-world" onClick={()=>{if(document.fullscreenElement)void document.exitFullscreen().catch(()=>{});else void document.documentElement.requestFullscreen().catch(()=>{})}}>Pantalla completa</button></>}
-   {panel==='scale'&&<><h2 id="dialog-title">Un mundo para aprender.</h2><p>Artemisa: 240 × 240 m. Ares: 320 × 320 m. Escenarios ficticios con una escala común de un metro por unidad.</p><details><summary>Medidas y referencias NASA</summary><ScaleReference/></details><details><summary>Alcance de esta aventura</summary><p>La campaña lunar enlaza objetivo, diseño, revisión, operaciones e informe. Marte es explorable; sus misiones específicas siguen pendientes. La fauna y la costa son ambientales, no una recreación geográfica de una base NASA.</p><a href="https://www.nasa.gov/reference/4-0-system-design-processes/" target="_blank" rel="noreferrer">Diseño de sistemas · NASA ↗</a></details></>}
-   {active&&<><span className="paper-kicker">ESTACIÓN {active.number}</span><h2 id="dialog-title">{active.short}</h2>{position.nearby!==active.id&&<button className="secondary-world" onClick={()=>visit(active.id)}>Ir a la entrada →</button>}<MissionStation key={active.id} sector={active.id} present={mode==='walk'&&position.nearby===active.id} mars={mars} onCampaign={openCampaign}/></>}
-  </section></div>}
- </main>
+const Campaign = lazy(() => import('../App'))
+function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
+  useBlueprint()
+  useCampusMission()
+  const world = useWorld(),
+    mars = world.id === 'mars',
+    SECTORS = world.sectors
+  const next = nextMissionStep(),
+    destination = SECTORS.find((s) => s.id === next.sector)!
+  const [mode, setMode] = useState<ViewMode>('walk'),
+    [panel, setPanel] = useState<Panel>(null),
+    [conversation, setConversation] = useState<Conversation | null>(null),
+    [ready, setReady] = useState(false)
+  const [tourIndex, setTourIndex] = useState(0),
+    [tourPlaying, setTourPlaying] = useState(true),
+    [miniMap, setMiniMap] = useState(false)
+  const [campaign, setCampaign] = useState(false),
+    [campaignStage, setCampaignStage] = useState<'briefing' | 'design' | 'launch'>('briefing')
+  const [position, setPosition] = useState<PositionReport>({ x: 0, z: 37, nearby: null, fps: 0 }),
+    [travel, setTravel] = useState<Travel>({ id: 'start', serial: 0 })
+  const [quality, setQuality] = useState<'standard' | 'light'>('standard'),
+    [reduced, setReduced] = useState(
+      () => window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+    )
+  const [visited, setVisited] = useState<SectorId[]>([])
+  const input = useRef<InputState>({
+    keys: new Set(),
+    actions: [],
+    yaw: 0,
+    pitch: 0.14,
+    zoom: MOTION_SCALE.zoom,
+  })
+  const onPosition = useCallback((p: PositionReport) => setPosition(p), []),
+    onReady = useCallback(() => setReady(true), [])
+  const onInteract = useCallback(
+    (id: SectorId) => {
+      setPanel(null)
+      setConversation(
+        mars
+          ? {
+              speaker: 'TARS · ARES',
+              lines: [
+                'Ares es nuestro terreno de exploración. La primera misión de diseño comienza en Artemisa, en la Tierra.',
+              ],
+              action: 'Ver estación',
+              sector: id,
+            }
+          : stationConversation(id),
+      )
+    },
+    [mars],
+  )
+  useEffect(() => {
+    if (!ready || mars) return
+    try {
+      if (localStorage.getItem('selene-arrival-story-v1')) return
+    } catch {
+      /* Show the introduction once per mount. */
+    }
+    setConversation(ARRIVAL)
+  }, [ready, mars])
+  const closeConversation = () => {
+    if (conversation === ARRIVAL)
+      try {
+        localStorage.setItem('selene-arrival-story-v1', 'seen')
+      } catch {
+        /* Continue. */
+      }
+    setConversation(null)
+  }
+  useEffect(() => {
+    if (position.nearby)
+      setVisited((v) => (v.includes(position.nearby!) ? v : [...v, position.nearby!]))
+  }, [position.nearby])
+  useEffect(() => {
+    if (mode !== 'tour' || !tourPlaying || panel || conversation || reduced) return
+    const timer = window.setInterval(() => setTourIndex((i) => (i + 1) % 5), 11000)
+    return () => clearInterval(timer)
+  }, [mode, tourPlaying, panel, conversation, reduced])
+  useEffect(() => {
+    input.current.keys.clear()
+    input.current.actions.length = 0
+  }, [panel, conversation])
+  useEffect(() => {
+    const key = (e: KeyboardEvent) => {
+      if (conversation || campaign) return
+      if (e.code === 'Escape') {
+        setPanel((p) => (p ? null : 'menu'))
+        return
+      }
+      if (
+        e.target instanceof HTMLElement &&
+        e.target.closest('input,select,textarea,button,[contenteditable]')
+      )
+        return
+      if (e.code === 'KeyM') {
+        e.preventDefault()
+        setPanel((p) => (p === 'map' ? null : 'map'))
+      }
+      if (e.code === 'KeyJ') {
+        e.preventDefault()
+        setPanel((p) => (p === 'journal' ? null : 'journal'))
+      }
+    }
+    window.addEventListener('keydown', key)
+    return () => window.removeEventListener('keydown', key)
+  }, [conversation, campaign])
+  useEffect(() => {
+    const observe = (e: Event) => {
+      if (panel || conversation || mode !== 'walk' || campaign) return
+      const data = (e as CustomEvent<{ name: string }>).detail
+      setConversation({
+        speaker: 'TARS · CUADERNO DE CAMPO',
+        lines: [
+          `${data.name}. Podemos observar sus movimientos desde el sendero. Esta costa forma parte del campus ficticio de Artemisa.`,
+          'Una pausa para mirar también es parte de explorar. Cuando quieras, retomamos nuestro encargo lunar.',
+        ],
+        action: 'Seguir explorando',
+      })
+    }
+    window.addEventListener('selene-wildlife-observe', observe)
+    return () => window.removeEventListener('selene-wildlife-observe', observe)
+  }, [panel, conversation, mode, campaign])
+  useEffect(() => {
+    const open = () => {
+      if (panel || conversation || campaign) return
+      setConversation({
+        speaker: 'TARS · DESCENSO L01',
+        kind: 'lander',
+        lines: [
+          mars
+            ? 'Esta es la cápsula L01: aquí se representa la llegada a la superficie. Su etapa superior puede separarse para el ascenso.'
+            : 'Este módulo de entrenamiento nos permite estudiar otra etapa del viaje: llegar a una superficie y separar después la cápsula de ascenso.',
+          'El encargo lunar actual es orbital. Estas animaciones muestran los mecanismos del modelo; no calculan una trayectoria real de aterrizaje.',
+        ],
+        action: 'Explorar la cápsula',
+      })
+    }
+    window.addEventListener('selene-lander-panel', open)
+    return () => window.removeEventListener('selene-lander-panel', open)
+  }, [panel, conversation, campaign, mars])
+  const chooseMode = (m: ViewMode) => {
+    setMode(m)
+    setPanel(null)
+    input.current.keys.clear()
+  }
+  const visit = (id: Travel['id']) => {
+    setTravel((t) => ({ id, serial: t.serial + 1 }))
+    setMode('walk')
+    setPanel(null)
+    setConversation(null)
+  }
+  const openCampaign = (id: SectorId) => {
+    if (mars || position.nearby !== id) return
+    const draft = loadBlueprint()
+    if (id === 'launch' && !missionVerified(draft.config, draft.parts)) return
+    setCampaignStage(id === 'hangar' ? 'design' : 'launch')
+    setCampaign(true)
+    setPanel(null)
+    input.current.keys.clear()
+  }
+  const returnToCampus = () => {
+    setTravel((t) => ({ id: t.id, point: [position.x, position.z], serial: t.serial + 1 }))
+    setCampaign(false)
+  }
+  const nearby = SECTORS.find((s) => s.id === position.nearby),
+    tour = SECTORS[tourIndex]
+  const objectiveNames = OBJECTIVE_NAMES
+  if (campaign)
+    return (
+      <>
+        <button className="return-world" onClick={returnToCampus}>
+          ← Volver al campus
+        </button>
+        <div className="campaign-return-space">
+          <Suspense fallback={<p>Preparando la mesa…</p>}>
+            <Campaign
+              initialStage={campaignStage}
+              campus
+              launchAccess={campaignStage === 'launch'}
+              onReturnToCampus={returnToCampus}
+            />
+          </Suspense>
+        </div>
+      </>
+    )
+  return (
+    <main className={`selene-world clean-world ${mars ? 'mars-world' : 'earth-world'}`}>
+      <div className="world-viewport">
+        <ExplorerScene
+          mode={mode}
+          tourIndex={tourIndex}
+          travel={travel}
+          input={input}
+          paused={!!panel || !!conversation}
+          reduced={reduced}
+          onPosition={onPosition}
+          onInteract={onInteract}
+          quality={quality}
+          onReady={onReady}
+        />
+      </div>
+      {!ready && (
+        <div className="world-loading">
+          <span className="orbit-mark">◒</span>
+          <h1>Bienvenida a {world.place}.</h1>
+        </div>
+      )}
+      {!conversation && !panel && (
+        <button className="quest-slip" onClick={() => setPanel('journal')}>
+          <span>{mars ? 'ARES' : `MISIÓN ${next.number} / 05`}</span>
+          <strong>{mars ? 'Explora el paisaje' : objectiveNames[next.sector]}</strong>
+          <small>
+            {mars
+              ? 'El encargo lunar comienza en la Tierra'
+              : `${destination.short} · ${Math.round(Math.hypot(position.x - destination.entry[0], position.z - destination.entry[1]))} m`}{' '}
+            <b>↗</b>
+          </small>
+        </button>
+      )}
+      <button
+        className="paper-icon menu-toggle"
+        aria-label="Abrir menú"
+        title="Menú · Esc"
+        onClick={() => {
+          closeConversation()
+          setPanel('menu')
+        }}
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M9 6h12M9 12h12M9 18h12" />
+          <path d="M3 5h2v2H3zm0 6h2v2H3zm0 6h2v2H3z" />
+        </svg>
+      </button>
+      {!panel && !conversation && (
+        <nav className="paper-dock" aria-label="Herramientas">
+          <button
+            className="paper-icon"
+            title="Mapa · M"
+            aria-label="Abrir mapa"
+            onClick={() => setPanel('map')}
+          >
+            <Icon name="map" size={27} />
+          </button>
+          <button
+            className="paper-icon"
+            title="Bitácora · J"
+            aria-label="Abrir bitácora"
+            onClick={() => setPanel('journal')}
+          >
+            <Icon name="compass" size={27} />
+          </button>
+          <button
+            className="paper-icon"
+            title="Hablar con TARS"
+            aria-label="Consultar a TARS"
+            onClick={() => setPanel('tars')}
+          >
+            <Icon name="robot" size={28} />
+          </button>
+        </nav>
+      )}
+      {miniMap && !panel && !conversation && (
+        <aside className="small-map">
+          <CampusMap position={position} visited={visited} />
+        </aside>
+      )}
+      {mode === 'walk' && nearby && !panel && !conversation && (
+        <button className="station-prompt" onClick={() => onInteract(nearby.id)}>
+          <kbd>E</kbd> {nearby.id === 'research' ? 'Hablar con la Dra. Vega' : 'Usar estación'}{' '}
+          <span>▶</span>
+        </button>
+      )}
+      {mode !== 'walk' && !panel && !conversation && (
+        <div className="view-controls">
+          <button onClick={() => chooseMode('walk')}>← Volver a caminar</button>
+          {mode === 'tour' && (
+            <>
+              <span>{tour.name}</span>
+              <button disabled={reduced} onClick={() => setTourPlaying((v) => !v)}>
+                {tourPlaying ? 'Pausar' : 'Continuar'}
+              </button>
+              <button onClick={() => setTourIndex((i) => (i + 1) % 5)}>→</button>
+            </>
+          )}
+        </div>
+      )}
+      {!panel && !conversation && mode === 'walk' && (
+        <>
+          <div className="touch-movement" aria-label="Movimiento táctil">
+            {[
+              { key: 'KeyW', label: '↑' },
+              { key: 'KeyA', label: '←' },
+              { key: 'KeyS', label: '↓' },
+              { key: 'KeyD', label: '→' },
+            ].map((b) => (
+              <button
+                key={b.key}
+                aria-label={`Mover ${b.label}`}
+                onPointerDown={(e) => {
+                  e.preventDefault()
+                  e.currentTarget.setPointerCapture(e.pointerId)
+                  input.current.keys.add(b.key)
+                }}
+                onPointerUp={() => input.current.keys.delete(b.key)}
+                onPointerCancel={() => input.current.keys.delete(b.key)}
+                onLostPointerCapture={() => input.current.keys.delete(b.key)}
+              >
+                {b.label}
+              </button>
+            ))}
+          </div>
+          <div className="touch-actions">
+            <button
+              aria-label="Correr, mantener pulsado"
+              onPointerDown={(e) => {
+                e.preventDefault()
+                e.currentTarget.setPointerCapture(e.pointerId)
+                input.current.keys.add('ShiftLeft')
+              }}
+              onPointerUp={() => input.current.keys.delete('ShiftLeft')}
+              onPointerCancel={() => input.current.keys.delete('ShiftLeft')}
+              onLostPointerCapture={() => input.current.keys.delete('ShiftLeft')}
+            >
+              Correr
+            </button>
+            {!mars && (
+              <button
+                onClick={() => {
+                  if (!position.room) input.current.actions.push('jump')
+                }}
+              >
+                Saltar
+              </button>
+            )}
+          </div>
+          <button className="controls-hint" onClick={() => setPanel('controls')}>
+            ? Controles
+          </button>
+        </>
+      )}
+      {conversation && (
+        <StoryDialogue
+          conversation={conversation}
+          onClose={closeConversation}
+          onFinish={() => {
+            const sector = conversation.sector,
+              kind = conversation.kind
+            closeConversation()
+            if (kind === 'lander') setPanel('lander')
+            else if (sector) setPanel(sector)
+          }}
+        />
+      )}
+      {panel && (
+        <WorldNotebook
+          panel={panel}
+          position={position}
+          visited={visited}
+          mode={mode}
+          quality={quality}
+          setQuality={setQuality}
+          reduced={reduced}
+          setReduced={setReduced}
+          miniMap={miniMap}
+          setMiniMap={setMiniMap}
+          onClose={() => setPanel(null)}
+          onPanel={setPanel}
+          onMode={chooseMode}
+          onWorld={onWorld}
+          onVisit={visit}
+          onCampaign={openCampaign}
+          onConversation={setConversation}
+          onTravelPoint={(point) => {
+            setTravel((t) => ({ id: 'start', point, serial: t.serial + 1 }))
+            setMode('walk')
+            setPanel(null)
+          }}
+        />
+      )}
+    </main>
+  )
 }
 
-export default function Worlds(){
- const [id,setId]=useState<WorldId>(()=>new URLSearchParams(window.location.search).get('world')==='mars'?'mars':'earth')
- const change=(next:WorldId)=>{setId(next);const url=new URL(window.location.href);url.searchParams.set('world',next);window.history.replaceState(null,'',url)}
- return <WorldContext.Provider value={WORLDS[id]}><WorldExperience key={id} onWorld={change}/></WorldContext.Provider>
+export default function Worlds() {
+  const [id, setId] = useState<WorldId>(() =>
+    new URLSearchParams(window.location.search).get('world') === 'mars' ? 'mars' : 'earth',
+  )
+  const change = (next: WorldId) => {
+    setId(next)
+    const url = new URL(window.location.href)
+    url.searchParams.set('world', next)
+    window.history.replaceState(null, '', url)
+  }
+  return (
+    <WorldContext.Provider value={WORLDS[id]}>
+      <WorldExperience key={id} onWorld={change} />
+    </WorldContext.Provider>
+  )
 }

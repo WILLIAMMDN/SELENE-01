@@ -44,9 +44,9 @@ Crear ramas desde `main` y dirigir los PR a `main`. Enlazar un issue y pedir rev
 | Área | Archivos principales |
 | --- | --- |
 | Reglas de misión y operaciones | `src/game/missionDesign.ts` |
-| Progreso, revisión y persistencia | `src/game/campusMission.ts` |
-| Historia, estaciones y diálogos | `src/world/StoryDialogue.tsx`, `MissionStation.tsx` |
-| Pantallas y controles | `src/world/WorldExperience.tsx`, `notebook.css`, `src/styles.css` |
+| Progreso, revisión y persistencia | `src/game/campusMission.ts`, `missionRules.ts` y `state/` |
+| Historia, estaciones y diálogos | `src/game/narrative/conversations.ts`, `src/world/MissionStation.tsx` |
+| Pantallas y controles | `src/ui/`, `src/world/WorldExperience.tsx`, `src/world/controls/` y estilos existentes |
 | Distribución y navegación | `src/world/campusLayout.ts`, `buildingNavigation.ts`, `environmentLayout.ts` |
 | Terreno, vegetación y atmósfera | `src/world/Environment.tsx`, `ArtKit.tsx`, `IllustratedTrees.tsx` |
 | Mundos y escalas | `src/world/worldConfig.tsx`, `worldData.ts`, `physicalScale.ts` |
@@ -74,3 +74,9 @@ blender --background --factory-startup --disable-autoexec --python tools/export_
 El recorrido principal es investigación → ensamblaje → revisión en comunicaciones → autorización de lanzamiento → tres decisiones de operaciones → informe. Marte es un escenario de exploración con demostración de descenso; no una segunda campaña completa. Los cuatro cuadernos de tripulación son locales, no multijugador. Los números de diseño son una simulación educativa: ver `docs/NASA_INTEGRATION.md` y `docs/PHYSICAL_SCALE.md` para fuentes y supuestos.
 
 Antes de enviar un PR ejecutar `npm test` y `npm run build`. GitHub Actions repite ambos con Node 22 y `npm ci`. El equipo debe revisar visualmente materiales, animaciones, interiores y rendimiento; la publicación no certifica esas comprobaciones. Compartir el código en GitHub no publica por sí mismo un sitio web jugable.
+
+## Organización del código
+
+Consultar [arquitectura y contratos](ARCHITECTURE.md) antes de añadir funciones. `game/` coordina las reglas y el progreso; `ui/` representa pantallas; `world/` y `scene/` controlan el mundo 3D; `shared/persistence/` guarda instantáneas. El controlador está en `game/hooks/useMissionController.ts`. El antiguo componente Orbi ahora se llama `TarsCampaignAssistant.tsx`.
+
+Usar `npm run format` para mantener el formato TypeScript y `npm run format:check` antes de enviar cambios. CI verifica el mismo formato además de las pruebas y la compilación. Las operaciones se recuperan al volver al puesto de lanzamiento si la configuración y su revisión siguen vigentes.

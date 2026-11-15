@@ -34,4 +34,4 @@ El rango antropométrico describe acomodación de asientos de Orion, no un requi
 
 Los mundos no aumentaron de extensión. El campus se interpreta como exposición educativa compacta: ningún lanzamiento real se sitúa a esta distancia de personas y edificios. Las masas, consumos y presupuestos del juego siguen identificados como educativos; no se deducen automáticamente de los tamaños ni se presentan como datos reales de Orion o SLS.
 
-Las 18 pruebas automáticas y la compilación pasaron localmente y en GitHub. La revisión visual y jugable queda pendiente del usuario. No se garantiza perfección visual ni conformidad técnica NASA.
+Las pruebas automatizadas automáticas y la compilación pasaron localmente y en GitHub. La revisión visual y jugable queda pendiente del usuario. No se garantiza perfección visual ni conformidad técnica NASA.

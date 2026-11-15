@@ -33,6 +33,7 @@ La versión compartida del juego está en `main`. Consulta [la guía del equipo]
     cd SELENE-01
     npm ci
     npm run dev
+    npm run format:check
     npm test
     npm run build
 
@@ -93,3 +94,7 @@ La interfaz muestra un objetivo breve y botones pequeños. E abre conversaciones
 Documentación vigente: [narrativa e interfaz](docs/NARRATIVE_AND_INTERFACE.md). La revisión visual de esta entrega queda a cargo del equipo.
 
 La cápsula L01 de `ODYSSEY_LANDER_FINAL.rar` está integrada en el descenso de Marte y en una plataforma de entrenamiento de la Tierra. El mapa ofrece acceso; pulsa el modelo o E cerca de él para reproducir descenso y separación de ascenso. Conserva su escala original de 5 m de alto. Su demostración es independiente de la misión orbital.
+
+## Organización para continuar
+
+Las pantallas se agrupan en `src/ui/`; las reglas, el controlador y los almacenes de partida en `src/game/`; el renderizado y los controles en `src/world/` y `src/scene/`. Se mantienen los modelos y estilos existentes. El guardado conserva las claves anteriores y permite recuperar operaciones desde la plataforma con el mismo diseño revisado. Ver [arquitectura](docs/ARCHITECTURE.md) para responsabilidades, contratos y límites.

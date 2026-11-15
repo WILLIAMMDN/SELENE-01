@@ -8,6 +8,7 @@ Todo cambio nuevo nace en un issue y una rama feature/*, art/*, fix/* o docs/*. 
     cd SELENE-01
     npm ci
     git switch -c feature/mi-funcion
+    npm run format:check
     npm run build
     npm test
     git add .

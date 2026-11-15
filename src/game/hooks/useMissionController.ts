@@ -1,0 +1,217 @@
+import { useCallback, useState } from 'react'
+import {
+  useCampusMission,
+  missionProblems,
+  missionVerified,
+  recordMission,
+  resetCampusMission,
+  blueprintKey,
+} from '../campusMission'
+import {
+  INITIAL_DESIGN,
+  evaluateDesign,
+  startOperations,
+  applyOperation,
+  missionScore,
+  type InstrumentId,
+  type DesignConfig,
+  type OperationChoice,
+} from '../missionDesign'
+import {
+  INITIAL_ASSEMBLY,
+  assemblyProblems,
+  assemblyReady,
+  toggleModule,
+  type ModuleId,
+} from '../../spacecraft/assembly'
+import { loadBlueprint, saveBlueprint, useBlueprint } from '../state/blueprintStore'
+import {
+  clearOperationSession,
+  loadOperationSession,
+  saveOperationSession,
+} from '../state/operationStore'
+import { STAGES, type Stage } from '../campaignContent'
+import type { Station } from '../missionTypes'
+
+export type CampaignProps = {
+  initialStage?: 'briefing' | 'design' | 'launch'
+  campus?: boolean
+  launchAccess?: boolean
+  onReturnToCampus?: () => void
+}
+
+/** Owns campaign transitions and actions; presentation never writes browser storage. */
+export function useMissionController({
+  initialStage = 'briefing',
+  campus = false,
+  launchAccess = false,
+  onReturnToCampus,
+}: CampaignProps) {
+  useCampusMission()
+  const { config, parts: assembly } = useBlueprint()
+  const [resume] = useState(() =>
+    campus && launchAccess && initialStage === 'launch' && missionVerified(config, assembly)
+      ? loadOperationSession(blueprintKey(config, assembly))
+      : null,
+  )
+  const [stage, setStage] = useState<Stage>(() =>
+    resume ? (resume.ops.status === 'running' ? 'operations' : 'report') : initialStage,
+  )
+  const [ops, setOps] = useState(() => resume?.ops ?? startOperations())
+  const [launched, setLaunched] = useState(!!resume)
+  const [exploded, setExploded] = useState(false)
+  const [notification, setNotification] = useState('')
+  const evaluation = evaluateDesign(config)
+  const launchProblems = campus
+    ? [
+        ...missionProblems(config, assembly),
+        ...(!missionVerified(config, assembly)
+          ? ['Regresa a comunicaciones para registrar la revisión de esta configuración.']
+          : []),
+        ...(!launchAccess
+          ? ['Regresa al campus y utiliza el puesto de autorización de la plataforma.']
+          : []),
+      ]
+    : [...evaluation.problems, ...assemblyProblems(assembly)]
+  const engineeringProblems = campus
+    ? missionProblems(config, assembly)
+    : [...evaluation.problems, ...assemblyProblems(assembly)]
+  const stageIndex = STAGES.findIndex((x) => x.id === stage)
+  const operateReady =
+    evaluation.ready &&
+    assemblyReady(assembly) &&
+    (!campus || (launchAccess && missionVerified(config, assembly)))
+  function resetFlight() {
+    clearOperationSession()
+    setLaunched(false)
+    setOps(startOperations())
+  }
+  function updateConfig(change: Partial<DesignConfig>) {
+    resetFlight()
+    const current = loadBlueprint()
+    saveBlueprint({ ...current, config: { ...current.config, ...change } })
+  }
+  const go = (value: Stage) => {
+    if (value === 'operations' && (!operateReady || !launched)) {
+      setNotification('Autoriza primero un lanzamiento con un diseño válido.')
+      setStage('launch')
+      return
+    }
+    if (value === 'report' && (!launched || ops.status === 'running')) {
+      setNotification('Completa las tres decisiones de operaciones antes del informe.')
+      return
+    }
+    setNotification('')
+    setStage(value)
+  }
+  const interact = useCallback(
+    (station: Station) => {
+      if (station === 'briefing') {
+        setStage('briefing')
+        setNotification('La Dra. Vega te espera con las instrucciones.')
+      }
+      if (station === 'hangar') {
+        setStage('design')
+        setNotification('Has entrado al hangar de ingeniería.')
+      }
+      if (station === 'launch') {
+        setStage('launch')
+        setNotification('Verifica la misión antes de lanzar.')
+      }
+      if (station === 'control') {
+        setStage(launched ? 'operations' : 'launch')
+        setNotification(
+          launched
+            ? 'Has entrado al centro de control.'
+            : 'Autoriza el lanzamiento antes de operar la misión.',
+        )
+      }
+    },
+    [launched],
+  )
+  const toggleInstrument = (id: InstrumentId) => {
+    const current = loadBlueprint().config
+    updateConfig({
+      instruments: current.instruments.includes(id)
+        ? current.instruments.filter((x) => x !== id)
+        : [...current.instruments, id],
+    })
+  }
+  const assemble = (id: ModuleId) => {
+    resetFlight()
+    const current = loadBlueprint(),
+      next = toggleModule(current.parts, id)
+    saveBlueprint({
+      parts: next,
+      config: {
+        ...current.config,
+        habitat: next.includes('habitat'),
+        supports: next.includes('supports'),
+        solarUpgrade: next.includes('solar'),
+        commUpgrade: next.includes('antenna'),
+      },
+    })
+  }
+  const fly = () => {
+    if (!operateReady) {
+      go('design')
+      return
+    }
+    const next = startOperations()
+    if (campus) saveOperationSession(blueprintKey(config, assembly), next)
+    setOps(next)
+    setLaunched(true)
+    setStage('operations')
+    setNotification('¡Lanzamiento simulado! El orbitador está en la fase de operaciones.')
+  }
+  const operate = (choice: OperationChoice) => {
+    const next = applyOperation(ops, choice, evaluation)
+    if (campus) {
+      saveOperationSession(blueprintKey(config, assembly), next)
+      recordMission(next, missionScore(next, evaluation), config, assembly)
+    }
+    setOps(next)
+  }
+  const redesign = () => {
+    resetFlight()
+    go('design')
+  }
+  const restart = () => {
+    if (campus) resetCampusMission()
+    saveBlueprint({
+      config: { ...INITIAL_DESIGN, instruments: [...INITIAL_DESIGN.instruments] },
+      parts: [...INITIAL_ASSEMBLY],
+    })
+    resetFlight()
+    setExploded(false)
+    setStage('briefing')
+    setNotification('')
+  }
+  return {
+    stage,
+    config,
+    assembly,
+    exploded,
+    setExploded,
+    ops,
+    notification,
+    launched,
+    evaluation,
+    launchProblems,
+    engineeringProblems,
+    stageIndex,
+    operateReady,
+    go,
+    interact,
+    toggleInstrument,
+    assemble,
+    fly,
+    operate,
+    restart,
+    redesign,
+    updateConfig,
+    campus,
+    onReturnToCampus,
+  }
+}
+export type MissionController = ReturnType<typeof useMissionController>
