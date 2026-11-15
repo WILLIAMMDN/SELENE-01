@@ -178,6 +178,15 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
     window.addEventListener('selene-tools-panel', open)
     return () => window.removeEventListener('selene-tools-panel', open)
   }, [offworld, panel, conversation, campaign, mode])
+  useEffect(() => {
+    const onDialogue = (e: Event) => {
+      if (panel || campaign) return
+      const conv = (e as CustomEvent<Conversation>).detail
+      if (conv) setConversation(conv)
+    }
+    window.addEventListener('selene-dialogue', onDialogue)
+    return () => window.removeEventListener('selene-dialogue', onDialogue)
+  }, [panel, campaign])
   const chooseMode = (m: ViewMode) => {
     setMode(m)
     setPanel(null)
@@ -249,12 +258,14 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
       )}
       {!conversation && !panel && !(mode === 'walk' && position.room) && (
         <button className="quest-slip" onClick={() => setPanel('journal')}>
-          <span>{offworld ? (moon ? 'LUNA' : 'ARES') : `MISIÓN ${next.number} / 05`}</span>
-          <strong>{offworld ? 'Explora el paisaje' : objectiveNames[next.sector]}</strong>
+          <span>{moon ? 'MISIÓN ARTEMISA · POLO SUR' : offworld ? 'ARES' : `MISIÓN ${next.number} / 05`}</span>
+          <strong>{moon ? 'Prospección de recursos' : offworld ? 'Explora el paisaje' : objectiveNames[next.sector]}</strong>
           <small>
-            {offworld
-              ? 'El encargo lunar comienza en la Tierra'
-              : `${destination.short} · ${Math.round(Math.hypot(position.x - destination.entry[0], position.z - destination.entry[1]))} m`}{' '}
+            {moon
+              ? 'Dra. Silva y 6 estaciones en el sendero'
+              : offworld
+                ? 'El encargo lunar comienza en la Tierra'
+                : `${destination.short} · ${Math.round(Math.hypot(position.x - destination.entry[0], position.z - destination.entry[1]))} m`}{' '}
             <b>↗</b>
           </small>
         </button>

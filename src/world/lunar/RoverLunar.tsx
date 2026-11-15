@@ -37,6 +37,7 @@ export default function RoverLunar({
     [gltf.scene, position],
   )
   const [driving, setDriving] = useState(false)
+  const [isNear, setIsNear] = useState(false)
   const active = (enabled ?? driving) && !paused
   const keys = useRef(new Set<string>())
   const { gl, size, camera } = useThree()
@@ -65,11 +66,27 @@ export default function RoverLunar({
     }
     const down = (event: KeyboardEvent) => {
       if (
-        !active ||
         event.isComposing ||
         (event.target as HTMLElement)?.closest?.('input,textarea,select,[contenteditable="true"]')
       )
         return
+
+      // Toggle entrar / salir con tecla E
+      if (event.code === 'KeyE' && !event.repeat && enabled === undefined) {
+        if (active) {
+          event.preventDefault()
+          clear()
+          setDriving(false)
+          return
+        } else if (isNear && !paused) {
+          event.preventDefault()
+          setDriving(true)
+          return
+        }
+      }
+
+      if (!active) return
+
       if (
         [
           'KeyW',
@@ -107,12 +124,16 @@ export default function RoverLunar({
       window.removeEventListener('blur', clear)
       document.removeEventListener('visibilitychange', clear)
     }
-  }, [active, controller, enabled])
+  }, [active, isNear, paused, controller, enabled])
 
   useEffect(() => () => controller.dispose(), [controller])
 
   useFrame((_, delta) => {
     if (paused) return
+    const dist = camera.position.distanceTo(controller.vehicle.position)
+    const near = dist < 16
+    if (near !== isNear) setIsNear(near)
+
     const has = (...codes: string[]) => codes.some((code) => keys.current.has(code))
     if (active)
       controller.setInput({
@@ -127,44 +148,118 @@ export default function RoverLunar({
   return (
     <group>
       <primitive object={controller.vehicle} dispose={null}>
-        {enabled === undefined && (
-          <Html position={[0, 2.6, 0]} center distanceFactor={28}>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <button
-                type="button"
-                style={{
-                  background: active ? '#ba6061' : '#26343a',
-                  color: '#f6f6ec',
-                  border: '2px solid #56878b',
-                  borderRadius: 6,
-                  padding: '7px 14px',
-                  font: "700 12px 'Space Grotesk', sans-serif",
-                  cursor: 'pointer',
-                  boxShadow: '0 3px 0 #1b2529',
-                  letterSpacing: '0.04em',
-                  whiteSpace: 'nowrap',
-                }}
-                onPointerDown={(event) => event.stopPropagation()}
-                onClick={() => setDriving((value) => !value)}
-              >
-                {active ? 'SALIR DEL ROVER · [Esc]' : 'CONDUCIR ROVER LUNAR'}
-              </button>
-              {active && (
+        {enabled === undefined && !paused && (active || isNear) && (
+          <Html position={[0, active ? 3.4 : 2.4, 0]} center distanceFactor={22}>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                pointerEvents: 'auto',
+                userSelect: 'none',
+              }}
+            >
+              {!active ? (
+                <button
+                  type="button"
+                  style={{
+                    background: '#fdfdf6',
+                    color: '#26343a',
+                    border: '2.5px solid #26343a',
+                    borderRadius: 8,
+                    padding: '8px 16px',
+                    font: "700 13px 'Space Grotesk', sans-serif",
+                    cursor: 'pointer',
+                    boxShadow: '3px 4px 0 #26343a',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    whiteSpace: 'nowrap',
+                  }}
+                  onPointerDown={(event) => event.stopPropagation()}
+                  onClick={() => setDriving(true)}
+                >
+                  <span
+                    style={{
+                      background: '#ba6061',
+                      color: '#fff',
+                      fontSize: 10,
+                      fontWeight: 800,
+                      padding: '2px 6px',
+                      borderRadius: 4,
+                      letterSpacing: '0.05em',
+                    }}
+                  >
+                    ROVER
+                  </span>
+                  <kbd
+                    style={{
+                      background: '#26343a',
+                      color: '#fdfdf6',
+                      padding: '2px 6px',
+                      borderRadius: 4,
+                      fontSize: 11,
+                    }}
+                  >
+                    E
+                  </kbd>
+                  <span>Conducir Rover Lunar</span>
+                  <span style={{ color: '#ba6061', fontSize: 13, fontWeight: 900 }}>▶</span>
+                </button>
+              ) : (
                 <div
                   style={{
-                    background: 'rgba(38, 52, 58, 0.92)',
-                    color: '#f6f6ec',
-                    padding: '5px 10px',
-                    borderRadius: 4,
-                    whiteSpace: 'nowrap',
-                    fontSize: 11,
-                    marginTop: 6,
-                    border: '1px solid #56878b',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                    textAlign: 'center',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: 6,
                   }}
                 >
-                  WASD / Flechas: conducir · Espacio: freno · Shift: turbo · R: reiniciar
+                  <button
+                    type="button"
+                    style={{
+                      background: '#ba6061',
+                      color: '#fffdf6',
+                      border: '2.5px solid #26343a',
+                      borderRadius: 8,
+                      padding: '7px 15px',
+                      font: "700 12px 'Space Grotesk', sans-serif",
+                      cursor: 'pointer',
+                      boxShadow: '3px 4px 0 #26343a',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      whiteSpace: 'nowrap',
+                    }}
+                    onPointerDown={(event) => event.stopPropagation()}
+                    onClick={() => {
+                      keys.current.clear()
+                      controller.stop()
+                      setDriving(false)
+                    }}
+                  >
+                    <kbd style={{ background: '#26343a', color: '#fff', padding: '1px 5px', borderRadius: 3 }}>
+                      E / Esc
+                    </kbd>
+                    <span>Salir del rover</span>
+                    <span style={{ color: '#fff', fontSize: 11 }}>▶</span>
+                  </button>
+                  <div
+                    style={{
+                      background: '#fdfdf6',
+                      color: '#26343a',
+                      padding: '4px 10px',
+                      borderRadius: 6,
+                      border: '2px solid #26343a',
+                      boxShadow: '2px 3px 0 #26343a',
+                      whiteSpace: 'nowrap',
+                      fontSize: 11,
+                      fontWeight: 600,
+                      textAlign: 'center',
+                    }}
+                  >
+                    WASD: Conducir · Espacio: Freno · Shift: Turbo · R: Reiniciar
+                  </div>
                 </div>
               )}
             </div>

@@ -7,6 +7,7 @@ import { Sign, toon } from '../ArtKit'
 import OdysseyLander from '../../spacecraft/OdysseyLander'
 import { LUNAR_LANDER, LUNAR_SECTORS, lunarTerrainHeight, lunarCanWalk } from './lunarNavigation'
 import RoverLunar from './RoverLunar'
+import LunarResourcesMission from './LunarResourcesMission'
 import { roberRemote } from '../roberControl'
 
 export default function LunarEnvironment({
@@ -91,6 +92,13 @@ export default function LunarEnvironment({
         paused={paused}
         onControlChange={(vehicle) => {
           roberRemote.current = vehicle
+        }}
+      />
+      <LunarResourcesMission
+        heightAt={lunarTerrainHeight}
+        paused={paused}
+        onConversation={(conv) => {
+          window.dispatchEvent(new CustomEvent('selene-dialogue', { detail: conv }))
         }}
       />
       {LUNAR_SECTORS.map((s) => (
