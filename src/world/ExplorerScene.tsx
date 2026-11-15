@@ -73,10 +73,10 @@ export default memo(function ExplorerScene(
           />
         ) : (
           <>
-            <ambientLight intensity={1.25} color="#e1ebdf" />
+            <ambientLight intensity={moon ? 0.85 : 1.25} color="#e1ebdf" />
             <directionalLight
               position={[-80, 150, 65]}
-              intensity={2.1}
+              intensity={moon ? 2.36 : 2.1}
               color="#fff0d2"
               castShadow={props.quality === 'standard'}
               shadow-mapSize={[2048, 2048]}
@@ -85,7 +85,7 @@ export default memo(function ExplorerScene(
               shadow-camera-top={95}
               shadow-camera-bottom={-95}
               shadow-camera-far={420}
-              shadow-normalBias={0.025}
+              shadow-normalBias={moon ? 0.035 : 0.025}
             />
           </>
         )}

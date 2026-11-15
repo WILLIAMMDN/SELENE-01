@@ -6,6 +6,7 @@ import * as T from 'three'
 import { Sign, toon } from '../ArtKit'
 import OdysseyLander from '../../spacecraft/OdysseyLander'
 import { LUNAR_LANDER, LUNAR_SECTORS, lunarTerrainHeight } from './lunarNavigation'
+import LunarFootDust from './LunarFootDust'
 import LunarInteriors from './LunarInteriors'
 import { lunarInteriorInstances } from './lunarInteriorNavigation'
 import RoverLunar from './RoverLunar'
@@ -42,6 +43,36 @@ export default function LunarEnvironment({
         return material
       }
       n.material = Array.isArray(n.material) ? n.material.map(convert) : convert(n.material)
+      if (n.name === 'LUNA_TERRENO_MALLA') {
+        const ground = (Array.isArray(n.material) ? n.material[0] : n.material).clone()
+        ground.onBeforeCompile = (shader: { vertexShader: string; fragmentShader: string }) => {
+          shader.vertexShader =
+            'varying vec2 lunarXZ;\n' +
+            shader.vertexShader.replace(
+              '#include <begin_vertex>',
+              '#include <begin_vertex>\nlunarXZ = (modelMatrix * vec4(position, 1.0)).xz;',
+            )
+          shader.fragmentShader =
+            `varying vec2 lunarXZ;
+            float dustHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+            float dustNoise(vec2 p) {
+              vec2 i = floor(p), t = fract(p);
+              t = t*t*(3.0-2.0*t);
+              return mix(mix(dustHash(i), dustHash(i+vec2(1,0)), t.x),
+                mix(dustHash(i+vec2(0,1)), dustHash(i+vec2(1,1)), t.x), t.y);
+            }
+          ` +
+            shader.fragmentShader.replace(
+              '#include <color_fragment>',
+              `#include <color_fragment>
+            float grain = mix(dustNoise(lunarXZ * 9.0), 0.5, smoothstep(0.035, 0.16, length(fwidth(lunarXZ))));
+            diffuseColor.rgb *= 0.83 + 0.24*dustNoise(lunarXZ*.43) + 0.13*grain;
+          `,
+            )
+        }
+        materials.set(ground, ground)
+        n.material = ground
+      }
       n.receiveShadow = true
       n.castShadow = !n.name.includes('TERRENO') && !n.name.includes('HORIZONTE')
     })
@@ -84,6 +115,7 @@ export default function LunarEnvironment({
   return (
     <>
       <primitive object={asset.root} dispose={null} />
+      {!reduced && <LunarFootDust lunar={lunar} paused={paused} />}
       <LunarInteriors lunar={lunar} paused={paused} reduced={reduced} />
       <OdysseyLander
         x={LUNAR_LANDER.x}
