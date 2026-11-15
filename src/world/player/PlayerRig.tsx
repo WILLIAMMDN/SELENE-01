@@ -18,6 +18,14 @@ import { useWardrobe } from '../wardrobe'
 import ExplorerCharacter from '../ExplorerCharacter'
 import { MOTION_SCALE } from '../physicalScale'
 import { CHARACTER_KEYS, createCharacterMotion, stepCharacter } from '../characterMotion'
+import {
+  LUNAR_GRAVITY,
+  LUNAR_JUMP_SPEED,
+  LUNAR_WALK_SPEED,
+  LUNAR_RUN_SPEED,
+  LUNAR_TAKEOFF_TIME,
+  LUNAR_LAND_TIME,
+} from '../lunar/lunarPhysics'
 import type { ViewMode } from '../worldData'
 import type { SceneProps } from './types'
 
@@ -66,6 +74,14 @@ export default function PlayerRig({
     frames = useRef(0),
     fpsTime = useRef(0),
     fps = useRef(0)
+
+  // Estado del salto bajo gravedad lunar (solo activo en world === 'moon')
+  const lunarJump = useRef<{
+    phase: 'ground' | 'takeoff' | 'air' | 'land'
+    timer: number
+    airY: number
+    verticalSpeed: number
+  }>({ phase: 'ground', timer: 0, airY: 0, verticalSpeed: 0 })
   const { camera, gl } = useThree()
   const modeRef = useRef(mode)
   modeRef.current = mode
@@ -86,6 +102,7 @@ export default function PlayerRig({
     input.current.keys.clear()
     input.current.actions.length = 0
     motion.current = createCharacterMotion()
+    lunarJump.current = { phase: 'ground', timer: 0, airY: 0, verticalSpeed: 0 }
     input.current.yaw = 0
     if (player.current) player.current.position.copy(location.current)
     camera.position.set(p[0], groundHeight(...p) + 2.7, p[1] + MOTION_SCALE.zoom)
@@ -121,6 +138,13 @@ export default function PlayerRig({
         if (world.id === 'earth' && CHARACTER_KEYS[e.code]) {
           e.preventDefault()
           if (!e.repeat) input.current.actions.push(CHARACTER_KEYS[e.code])
+        } else if (world.id === 'moon' && e.code === 'Space' && !e.repeat) {
+          // Salto lunar: se activa solo si el jugador está en el suelo
+          e.preventDefault()
+          if (lunarJump.current.phase === 'ground') {
+            lunarJump.current.phase = 'takeoff'
+            lunarJump.current.timer = LUNAR_TAKEOFF_TIME
+          }
         } else if (e.code === 'KeyE' && !e.repeat) {
           const station = stationFor(location.current.x, location.current.z)
           if (station) onInteract(station.sector)
@@ -258,6 +282,17 @@ export default function PlayerRig({
         motion.current.speed = 0
       }
     } else {
+      // Salto lunar desde botón táctil (action 'jump' enviado por WorldExperience)
+      if (moon && mode === 'walk' && !paused) {
+        const jumpIdx = input.current.actions.indexOf('jump')
+        if (jumpIdx !== -1) {
+          input.current.actions.splice(jumpIdx, 1)
+          if (lunarJump.current.phase === 'ground') {
+            lunarJump.current.phase = 'takeoff'
+            lunarJump.current.timer = LUNAR_TAKEOFF_TIME
+          }
+        }
+      }
       let dx = 0,
         dz = 0
       if (mode === 'walk' && !paused) {
@@ -269,19 +304,32 @@ export default function PlayerRig({
           (k.has('KeyW') || k.has('ArrowUp') ? 1 : 0)
       }
       moving.current = Math.hypot(dx, dz) > 0 ? 1 : 0
+
+      // --- Movimiento horizontal (luna y marte) ---
       if (moving.current) {
-        const length = Math.hypot(dx, dz),
-          distance =
-            (k.has('ShiftLeft') || k.has('ShiftRight') ? MOTION_SCALE.run : MOTION_SCALE.walk) *
-            delta
+        const length = Math.hypot(dx, dz)
+        // En la Luna usamos velocidades ajustadas al traje EVA (NASA Apollo)
+        const isRunning = k.has('ShiftLeft') || k.has('ShiftRight')
+        const speed = moon
+          ? isRunning
+            ? LUNAR_RUN_SPEED
+            : LUNAR_WALK_SPEED
+          : isRunning
+            ? MOTION_SCALE.run
+            : MOTION_SCALE.walk
+        const distance = speed * delta
         dx /= length
         dz /= length
         const yaw = input.current.yaw,
           wx = dx * Math.cos(yaw) + dz * Math.sin(yaw),
           wz = -dx * Math.sin(yaw) + dz * Math.cos(yaw)
         moveWithCollisions(p, wx * distance, wz * distance, canWalk)
-        p.y = groundHeight(p.x, p.z)
-        phase.current += delta * (k.has('ShiftLeft') || k.has('ShiftRight') ? 9 : 5.5)
+
+        // Actualiza Y solo si no estamos en el aire (lo maneja el salto lunar)
+        if (!moon || lunarJump.current.phase === 'ground') {
+          p.y = groundHeight(p.x, p.z)
+        }
+        phase.current += delta * (isRunning ? 9 : 5.5)
         if (player.current) {
           const desired = Math.atan2(wx, wz),
             difference = Math.atan2(
@@ -291,12 +339,57 @@ export default function PlayerRig({
           player.current.rotation.y += difference * Math.min(1, delta * 14)
         }
       }
+
+      // --- Física del salto lunar (g = 1.62 m/s², NASA Moon Facts) ---
+      if (moon) {
+        const lj = lunarJump.current
+        const ground = groundHeight(p.x, p.z)
+
+        if (lj.phase === 'takeoff' || lj.phase === 'land') {
+          lj.timer -= delta
+          if (lj.timer <= 0) {
+            if (lj.phase === 'takeoff') {
+              lj.phase = 'air'
+              lj.airY = ground
+              lj.verticalSpeed = LUNAR_JUMP_SPEED
+            } else {
+              lj.phase = 'ground'
+            }
+          }
+        }
+
+        if (lj.phase === 'air') {
+          // Cinemática bajo gravedad lunar: Δy = v·Δt − ½·g·Δt²
+          lj.airY += lj.verticalSpeed * delta - 0.5 * LUNAR_GRAVITY * delta * delta
+          lj.verticalSpeed -= LUNAR_GRAVITY * delta
+          if (lj.airY <= ground) {
+            lj.airY = ground
+            lj.verticalSpeed = 0
+            lj.phase = 'land'
+            lj.timer = LUNAR_LAND_TIME
+          }
+          p.y = lj.airY
+        } else if (lj.phase === 'ground') {
+          p.y = ground
+        }
+
+        // Animación: Jump_Air durante el vuelo, Jump_Land al caer
+        if (lj.phase === 'air') {
+          motion.current.clip = 'Jump_Air'
+        } else if (lj.phase === 'land') {
+          motion.current.clip = 'Jump_Land'
+        }
+      }
     }
     if (world.id !== 'earth') {
+      const isRunning = k.has('ShiftLeft') || k.has('ShiftRight')
       motion.current.speed =
-        moving.current *
-        (k.has('ShiftLeft') || k.has('ShiftRight') ? MOTION_SCALE.run : MOTION_SCALE.walk)
-      motion.current.clip = motion.current.speed > 2.5 ? 'Run' : moving.current ? 'Walk' : 'Idle'
+        moving.current * (moon ? (isRunning ? LUNAR_RUN_SPEED : LUNAR_WALK_SPEED) : isRunning ? MOTION_SCALE.run : MOTION_SCALE.walk)
+      // No sobreescribir el clip si el salto lunar ya lo fijó (Jump_Air / Jump_Land)
+      const lj = lunarJump.current
+      if (!moon || (lj.phase !== 'air' && lj.phase !== 'land')) {
+        motion.current.clip = motion.current.speed > 2.5 ? 'Run' : moving.current ? 'Walk' : 'Idle'
+      }
     }
     occupant.x = p.x
     occupant.z = p.z

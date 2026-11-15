@@ -396,7 +396,7 @@ function WorldExperience({ onWorld }: { onWorld: (id: WorldId) => void }) {
             >
               {position.vehicle === 'driving' ? 'Frenar' : 'Correr'}
             </button>
-            {!offworld && position.vehicle !== 'driving' && !position.room && (
+            {(!offworld || moon) && position.vehicle !== 'driving' && !position.room && (
               <button
                 onClick={() => {
                   if (!position.room) input.current.actions.push('jump')
