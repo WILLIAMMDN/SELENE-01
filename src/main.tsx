@@ -2,6 +2,8 @@ import { lazy, StrictMode, Suspense } from 'react'
 import { createRoot } from 'react-dom/client'
 import WorldExperience from './world/WorldExperience'
 import CharacterGate from './ui/world/CharacterSelection'
+import LanguageSwitcher from './i18n/LanguageSwitcher'
+import { startLanguageObserver } from './i18n/language'
 import './styles.css'
 
 const App = lazy(() => import('./App'))
@@ -29,8 +31,11 @@ function GameEntry() {
   )
 }
 
+startLanguageObserver()
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
+    <LanguageSwitcher />
     {demo ? (
       <Suspense fallback={<p role="status">Preparando la demostración…</p>}>
         <DemoMission />
