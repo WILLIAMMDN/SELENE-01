@@ -1,9 +1,39 @@
-import { useRef } from 'react'
+import { Suspense, useEffect, useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
+import { useTexture } from '@react-three/drei'
 import * as T from 'three'
 import { Solid, Sign } from './ArtKit'
 import { occupant } from './buildingNavigation'
 import { SELENE_AUTHORS_DATA } from '../game/authorsData'
+
+function AuthorPortrait({ photo }: { photo: string }) {
+  const texture = useTexture(`${import.meta.env.BASE_URL}${photo}`)
+  const portrait = useMemo(() => {
+    const map = texture.clone()
+    const image = texture.image as HTMLImageElement
+    const imageAspect = image.width / image.height
+    const frameAspect = 0.62 / 0.75
+    if (imageAspect > frameAspect) {
+      map.repeat.x = frameAspect / imageAspect
+      map.offset.x = (1 - map.repeat.x) / 2
+    } else {
+      map.repeat.y = imageAspect / frameAspect
+      map.offset.y = (1 - map.repeat.y) / 2
+    }
+    map.colorSpace = T.SRGBColorSpace
+    map.needsUpdate = true
+    return map
+  }, [texture])
+
+  useEffect(() => () => portrait.dispose(), [portrait])
+
+  return (
+    <mesh position={[-1.25, 0, 0.075]} scale={[0.62, 0.75, 1]}>
+      <planeGeometry />
+      <meshBasicMaterial map={portrait} side={T.DoubleSide} toneMapped={false} />
+    </mesh>
+  )
+}
 
 type Props = {
   position?: [number, number, number]
@@ -72,8 +102,8 @@ export default function AuthorsMonument({
 
         {/* Top Header Marquee */}
         <Sign
-          text="EQUIPO CREADOR & AUTORES · SELENE-01"
-          sub="PROYECTO EDUCATIVO DE SIMULACIÓN ESPACIAL · 6 INTEGRANTES"
+          text="EQUIPO CREADOR · SELENE-01"
+          sub="SEIS INTEGRANTES · CRÉDITOS DEL PROYECTO"
           position={[0, 1.75, 0.14]}
           scale={[11.8, 0.85, 1]}
           bg="#ba6061"
@@ -101,11 +131,14 @@ export default function AuthorsMonument({
                   scale={[0.62, 0.75, 0.02]}
                   color={member.avatarColor}
                 />
+                <Suspense fallback={null}>
+                  <AuthorPortrait photo={member.photo} />
+                </Suspense>
 
                 {/* Inscribed Member Sign */}
                 <Sign
-                  text={member.name.toUpperCase()}
-                  sub={member.role.toUpperCase()}
+                  text={member.shortName.toUpperCase()}
+                  sub={member.role}
                   position={[0.42, 0, 0.04]}
                   scale={[2.2, 0.78, 1]}
                   bg="#ffffff"
