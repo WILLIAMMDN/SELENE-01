@@ -601,9 +601,9 @@ export default function PlayerRig({
         }
         if (result.interact && launchPhase === 'idle') {
           if (canUseWardrobe(p.x, p.z, world.id)) onWardrobe?.()
-          else if (Math.hypot(p.x + 14, p.z - 36) < 4.8)
+          else if (Math.hypot(p.x + 14, p.z - 36) < 4.8) {
             window.dispatchEvent(new CustomEvent('selene-authors-panel'))
-          else {
+          } else {
             const station = stationFor(p.x, p.z)
             if (station) onInteract(station.sector)
           }

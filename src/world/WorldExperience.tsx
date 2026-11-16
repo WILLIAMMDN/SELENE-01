@@ -165,6 +165,14 @@ function WorldExperience({
     [mars, moon],
   )
   useEffect(() => {
+    if (!ready) return
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('launch') === 'true' || params.get('cinematic') === 'true') {
+      onLaunchPhase('flight')
+    }
+  }, [ready, onLaunchPhase])
+
+  useEffect(() => {
     if (!ready || offworld) return
     try {
       if (localStorage.getItem('selene-arrival-story-v1')) return
@@ -778,6 +786,17 @@ function WorldExperience({
             </button>
           </div>
         ))}
+      {launchPhase === 'idle' &&
+        mode === 'walk' &&
+        !nearby &&
+        !position.vehicle &&
+        !panel &&
+        !conversation &&
+        Math.hypot(position.x - -14, position.z - 36) < 4.8 && (
+          <button className="station-prompt" onClick={() => setPanel('authors')}>
+            <kbd>E</kbd> Ver Equipo Creador & Créditos <span>👥</span>
+          </button>
+        )}
       {launchPhase === 'idle' && mode === 'walk' && position.room && !panel && !conversation && (
         <div className="interior-caption">
           {moon ? position.room : roomLabel(position.room)}{' '}
