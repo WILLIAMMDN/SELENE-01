@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { MissionController } from '../../game/hooks/useMissionController'
-import { MODULES, COMPLETE_ASSEMBLY } from '../../spacecraft/assembly'
+import { MODULES, COMPLETE_ASSEMBLY, assemblyProblems } from '../../spacecraft/assembly'
 import {
   INSTRUMENTS,
   ORBITS,
@@ -50,6 +50,7 @@ export default function DesignPanel({ controller }: { controller: MissionControl
     setExploded,
     config,
     evaluation,
+    engineeringProblems,
     toggleInstrument,
     assemble,
     updateConfig,
@@ -152,6 +153,59 @@ export default function DesignPanel({ controller }: { controller: MissionControl
           </details>
         </section>
       )}
+      {/* Alertas y advertencias activas en tiempo real */}
+      <section
+        className={`design-alerts ${engineeringProblems.length > 0 ? 'is-danger' : 'is-success'}`}
+        aria-live="polite"
+      >
+        <div className="design-alerts-head">
+          <span className="design-alerts-badge">
+            {engineeringProblems.length > 0 ? '⚠ ADVERTENCIAS' : '✓ COMPATIBLE'}
+          </span>
+          <strong>
+            {engineeringProblems.length > 0
+              ? `${engineeringProblems.length} problema(s) por corregir:`
+              : 'Sistemas y recursos equilibrados para el lanzamiento.'}
+          </strong>
+        </div>
+        {engineeringProblems.length > 0 ? (
+          <ul className="design-alerts-list">
+            {engineeringProblems.map((prob) => (
+              <li key={prob}>{prob}</li>
+            ))}
+          </ul>
+        ) : (
+          <p className="design-alerts-desc">
+            Todos los componentes obligatorios están montados y los recursos se encuentran dentro de
+            los límites del lanzador.
+          </p>
+        )}
+      </section>
+
+      {/* Recomendaciones de TARS y lista de preparación */}
+      <section className="design-checklist-box">
+        <details>
+          <summary>
+            Recomendaciones y preparación · {guidance.requirements.filter((r) => r.complete).length}{' '}
+            / {guidance.requirements.length}
+          </summary>
+          <div className="design-tars-advice">
+            <span className="tars-badge">TARS · GUÍA</span>
+            <p>{guidance.explanation}</p>
+          </div>
+          <ul className="debrief-notes">
+            {guidance.requirements.map((item) => (
+              <li key={item.id} className={item.complete ? 'item-done' : 'item-pending'}>
+                <strong>
+                  {item.complete ? '✓ ' : 'Pendiente · '}
+                  {item.label}
+                </strong>
+                <p>{item.detail}</p>
+              </li>
+            ))}
+          </ul>
+        </details>
+      </section>
       {activeStep === 1 && (
         <div className="odyssey-assembly" id="design-assembly">
           <div className="assembly-heading">
@@ -167,6 +221,12 @@ export default function DesignPanel({ controller }: { controller: MissionControl
             Ensambla los sistemas de la nave. Elige depósitos grandes o pequeños; la antena se monta
             sobre el hábitat.
           </p>
+          {assemblyProblems(assembly).length > 0 && (
+            <div className="step-callout warning">
+              <strong>Falta ensamblar:</strong>
+              <p>{assemblyProblems(assembly).join(' · ')}</p>
+            </div>
+          )}
           <div className="assembly-parts">
             {MODULES.map((part) => {
               const installed = assembly.includes(part.id)
@@ -229,6 +289,12 @@ export default function DesignPanel({ controller }: { controller: MissionControl
             Instrumentos simplificados de ODYSSEY. Las cifras siguientes son valores del juego, no
             especificaciones de los instrumentos NASA citados.
           </p>
+          {guidance.objective && !config.instruments.includes(guidance.objective.id) && (
+            <div className="step-callout warning">
+              <strong>Instrumento requerido por el encargo:</strong>
+              <p>{guidance.objective.requirement}</p>
+            </div>
+          )}
           <div className="select-list">
             {INSTRUMENTS.map((item) => (
               <label className="select-card" key={item.id}>
@@ -265,6 +331,12 @@ export default function DesignPanel({ controller }: { controller: MissionControl
           <p className="small-note">
             Define la órbita, el lanzador y el tiempo de operación de este modelo educativo.
           </p>
+          {evaluation.problems.length > 0 && (
+            <div className="step-callout warning">
+              <strong>Incompatibilidad de misión:</strong>
+              <p>{evaluation.problems.join(' · ')}</p>
+            </div>
+          )}
           <h3>Órbita prevista</h3>
           <select
             value={config.orbit}
@@ -343,12 +415,24 @@ export default function DesignPanel({ controller }: { controller: MissionControl
         </button>
       )}
       {activeStep === 3 && (
-        <button
-          className="action-primary"
-          onClick={() => (campus ? onReturnToCampus?.() : go('launch'))}
-        >
-          {campus ? 'Guardar y volver al campus →' : 'Verificar para lanzamiento →'}
-        </button>
+        <div className="design-submit-area">
+          <button
+            className="action-primary"
+            onClick={() => (campus ? onReturnToCampus?.() : go('launch'))}
+          >
+            {campus ? 'Guardar y volver al campus →' : 'Verificar para lanzamiento →'}
+          </button>
+          {engineeringProblems.length > 0 ? (
+            <p className="design-submit-hint warning">
+              ⚠ Resuelve las advertencias de arriba para poder autorizar el despegue en la
+              plataforma.
+            </p>
+          ) : (
+            <p className="design-submit-hint success">
+              ✓ Diseño validado. Puedes continuar con la revisión final y el despegue.
+            </p>
+          )}
+        </div>
       )}
     </>
   )

@@ -10,6 +10,7 @@ Thumbs.db
 *.log
 
 # Local editor metadata, backups and retired character notes
+.firebase/
 .openai/
 *.tsbuildinfo
 *.blend1

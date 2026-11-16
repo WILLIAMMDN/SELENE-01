@@ -2912,5 +2912,17 @@
   "✓ Objetivo elegido": "✓ Target chosen",
   "✓ Revisión registrada": "✓ Review recorded",
   "👥 Equipo creador y autores": "👥 Creative team and authors",
-  "🚀 Ver despegue en Plataforma LC-01 →": "🚀 See takeoff on Platform LC-01 →"
+  "🚀 Ver despegue en Plataforma LC-01 →": "🚀 See takeoff on Platform LC-01 →",
+  "⚠ ADVERTENCIAS": "⚠ WARNINGS",
+  "✓ COMPATIBLE": "✓ COMPATIBLE",
+  "Lo que falta o requiere cambios para el lanzamiento:": "What is missing or requires changes for launch:",
+  "Sistemas y recursos equilibrados para el lanzamiento.": "Systems and resources balanced for launch.",
+  "Todos los componentes obligatorios están montados y los recursos se encuentran dentro de los límites del lanzador.": "All mandatory components are assembled and resources are within launcher limits.",
+  "Recomendaciones y preparación ·": "Recommendations and preparation ·",
+  "TARS · GUÍA": "TARS · GUIDANCE",
+  "TARS · Indicación de vuelo:": "TARS · Flight guidance:",
+  "Instrumento requerido por el encargo:": "Instrument required by assignment:",
+  "Incompatibilidad de misión:": "Mission incompatibility:",
+  "Resuelve las advertencias de arriba para poder autorizar el despegue en la plataforma.": "Resolve the warnings above to authorize liftoff at the launch pad.",
+  "Diseño validado. Puedes continuar con la revisión final y el despegue.": "Design validated. You can proceed to final review and launch."
 }
