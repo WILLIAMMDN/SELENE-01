@@ -1,0 +1,33 @@
+.selene-language {
+  position: fixed;
+  z-index: 10000;
+  right: max(12px, env(safe-area-inset-right));
+  bottom: max(12px, env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 9px;
+  border: 1px solid #33484b;
+  border-radius: 5px;
+  background: #f6f2e8f2;
+  box-shadow: 2px 3px 0 #24343830;
+  color: #243438;
+  font: 600 12px/1.2 system-ui, sans-serif;
+}
+.selene-language select {
+  min-height: 30px;
+  padding: 3px 7px;
+  border: 1px solid #667d78;
+  border-radius: 3px;
+  background: white;
+  color: #243438;
+  font: inherit;
+  cursor: pointer;
+}
+.selene-language select:focus-visible {
+  outline: 2px solid #a65c45;
+  outline-offset: 2px;
+}
+@media (max-width: 500px) {
+  .selene-language label { display: none; }
+}

@@ -1,5 +1,6 @@
 import { HUMAN_SCALE } from './physicalScale'
-import { useMemo } from 'react'
+import { useMemo, useSyncExternalStore } from 'react'
+import { getLanguage, subscribeLanguage, translate } from '../i18n/language'
 import * as T from 'three'
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js'
 import { PALETTE as P } from './worldData'
@@ -148,7 +149,8 @@ export function Sign({
   bg?: string
   fg?: string
 }) {
-  const map = labelTexture(text, sub, bg, fg)
+  const language = useSyncExternalStore(subscribeLanguage, getLanguage)
+  const map = labelTexture(translate(text, language), translate(sub, language), bg, fg)
   return (
     <mesh position={position} rotation={rotation} scale={scale}>
       <planeGeometry />

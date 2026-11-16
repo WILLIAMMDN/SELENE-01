@@ -105,8 +105,8 @@ export default function MarsFieldJournal() {
       )}
       <div className="lunar-source-note">
         <strong>Base científica.</strong> Mars Reconnaissance Orbiter ha estudiado superficie,
-        minerales y subsuelo con instrumentos distintos. CRISM terminó de adquirir datos en 2022;
-        aquí se usa como ejemplo histórico.{' '}
+        minerales y subsuelo con instrumentos distintos. NASA retiró CRISM en abril de 2023; aquí se
+        usa su archivo como referencia histórica.{' '}
         <a
           href="https://science.nasa.gov/mission/mars-reconnaissance-orbiter/science-instruments/"
           target="_blank"
