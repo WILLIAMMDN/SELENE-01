@@ -21,11 +21,13 @@ export default function MissionStation({
   present,
   mars,
   onCampaign,
+  onJournal,
 }: {
   sector: SectorId
   present: boolean
   mars: boolean
   onCampaign: (id: SectorId) => void
+  onJournal: () => void
 }) {
   const mission = useCampusMission(),
     [message, setMessage] = useState('')
@@ -40,9 +42,13 @@ export default function MissionStation({
     return (
       <div className="mission-station">
         <p>
-          Este interior se puede recorrer. La secuencia de diseño y operaciones de esta entrega se
-          desarrolla en la Tierra y estudia la Luna.
+          Ares es un ejercicio de reconocimiento independiente. En la bitácora elegirás una pregunta
+          y el tipo de datos orbitales históricos que ayudaría a estudiarla. La campaña de diseño de
+          ODYSSEY sigue siendo lunar.
         </p>
+        <button className="primary-world" onClick={onJournal}>
+          Abrir pregunta y datos de Ares →
+        </button>
       </div>
     )
   return (

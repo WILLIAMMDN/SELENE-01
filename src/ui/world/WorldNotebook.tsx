@@ -11,7 +11,8 @@ import { LANDER_ACTIONS } from '../../spacecraft/OdysseyLander'
 import MissionStation from '../../world/MissionStation'
 import TarsAssistant from '../../robot/TarsAssistant'
 import ScaleReference from '../../world/ScaleReference'
-import { useCampusMission, nextMissionStep } from '../../game/campusMission'
+import { useCampusMission, nextMissionStep, OBJECTIVES } from '../../game/campusMission'
+import { missionGuidance } from '../../game/missionGuidance'
 import { useBlueprint } from '../../game/state/blueprintStore'
 import { stationConversation, type Conversation } from '../../game/narrative/conversations'
 import { useWorld, type WorldId } from '../../world/worldConfig'
@@ -69,9 +70,11 @@ export default function WorldNotebook({
   onConversation,
   onTravelPoint,
 }: Props) {
-  useBlueprint()
+  const blueprint = useBlueprint()
   const mission = useCampusMission(),
     next = nextMissionStep(),
+    guidance = missionGuidance(mission, blueprint.config, blueprint.parts),
+    chosenObjective = OBJECTIVES.find(({ id }) => id === mission.objective),
     world = useWorld(),
     mars = world.id === 'mars',
     moon = world.id === 'moon',
@@ -262,9 +265,22 @@ export default function WorldNotebook({
               <span className="paper-kicker">BITÁCORA DE MISIÓN</span>
               <h2 id="dialog-title">Una pregunta. Una misión.</h2>
               <p>
-                Tu encargo: diseñar ODYSSEY, enviarla a estudiar el polo sur lunar y recuperar
-                información que permita responder a tu pregunta.
+                {chosenObjective
+                  ? `Tu pregunta: ${chosenObjective.question}`
+                  : 'Tu primer paso es aceptar una pregunta científica con la Dra. Vega.'}
               </p>
+              <div className="mission-next-card" role="status">
+                <span>AHORA · PASO {next.number} DE 05</span>
+                <strong>{next.title}</strong>
+                <p>{guidance.explanation}</p>
+                <p>Destino: {SECTORS.find(({ id }) => id === next.sector)?.name}.</p>
+                <button
+                  className="secondary-world"
+                  onClick={() => onTravelPoint(SECTORS.find(({ id }) => id === next.sector)!.entry)}
+                >
+                  Ir a la entrada del destino →
+                </button>
+              </div>
               <ol className="quest-list">
                 {(['research', 'hangar', 'control', 'launch', 'observatory'] as SectorId[]).map(
                   (id, i) => (
@@ -609,6 +625,7 @@ export default function WorldNotebook({
                 present={mode === 'walk' && position.nearby === active.id}
                 mars={mars}
                 onCampaign={onCampaign}
+                onJournal={() => onPanel('journal')}
               />
             )}
           </>

@@ -57,6 +57,23 @@ export default function ReportPanel({ controller }: { controller: MissionControl
         {debrief?.reflection ??
           '¿Qué instrumento cambiarías para equilibrar valor científico, masa, potencia y capacidad de transmisión?'}
       </p>
+      <section className="flight-brief" aria-label="Explorar otros escenarios">
+        <h2>Después del informe</h2>
+        <p>
+          La misión de ODYSSEY termina aquí. Puedes visitar dos ejercicios de campo independientes:
+          en la Luna se practica el análisis de muestras; en Marte se relaciona una pregunta con un
+          instrumento orbital. Ninguno es un aterrizaje de esta nave.
+        </p>
+        <p>
+          <a className="source-link" href="/?world=moon">
+            Explorar la superficie lunar ↗
+          </a>
+          {' · '}
+          <a className="source-link" href="/?world=mars">
+            Explorar Marte ↗
+          </a>
+        </p>
+      </section>
       {campus && (
         <button className="action-secondary" onClick={onReturnToCampus}>
           Volver al campus · el informe te espera en el mirador →

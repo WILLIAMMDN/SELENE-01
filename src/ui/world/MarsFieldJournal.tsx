@@ -11,7 +11,8 @@ const QUESTIONS = [
     id: 'minerals',
     title: '¿Qué minerales podrían registrar agua antigua?',
     instrument: 'crism',
-    reason: 'CRISM estudia la composición mineral mediante espectros.',
+    reason:
+      'CRISM produjo espectros para estudiar minerales; sus datos históricos sirven como referencia.',
   },
   {
     id: 'layers',
@@ -39,9 +40,9 @@ export default function MarsFieldJournal() {
       <h2 id="dialog-title">Reconocimiento marciano.</h2>
       <p>
         Este es un ejercicio independiente de la campaña lunar. Desde la Tierra defines una pregunta
-        y eliges qué tipo de observación orbital pedirías; en Ares exploras un paisaje ficticio para
-        formular el siguiente estudio. No se muestran datos reales del sitio ni una misión tripulada
-        de NASA.
+        y eliges qué tipo de observación orbital histórica consultarías; en Ares exploras un paisaje
+        ficticio para formular el siguiente estudio. No se muestran datos reales del sitio ni una
+        misión tripulada de NASA.
       </p>
       <div className="lunar-science-brief" aria-label="Secuencia de reconocimiento">
         <div>
@@ -50,7 +51,7 @@ export default function MarsFieldJournal() {
         </div>
         <div>
           <span>02 · ÓRBITA</span>
-          <strong>Escoge un instrumento de referencia.</strong>
+          <strong>Escoge datos de un instrumento de referencia.</strong>
         </div>
         <div>
           <span>03 · ARES</span>
@@ -75,7 +76,7 @@ export default function MarsFieldJournal() {
         ))}
       </fieldset>
       <fieldset>
-        <legend>2. ¿Qué instrumento pedirías?</legend>
+        <legend>2. ¿Qué observaciones consultarías?</legend>
         {INSTRUMENTS.map((item) => (
           <label key={item.id}>
             <input
@@ -92,7 +93,7 @@ export default function MarsFieldJournal() {
         <div className="mars-study-result" role="status">
           <strong>
             {matched
-              ? 'Observación adecuada para la pregunta'
+              ? 'Referencia adecuada para la pregunta'
               : 'Revisa la relación entre pregunta e instrumento'}
           </strong>
           <p>{selected.reason}</p>
@@ -103,8 +104,9 @@ export default function MarsFieldJournal() {
         </div>
       )}
       <div className="lunar-source-note">
-        <strong>Base científica.</strong> Mars Reconnaissance Orbiter estudia la superficie,
-        minerales y subsuelo marcianos con instrumentos distintos.{' '}
+        <strong>Base científica.</strong> Mars Reconnaissance Orbiter ha estudiado superficie,
+        minerales y subsuelo con instrumentos distintos. CRISM terminó de adquirir datos en 2022;
+        aquí se usa como ejemplo histórico.{' '}
         <a
           href="https://science.nasa.gov/mission/mars-reconnaissance-orbiter/science-instruments/"
           target="_blank"
@@ -118,6 +120,13 @@ export default function MarsFieldJournal() {
           rel="noreferrer"
         >
           Misión MRO · NASA ↗
+        </a>{' '}
+        <a
+          href="https://www.jpl.nasa.gov/news/nasa-retires-mineral-mapping-instrument-on-mars-orbiter/"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Retiro de CRISM · NASA/JPL ↗
         </a>
       </div>
     </div>

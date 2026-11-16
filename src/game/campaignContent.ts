@@ -1,10 +1,10 @@
 export type Stage = 'briefing' | 'design' | 'launch' | 'operations' | 'report'
 export const STAGES: { id: Stage; label: string }[] = [
-  { id: 'briefing', label: '01 · Historia' },
-  { id: 'design', label: '02 · Ingeniería' },
-  { id: 'launch', label: '03 · Lanzamiento' },
-  { id: 'operations', label: '04 · Operaciones' },
-  { id: 'report', label: '05 · Informe' },
+  { id: 'briefing', label: '01 · Pregunta' },
+  { id: 'design', label: '02 · Diseña la nave' },
+  { id: 'launch', label: '03 · Revisa y lanza' },
+  { id: 'operations', label: '04 · Opera la nave' },
+  { id: 'report', label: '05 · Resultados' },
 ]
 export const TIPS: Record<Stage, string> = {
   briefing: 'Antes de construir, define qué quieres investigar y qué necesitarás medir.',
