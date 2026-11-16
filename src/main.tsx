@@ -1,12 +1,7 @@
-import { lazy, StrictMode, Suspense, useState } from 'react'
+import { lazy, StrictMode, Suspense } from 'react'
 import { createRoot } from 'react-dom/client'
 import WorldExperience from './world/WorldExperience'
 import CharacterGate from './ui/world/CharacterSelection'
-import type { LaunchDestination } from './game/launchJourney'
-import { worldLocation } from './world/worldLocation'
-import { loadBlueprint } from './game/state/blueprintStore'
-import { blueprintKey, getMission } from './game/campusMission'
-import { makeMissionArrival, savePendingMissionArrival } from './game/missionArrival'
 import './styles.css'
 
 const App = lazy(() => import('./App'))
@@ -22,29 +17,15 @@ const isCampaign =
 const stage: 'briefing' | 'design' | 'launch' =
   stageParam === 'briefing' || stageParam === 'design' || stageParam === 'launch'
     ? stageParam
-    : 'launch'
+    : 'briefing'
 
 function GameEntry() {
-  const [campaign, setCampaign] = useState(isCampaign)
-  const [arrival, setArrival] = useState(false)
-  const arrive = (destination: LaunchDestination) => {
-    const draft = loadBlueprint()
-    const arrival = makeMissionArrival(
-      blueprintKey(draft.config, draft.parts),
-      getMission().objective,
-      destination,
-    )
-    savePendingMissionArrival(arrival)
-    window.history.replaceState(null, '', worldLocation(window.location.href, destination))
-    setArrival(destination === 'moon')
-    setCampaign(false)
-  }
-  return campaign ? (
+  return isCampaign ? (
     <Suspense fallback={<p role="status">Preparando la misión…</p>}>
-      <App initialStage={stage} onLaunchComplete={arrive} />
+      <App initialStage={stage} />
     </Suspense>
   ) : (
-    <WorldExperience arrivalOnMount={arrival} />
+    <WorldExperience />
   )
 }
 

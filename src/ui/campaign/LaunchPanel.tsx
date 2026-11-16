@@ -1,22 +1,17 @@
 import type { MissionController } from '../../game/hooks/useMissionController'
 import { assemblyReady } from '../../spacecraft/assembly'
-import { LAUNCH_DESTINATIONS } from '../../game/launchJourney'
-import DestinationPicker from './DestinationPicker'
 export default function LaunchPanel({ controller }: { controller: MissionController }) {
   const {
     operateReady,
     launchProblems,
     assembly,
     evaluation,
-    destination,
-    setDestination,
     guidance,
     fly,
     campus,
     onReturnToCampus,
     go,
   } = controller
-  const target = LAUNCH_DESTINATIONS.find((item) => item.id === destination)!
   return (
     <>
       <span className="eyebrow">CUADERNO DE MISIÓN / 03 · REVISIÓN</span>
@@ -57,11 +52,11 @@ export default function LaunchPanel({ controller }: { controller: MissionControl
           ))}
         </ul>
       )}
-      <DestinationPicker value={destination} onChange={setDestination} />
       <div className="flight-brief">
         <h2>Revisión de ODYSSEY</h2>
         <p>
-          <b>Mapa de exploración tras el lanzamiento:</b> {target.name} · {target.place}
+          <b>Destino científico:</b> órbita polar de la Luna. Después del vuelo, operarás la nave
+          desde control y evaluarás los datos recibidos en la Tierra.
         </p>
         <p>
           <b>Ensamblaje:</b>{' '}
@@ -83,7 +78,7 @@ export default function LaunchPanel({ controller }: { controller: MissionControl
       </div>
       <button className="action-primary" onClick={fly} disabled={!operateReady}>
         {operateReady
-          ? `Simular campaña lunar y abrir ${target.name} →`
+          ? 'Simular lanzamiento lunar y pasar a operaciones →'
           : 'Corrige los problemas para lanzar'}
       </button>
       {campus && (

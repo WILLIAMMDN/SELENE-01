@@ -18,7 +18,7 @@ export const MARS_SECTORS: Sector[] = [
     description:
       'Define qué quieres estudiar: las capas del terreno, el entorno o las señales de antiguos procesos geológicos. Este laboratorio es el punto de partida del sector marciano.',
     detail:
-      'Exterior recorrible, entrada señalizada y espacio para futura selección de objetivos. La campaña de ingeniería actual sigue siendo lunar; este escenario no la convierte automáticamente en una misión a Marte.',
+      'Exterior recorrible y entrada señalizada. La bitácora de Ares permite relacionar una pregunta con datos orbitales de referencia. La campaña de ingeniería actual sigue siendo lunar.',
     chapter: 'OBJETIVOS CIENTÍFICOS',
   },
   {

@@ -18,6 +18,7 @@ Un estudiante llega al centro espacial SELENE y recibe de la Dra. Vega una misi�
 - Assets integrados: exploradora Quaternius (CC0), TARS01, ODYSSEY final con ensamblaje modular, ROBER con cinco animaciones y control remoto, tres variantes animadas del árbol Anime Tree, incluidas con autorización expresa de su creador y diez módulos BASEPRI, con puertas automáticas, suelo interior, rampas y colisiones; plataforma y lanzador de Juego NASA.rar con cinco mecanismos animados. Tierra tiene suelo, caminos, vegetación y cielo con tratamiento ilustrado. Los escenarios combinan estos GLB con geometría ilustrada por código; los resultados son **hipotéticos de enseñanza**.
 - Pendiente: revisión artística de animaciones y materiales, colisiones avanzadas, campaña extensa, multijugador real, cálculo orbital de alta fidelidad, pruebas con estudiantes y despliegue público.
 - Los **seis integrantes** son desarrolladores. El cooperativo **hasta cuatro jugadores**, sugerido en el reto, es una ampliación futura.
+- Recorrido principal: pregunta científica → ensamblaje e instrumentos → revisión de recursos y órbita → lanzamiento simulado → operaciones del orbitador → informe. El explorador de superficie lunar y el escenario de Marte son ejercicios independientes; ODYSSEY no aterriza allí.
 
 ## Tecnologías
 
@@ -59,6 +60,7 @@ Abrir `?world=earth` para Tierra o `?world=mars` para Marte. ROBER está junto a
 - docs/ROADMAP.md — fases y criterios de entrega.
 - docs/TEAM.md — reparto y responsabilidades.
 - docs/CHALLENGE_ALIGNMENT.md — correspondencia con el reto.
+- docs/PRESENTATION_READINESS.md — comprobaciones y pendientes antes de presentar.
 
 ## Fuentes y repositorios auténticos
 

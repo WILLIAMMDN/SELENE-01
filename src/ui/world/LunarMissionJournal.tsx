@@ -15,6 +15,7 @@ import {
   useLunarSamples,
 } from '../../world/lunar/lunarMissionProgress'
 import { LUNAR_ROVER_START } from '../../world/lunar/lunarRoverControl'
+import { lunarFieldGuide } from '../../world/lunar/lunarFieldGuide'
 import type { PositionReport } from '../../world/player/types'
 import { LUNAR_LANDER, LUNAR_SECTORS } from '../../world/lunar/lunarNavigation'
 
@@ -63,21 +64,7 @@ export default function LunarMissionJournal({
   const roverLocation: [number, number] = rover ? [rover.x, rover.z] : LUNAR_ROVER_START
   const completeCount =
     Number(surveyDone) + Number(powerTested) + Number(telemetryTested) + Number(traversed)
-  const nextStep = !hasIce
-    ? 'Recoge hielo en la estación 01.'
-    : !iceAnalyzed
-      ? 'Lleva la muestra a la mesa de análisis de LAB-L01.'
-      : !powerTested
-        ? 'Despliega PWR-L01 para habilitar la transmisión.'
-        : !iceSent
-          ? 'Envía el resultado de LAB-L01 a control de misión.'
-          : !surveyDone
-            ? `Prospección pendiente en ${nextResource?.name}.`
-            : !telemetryTested
-              ? 'Envía el registro de prueba a control de misión.'
-              : !traversed
-                ? `Conduce ${LUNAR_TRAVERSE_DISTANCE} m en una salida y baja del rover.`
-                : 'Informe de superficie completo. El retorno de la roca es opcional.'
+  const nextStep = lunarFieldGuide({ samples: collected, fieldwork: steps, operations }).hint
 
   // Tab activo: 'missions' (5 misiones operativas) o 'simulator' (Simulador de Compensaciones NASA)
   const [tab, setTab] = useState<'missions' | 'simulator'>('missions')

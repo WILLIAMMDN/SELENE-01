@@ -1,6 +1,7 @@
 import type { MissionController } from '../../game/hooks/useMissionController'
+import { OBJECTIVES } from '../../game/objectives'
 export default function BriefingPanel({ controller }: { controller: MissionController }) {
-  const { go } = controller
+  const { go, guidance, chooseObjective, campus, onReturnToCampus } = controller
   return (
     <>
       <span className="eyebrow">CUADERNO DE MISIÓN / 01 · ENCARGO</span>
@@ -26,6 +27,29 @@ export default function BriefingPanel({ controller }: { controller: MissionContr
           Leer el reto ↗
         </a>
       </p>
+      <h2>1. Elige la pregunta</h2>
+      {campus ? (
+        <p className="simulation-note">
+          {guidance.objective
+            ? `Encargo elegido en el laboratorio: ${guidance.objective.name}. ${guidance.objective.question}`
+            : 'Ve al laboratorio del campus y habla con la Dra. Vega para aceptar un encargo.'}
+        </p>
+      ) : (
+        <div className="briefing-objectives" aria-label="Preguntas científicas">
+          {OBJECTIVES.map((objective) => (
+            <button
+              key={objective.id}
+              type="button"
+              aria-pressed={guidance.objective?.id === objective.id}
+              onClick={() => chooseObjective(objective.id)}
+            >
+              <strong>{objective.name}</strong>
+              <span>{objective.question}</span>
+              <small>{objective.requirement}</small>
+            </button>
+          ))}
+        </div>
+      )}
       <div className="evidence-card">
         <span className="evidence-label">BASE CIENTÍFICA · NASA</span>
         <p>
@@ -67,9 +91,21 @@ export default function BriefingPanel({ controller }: { controller: MissionContr
         Los hechos sobre la Luna tienen fuentes NASA. ODYSSEY, sus costos y sus capacidades son
         supuestos educativos del juego.
       </p>
-      <button className="action-primary" onClick={() => go('design')}>
-        Abrir el diseño de la misión →
-      </button>
+      {campus && !guidance.objective ? (
+        <button className="action-primary" onClick={onReturnToCampus}>
+          Volver al campus e ir al laboratorio →
+        </button>
+      ) : (
+        <button
+          className="action-primary"
+          disabled={!guidance.objective}
+          onClick={() => go('design')}
+        >
+          {guidance.objective
+            ? 'Diseñar la nave para esta pregunta →'
+            : 'Elige una pregunta para continuar'}
+        </button>
+      )}
     </>
   )
 }

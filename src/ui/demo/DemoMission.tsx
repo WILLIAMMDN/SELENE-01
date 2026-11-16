@@ -291,8 +291,8 @@ export default function DemoMission() {
             <>
               <p>
                 El ejercicio marciano empieza de nuevo en la Tierra. Para estudiar minerales
-                asociados con agua antigua, escogemos CRISM como instrumento de referencia de Mars
-                Reconnaissance Orbiter.
+                asociados con agua antigua, escogemos datos históricos de CRISM, instrumento de Mars
+                Reconnaissance Orbiter retirado en 2022.
               </p>
               <p>
                 En Ares se plantea un estudio; este recorrido no presenta espectros reales del lugar

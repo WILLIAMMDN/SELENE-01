@@ -1,5 +1,11 @@
 import { roomLabel } from './buildingEntrances'
-import { analyzeLunarIce, useLunarFieldwork, useLunarSamples } from './lunar/lunarMissionProgress'
+import {
+  analyzeLunarIce,
+  useLunarFieldwork,
+  useLunarSamples,
+  useLunarOperations,
+} from './lunar/lunarMissionProgress'
+import { lunarFieldGuide } from './lunar/lunarFieldGuide'
 import type { LunarWorkstationId } from './lunar/lunarFieldwork'
 import { LUNAR_LOW_RESERVE } from './lunar/lunarPhysics'
 import VehicleDashboard from '../ui/world/VehicleDashboard'
@@ -10,23 +16,16 @@ import { canUseWardrobe } from './wardrobeStation'
 import AuthorsPanel from '../ui/world/AuthorsPanel'
 import { worldLocation } from './worldLocation'
 import WorldNotebook from '../ui/world/WorldNotebook'
-import { OBJECTIVE_NAMES, type Panel } from '../ui/world/worldUiTypes'
+import type { Panel } from '../ui/world/worldUiTypes'
 import {
   useCampusMission,
   nextMissionStep,
   missionVerified,
   blueprintKey,
-  getMission,
 } from '../game/campusMission'
 import { loadOperationSession, saveOperationSession } from '../game/state/operationStore'
-import { equipForLaunch, wardrobeStore } from './wardrobe'
-import { useLaunchDestination } from '../game/state/launchDestinationStore'
-import {
-  makeMissionArrival,
-  savePendingMissionArrival,
-  loadPendingMissionArrival,
-  clearPendingMissionArrival,
-} from '../game/missionArrival'
+import { wardrobeStore } from './wardrobe'
+import { loadPendingMissionArrival, clearPendingMissionArrival } from '../game/missionArrival'
 import { startOperations } from '../game/missionDesign'
 import type { BoardingMotion, BoardingPhase } from '../spacecraft/boardingRoute'
 import LaunchCinematicOverlay from '../spacecraft/LaunchCinematicOverlay'
@@ -54,7 +53,6 @@ function WorldExperience({
   onLandingComplete: () => void
 }) {
   const blueprint = useBlueprint()
-  const launchDestination = useLaunchDestination()
   useCampusMission()
   const world = useWorld(),
     mars = world.id === 'mars',
@@ -120,18 +118,14 @@ function WorldExperience({
       if (missionVerified(draft.config, draft.parts)) {
         const key = blueprintKey(draft.config, draft.parts)
         if (!loadOperationSession(key)) saveOperationSession(key, startOperations())
-        const objective = getMission().objective
-        const arrival = makeMissionArrival(key, objective, launchDestination)
-        savePendingMissionArrival(arrival)
-        wardrobeStore.set(equipForLaunch(wardrobeStore.getSnapshot(), arrival.world))
-        // The world team owns both destinations; the lunar team adds its own
-        // in-engine arrival film before the playable base is revealed.
-        onWorld(arrival.world, arrival.world === 'moon')
+        // Operations follow the lunar launch; surface maps are optional later.
+        setCampaignStage('launch')
+        setCampaign(true)
       }
     }
     setLaunchPhase('idle')
     setFlightFinished(false)
-  }, [flightFinished, onWorld, launchDestination])
+  }, [flightFinished])
   const [position, setPosition] = useState<PositionReport>({ x: 0, z: 37, nearby: null, fps: 0 }),
     [travel, setTravel] = useState<Travel>({ id: 'start', serial: 0 })
   const [quality, setQuality] = useState<'standard' | 'light'>('standard'),
@@ -160,7 +154,7 @@ function WorldExperience({
           ? {
               speaker: 'TARS · ARES',
               lines: [
-                'Ares es un paisaje de entrenamiento. Abre la bitácora para formular una pregunta marciana desde la Tierra y elegir una observación orbital inspirada en Mars Reconnaissance Orbiter.',
+                'Ares es un paisaje de entrenamiento. Abre la bitácora para formular una pregunta marciana desde la Tierra y elegir qué observaciones de Mars Reconnaissance Orbiter consultarías.',
               ],
               action: 'Ver estación',
               sector: id,
@@ -321,6 +315,12 @@ function WorldExperience({
   }, [panel, campaign])
   const lunarSamples = useLunarSamples()
   const lunarFieldwork = useLunarFieldwork()
+  const lunarOperations = useLunarOperations()
+  const lunarGuide = lunarFieldGuide({
+    samples: lunarSamples,
+    fieldwork: lunarFieldwork.steps,
+    operations: lunarOperations,
+  })
   useEffect(() => {
     const useStation = (event: Event) => {
       if (!moon || panel || conversation || campaign || mode !== 'walk') return
@@ -392,7 +392,6 @@ function WorldExperience({
   const hatch = moon && mode === 'walk' ? position.hatch : undefined
   const nearby = SECTORS.find((s) => s.id === position.nearby),
     tour = SECTORS[tourIndex]
-  const objectiveNames = OBJECTIVE_NAMES
   if (campaign)
     return (
       <>
@@ -406,15 +405,6 @@ function WorldExperience({
               campus
               launchAccess={campaignStage === 'launch'}
               onReturnToCampus={returnToCampus}
-              onLaunchComplete={(target) => {
-                const draft = loadBlueprint()
-                const key = blueprintKey(draft.config, draft.parts)
-                const arrival = makeMissionArrival(key, getMission().objective, target)
-                savePendingMissionArrival(arrival)
-                wardrobeStore.set(equipForLaunch(wardrobeStore.getSnapshot(), target))
-                setCampaign(false)
-                onWorld(target, target === 'moon')
-              }}
             />
           </Suspense>
         </div>
@@ -499,10 +489,7 @@ function WorldExperience({
       {launchPhase === 'cockpit' && (
         <div className="boarding-cockpit-prompt">
           <strong>ODYSSEY · Recreación de cabina</strong>
-          <span>
-            TARS: Diseño revisado. Escenario de exploración:{' '}
-            {launchDestination === 'moon' ? 'Luna' : 'Marte'}.
-          </span>
+          <span>TARS: Diseño revisado. El objetivo de ODYSSEY es la órbita lunar.</span>
           <button type="button" onClick={() => onLaunchPhase('flight')}>
             Iniciar despegue
           </button>
@@ -572,25 +559,13 @@ function WorldExperience({
                   : 'ARES'
                 : `MISIÓN ${next.number} / 05`}
             </span>
-            <strong>
-              {moon
-                ? 'Ejercicio de superficie'
-                : offworld
-                  ? 'Reconocimiento marciano'
-                  : objectiveNames[next.sector]}
-            </strong>
+            <strong>{moon ? lunarGuide.title : offworld ? 'Pregunta marciana' : next.title}</strong>
             <small>
               <span>
                 {moon
-                  ? lunarFieldwork.steps.includes('iceSent')
-                    ? 'Resultado de hielo transmitido'
-                    : lunarFieldwork.steps.includes('iceAnalyzed')
-                      ? 'Transmite el resultado desde la bitácora'
-                      : lunarSamples.includes('hielo')
-                        ? 'Lleva la muestra a LAB-L01'
-                        : 'Recoge la muestra simulada en la estación 01'
+                  ? lunarGuide.hint
                   : offworld
-                    ? 'Abre la bitácora para comenzar'
+                    ? 'Abre la bitácora (J) y relaciona pregunta con datos orbitales'
                     : guideEnabled && mode === 'walk' && activeGuide
                       ? activeGuide.arrived
                         ? activeGuide.hint

@@ -124,6 +124,17 @@ export default function DesignPanel({ controller }: { controller: MissionControl
           </div>
         ))}
       </div>
+      {!guidance.objective && (
+        <section className="design-brief" aria-label="Pregunta pendiente">
+          <strong>Falta la pregunta científica</strong>
+          <p>
+            Elige qué quieres investigar antes de decidir qué instrumento y órbita necesita ODYSSEY.
+          </p>
+          <button type="button" className="action-secondary" onClick={() => go('briefing')}>
+            Volver al encargo →
+          </button>
+        </section>
+      )}
       {guidance.objective && (
         <section className="design-brief" aria-label="Encargo científico elegido">
           <span className="evidence-label">ENCARGO CIENTÍFICO · {guidance.objective.name}</span>

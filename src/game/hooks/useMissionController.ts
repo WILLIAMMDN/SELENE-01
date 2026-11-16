@@ -1,6 +1,5 @@
 import { useCallback, useState } from 'react'
 import { createLaunchJourney, type LaunchDestination } from '../launchJourney'
-import { launchDestinationStore, useLaunchDestination } from '../state/launchDestinationStore'
 import { equipForLaunch, wardrobeStore } from '../../world/wardrobe'
 import { missionGuidance } from '../missionGuidance'
 import { objectiveDebrief } from '../objectiveDebrief'
@@ -9,6 +8,7 @@ import {
   useCampusMission,
   missionProblems,
   missionVerified,
+  acceptObjective,
   recordMission,
   resetCampusMission,
   blueprintKey,
@@ -24,7 +24,6 @@ import {
 } from '../missionDesign'
 import {
   INITIAL_ASSEMBLY,
-  assemblyProblems,
   assemblyReady,
   toggleModule,
   type ModuleId,
@@ -56,7 +55,6 @@ export function useMissionController({
 }: CampaignProps) {
   const mission = useCampusMission()
   const { config, parts: assembly } = useBlueprint()
-  const destination = useLaunchDestination()
   const [resume] = useState(() =>
     campus && launchAccess && initialStage === 'launch' && missionVerified(config, assembly)
       ? loadOperationSession(blueprintKey(config, assembly))
@@ -75,24 +73,21 @@ export function useMissionController({
   const evaluation = evaluateDesign(config)
   const guidance = missionGuidance(mission, config, assembly)
   const debrief = objectiveDebrief(mission.objective, config, ops)
-  const launchProblems = campus
-    ? [
-        ...missionProblems(config, assembly),
-        ...(!missionVerified(config, assembly)
-          ? ['Regresa a comunicaciones para registrar la revisión de esta configuración.']
-          : []),
-        ...(!launchAccess
-          ? ['Regresa al campus y utiliza el puesto de autorización de la plataforma.']
-          : []),
-      ]
-    : [...evaluation.problems, ...assemblyProblems(assembly)]
-  const engineeringProblems = campus
-    ? missionProblems(config, assembly)
-    : [...evaluation.problems, ...assemblyProblems(assembly)]
+  const launchProblems = [
+    ...missionProblems(config, assembly),
+    ...(campus && !missionVerified(config, assembly)
+      ? ['Regresa a comunicaciones para registrar la revisión de esta configuración.']
+      : []),
+    ...(campus && !launchAccess
+      ? ['Regresa al campus y utiliza el puesto de autorización de la plataforma.']
+      : []),
+  ]
+  const engineeringProblems = missionProblems(config, assembly)
   const stageIndex = STAGES.findIndex((x) => x.id === stage)
   const operateReady =
     evaluation.ready &&
     assemblyReady(assembly) &&
+    missionProblems(config, assembly).length === 0 &&
     (!campus || (launchAccess && missionVerified(config, assembly)))
   function resetFlight() {
     clearOperationSession()
@@ -106,6 +101,10 @@ export function useMissionController({
     resetFlight()
     const current = loadBlueprint()
     saveBlueprint({ ...current, config: { ...current.config, ...change } })
+  }
+  function chooseObjective(id: InstrumentId) {
+    resetFlight()
+    acceptObjective(id)
   }
   const go = (value: Stage) => {
     if (value === 'operations' && (!operateReady || !launched)) {
@@ -174,7 +173,7 @@ export function useMissionController({
       go('design')
       return
     }
-    if (!journey.begin(destination, blueprintKey(config, assembly), operateReady)) return
+    if (!journey.begin('moon', blueprintKey(config, assembly), operateReady)) return
     setLaunchElapsed(0)
     setLaunching(true)
     setNotification('')
@@ -229,9 +228,7 @@ export function useMissionController({
   return {
     stage,
     config,
-    destination,
-    setDestination: launchDestinationStore.set,
-    launchDestination: journey.destination ?? destination,
+    chooseObjective,
     assembly,
     exploded,
     setExploded,

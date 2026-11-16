@@ -14,6 +14,20 @@
   background: #dce6dc;
   font-family: 'Trebuchet MS', Arial, sans-serif;
 }
+.app-shell .briefing-objectives { display: grid; gap: 8px; margin: 14px 0 21px; }
+.app-shell .briefing-objectives button { display: grid; gap: 4px; padding: 12px 14px; text-align: left; background: #f7f7ed; border: 1px solid #a9bbb0; color: #34464c; }
+.app-shell .briefing-objectives button:hover { background: #ecf1e8; }
+.app-shell .briefing-objectives button[aria-pressed='true'] { background: #e4eee6; border-left: 4px solid #56878b; }
+.app-shell .briefing-objectives strong { font-size: 14px; }
+.app-shell .briefing-objectives span { font-size: 12px; line-height: 1.4; }
+.app-shell .briefing-objectives small { font-size: 11px; color: #5b7472; }
+.app-shell.stage-briefing .game-layout { grid-template-columns: minmax(460px, 1fr) minmax(440px, 1fr); }
+.app-shell.stage-briefing .engineering-panel { display: none; }
+.app-shell.stage-briefing .campaign-panel { max-height: calc(100vh - 130px); }
+@media (max-width: 900px) {
+  .app-shell.stage-briefing .game-layout { display: flex; flex-direction: column; }
+  .app-shell.stage-briefing .campaign-panel { max-height: none; }
+}
 
 .app-shell .topbar,
 .app-shell .stage-nav,
