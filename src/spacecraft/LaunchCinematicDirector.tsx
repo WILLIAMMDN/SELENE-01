@@ -32,8 +32,6 @@ export default function LaunchCinematicDirector({
   const completed = useRef(false)
   const cameraGoal = useMemo(() => new THREE.Vector3(), [])
   const targetGoal = useMemo(() => new THREE.Vector3(), [])
-  const cachedBackground = useRef<THREE.Color | null>(null)
-  const cachedFog = useRef<{ near: number; far: number; color: THREE.Color } | null>(null)
   const daylight = useMemo(() => new THREE.Color('#a7ccc6'), [])
   const deepSpace = useMemo(() => new THREE.Color('#111b2b'), [])
   const background = useMemo(() => new THREE.Color(), [])
@@ -56,29 +54,12 @@ export default function LaunchCinematicDirector({
     completed.current = false
     lastPublished.current = -1
     lastShot.current = ''
-    if (scene.background instanceof THREE.Color) {
-      cachedBackground.current = scene.background.clone()
-    }
-    if (scene.fog instanceof THREE.Fog) {
-      cachedFog.current = {
-        near: scene.fog.near,
-        far: scene.fog.far,
-        color: scene.fog.color.clone(),
-      }
-    }
     camera.up.set(0, 1, 0)
     const start = getLaunchCameraPose(0, launcher, origin, LAUNCH_SITE.height)
     camera.position.set(...start.position)
     camera.lookAt(...start.target)
-    return () => {
-      if (scene.background instanceof THREE.Color && cachedBackground.current)
-        scene.background.copy(cachedBackground.current)
-      if (scene.fog instanceof THREE.Fog && cachedFog.current) {
-        scene.fog.near = cachedFog.current.near
-        scene.fog.far = cachedFog.current.far
-        scene.fog.color.copy(cachedFog.current.color)
-      }
-    }
+    // The next scene owns its background and fog. Restoring the launch colors here
+    // overrides the orbital scene during the same React commit.
   }, [camera, clock, launcher, origin[0], origin[1], origin[2], scene])
 
   useFrame((_, rawDelta) => {
